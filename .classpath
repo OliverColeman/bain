@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/jfreechart/lib/jcommon-1.0.17.jar"/>
+	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/jfreechart/lib/jfreechart-1.0.14.jar"/>
+	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/aparapi/aparapi.jar"/>
+	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/swingx-all-1.6.3.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
