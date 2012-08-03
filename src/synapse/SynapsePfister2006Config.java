@@ -1,6 +1,6 @@
 package synapse;
 
-import misc.ComponentConfiguration;
+import base.ComponentConfiguration;
 
 /**
  * Configuration object for SynapsePfister2006.

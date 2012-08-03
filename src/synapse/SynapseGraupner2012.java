@@ -1,7 +1,7 @@
 package synapse;
 
-import misc.ComponentConfiguration;
-import misc.Simulation;
+import base.ComponentConfiguration;
+import base.Simulation;
 
 /**
  * Implementation of the synapse model described by

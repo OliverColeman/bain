@@ -1,6 +1,6 @@
 package neuron;
 
-import misc.ConfigurableComponent;
+import base.ConfigurableComponent;
 
 /**
  * Base class for all Neuron models.

@@ -1,6 +1,6 @@
 package synapse;
 
-import misc.ComponentConfiguration;
+import base.ComponentConfiguration;
 import misc.Ziggurat;
 
 /**

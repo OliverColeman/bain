@@ -1,6 +1,6 @@
 package neuron;
 
-import misc.ComponentConfiguration;
+import base.ComponentConfiguration;
 
 /**
  * Configuration for NeuronRandom.

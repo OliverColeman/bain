@@ -1,6 +1,6 @@
 package synapse;
 
-import misc.ConfigurableComponent;
+import base.ConfigurableComponent;
 import neuron.Neuron;
 
 

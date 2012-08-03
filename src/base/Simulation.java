@@ -1,10 +1,8 @@
-package misc;
+package base;
 
-import java.util.HashMap;
 import java.util.Vector;
 
 import synapse.Synapse;
-
 import neuron.Neuron;
 
 public class Simulation {

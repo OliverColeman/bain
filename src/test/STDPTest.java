@@ -1,5 +1,6 @@
 package test;
 
+import base.Simulation;
 import neuron.*;
 import synapse.*;
 import misc.*;

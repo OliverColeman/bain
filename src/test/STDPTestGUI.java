@@ -25,6 +25,8 @@ import org.jfree.data.xy.*;
 import org.jfree.ui.*;
 import org.jfree.chart.axis.*;
 
+import base.ComponentConfiguration;
+
 /**
  * GUI for experimenting with Synapse models.
  * 
