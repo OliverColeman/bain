@@ -72,14 +72,10 @@ public class SynapseGraupner2012 extends Synapse {
 	    // Update strength.
 	    double delta_s = (-p * (1 - p) * (config.bistableBoundary - p)) * config.getStepPeriod(); // Multiply by inverse of time resolution.
 	    if (c >= config.depThresh || c >= config.potThresh) {
-		    if (c >= config.potThresh) {
+		    if (c >= config.potThresh)
 		    	delta_s += config.potRateMult * (1 - p);
-		    	System.out.println("p");
-		    }
-		    if (c >= config.depThresh) {
+		    if (c >= config.depThresh)
 		    	delta_s -= config.depRateMult * p;
-		    	System.out.println("d");
-		    }
 		    delta_s += config.noiseMult * config.rng.nextGaussian();
 	    }
 	    

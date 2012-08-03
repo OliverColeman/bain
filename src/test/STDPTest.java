@@ -196,7 +196,6 @@ public class STDPTest {
 							}
 						}
 						
-						//System.out.println(position[0] + " , " + position[1] + " : " + Arrays.deepToString(currentSpikeTimings));
 						((NeuronFixedConfig) pre.getConfig()).setSpikeTimings(currentSpikeTimings[0]);
 						((NeuronFixedConfig) post.getConfig()).setSpikeTimings(currentSpikeTimings[1]);
 						sim.reset();

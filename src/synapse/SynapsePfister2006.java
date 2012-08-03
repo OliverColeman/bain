@@ -59,8 +59,6 @@ public class SynapsePfister2006 extends Synapse {
 	        strength += r1 * (config.a2P + config.a3P * o2p);
 	    }
 	    
-	    //System.out.println(r1 + "\t" + r2 + "\t" + o1 + "\t" + o2 + "\t" + strength);   
-	    
 	    return pre.getOutput() * strength;
 	}
 	
