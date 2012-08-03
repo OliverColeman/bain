@@ -1,10 +1,22 @@
 package neuron;
 
+import misc.ConfigurableComponent;
+
 /**
  * Base class for all Neuron models.
  * @author Oliver J. Coleman
  */
-public abstract class Neuron {
+public abstract class Neuron extends ConfigurableComponent {
+	/**
+	 * Refers to a pre-synaptic Neuron or spike.
+	 */
+	public static final int PRE = 0;
+	
+	/**
+	 * Refers to a post-synaptic Neuron or spike.
+	 */
+	public static final int POST = 1;
+	
 	protected double output;
 	  
 	/**
@@ -12,12 +24,6 @@ public abstract class Neuron {
 	 */
 	public abstract boolean spiked();
 	
-	/**
-	 * Update the model over one millisecond.
-	 * @return The output value at the end of the specified time period.
-	 */
-	public abstract double step();
-	  
 	/** 
 	 * Returns the output of the Neuron for the last time step.
 	 */

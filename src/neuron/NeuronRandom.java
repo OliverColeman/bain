@@ -1,5 +1,7 @@
 package neuron;
 
+import misc.ComponentConfiguration;
+
 /**
  * A neuron that produces randomised spike trains.
  * 
@@ -8,17 +10,13 @@ package neuron;
  * @author Oliver J. Coleman
  */
 public class NeuronRandom extends Neuron {
-	double threshold;
+	NeuronRandomConfig config;
 	
 	/**
-	 * Create a NeuronRandom with the given firing threshold. The threshold, which should be between 0 and 1, 
-	 * describes how likely the Neuron is to spike at any given time step: a value of 0 would cause the Neuron
-	 * to spike every time step, a value of 1 would cause the Neuron to never spike, a value of 0.5 would cause
-	 * the Neuron to spike 50% of time steps.
-	 * @param threshold The firing threshold.
+	 * Create a NeuronRandom with the specified configuration.
 	 */ 
-	public NeuronRandom(double threshold) {
-		this.threshold = threshold;
+	public NeuronRandom(NeuronRandomConfig config) {
+		this.config = config;
 	}
 	
 	/**
@@ -33,7 +31,22 @@ public class NeuronRandom extends Neuron {
 	 * @see neuron.Neuron#step()
 	 */
 	public double step() {
-		output = (Math.random() > threshold) ? 1 : 0;
+		output = (Math.random() > config.threshold) ? 1 : 0;
 		return output;
+	}
+
+	@Override
+	public void setConfig(ComponentConfiguration config) {
+		this.config = (NeuronRandomConfig) config;
+	}
+
+	@Override
+	public ComponentConfiguration getConfig() {
+		return config;
+	}
+
+	@Override
+	public ComponentConfiguration getConfigSingleton() {
+		return new NeuronRandomConfig();
 	}
 }

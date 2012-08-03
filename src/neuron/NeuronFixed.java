@@ -1,64 +1,32 @@
 package neuron;
 
+import misc.ComponentConfiguration;
+
 /**
  * A neuron that produces pre-determined spike patterns.
  * @author Oliver J. Coleman
  */
 public class NeuronFixed extends Neuron {
-	// Presentation period of spike pattern.
-	int spikePatternPeriod;
-
-	// Timings of spikes.
-	int[] spikeTimings;
+	NeuronFixedConfig config;
 	
-	int spikeTimingIndex = 0, time = 0;
-			
+	int spikeTimingIndex = 0; 
+	int stepIndex = 0;
 	
 	/**
-	 * Create a NeuronTest with a custom firing pattern.
-	 * @param spikePatternPeriod The total length of the pattern (ms).
-	 * @param spikeTimings An array containing the times (ms) of each spike, relative to the beginning of the pattern.
+	 * Create a NeuronTest with the specified configuration.
+	 * @param config The configuration to use for this NeuronFixed.
 	 */
-	public NeuronFixed(int spikePatternPeriod, int[] spikeTimings) {
-		this.spikePatternPeriod = spikePatternPeriod;
-		this.spikeTimings = spikeTimings;
+	public NeuronFixed(NeuronFixedConfig config) {
+		this.config = config;
 	}
 	
-	/**
-	 * Create a NeuronTest with a regular firing pattern.
-	 * @param spikePatternPeriod The total length of the pattern (ms).
-	 * @param spikingPeriod The time between spikes (ms).
-	 * @param startDelay Time before spiking begins (ms).
-	 */
-	public NeuronFixed(int spikePatternPeriod, int spikingPeriod, int startDelay) {
-		this.spikePatternPeriod = spikePatternPeriod;
-
-		int spikeCount = spikePatternPeriod / spikingPeriod;
-		spikeTimings = new int[spikeCount];
-				
-		int st = startDelay;
-		for (int s = 0; s < spikeCount; s++) {
-			spikeTimings[s] = st;
-			st += spikingPeriod;
-		}
-	}
-	
-	/**
-	 * Sets a new firing pattern. The Neuron is reset and will begin at the start of the new pattern.
-	 * @param spikeTimings An array containing the times (ms) of each spike, relative to the beginning of the pattern.
-	 */
-	public void setSpikeTimings(int[] spikeTimings) {
-		this.spikeTimings = spikeTimings;
-		this.reset();
-	}
-
 	/**
 	 * @see neuron.Neuron#reset()
 	 */
 	public void reset(){
 		output = 0;
 		spikeTimingIndex = 0;
-		time = 0;
+		stepIndex = 0;
 	}
 	
 	/**
@@ -73,7 +41,8 @@ public class NeuronFixed extends Neuron {
 	 * @see neuron.Neuron#step()
 	 */
 	public double step() {
-		if (spikeTimingIndex < spikeTimings.length && spikeTimings[spikeTimingIndex] == time) {
+		double time = stepIndex * config.getStepPeriod(); 
+		if (spikeTimingIndex < config.spikeTimings.length && config.spikeTimings[spikeTimingIndex] <= time+config.getStepPeriod()/10) {
 			output = 1;
 			spikeTimingIndex++;
 		}
@@ -81,14 +50,30 @@ public class NeuronFixed extends Neuron {
 			output = 0;
 		}
 		
-		if (time < spikePatternPeriod-1) {
-			time++;
+		if (time < config.spikePatternPeriod - config.getStepPeriod()) {
+			stepIndex++;
 		}
 		else {
-			time = 0;
+			stepIndex = 0;
 			spikeTimingIndex = 0;
 		}
 
 		return output;
+	}
+
+	@Override
+	public void setConfig(ComponentConfiguration config) {
+		this.config = (NeuronFixedConfig) config;
+		reset();
+	}
+
+	@Override
+	public ComponentConfiguration getConfig() {
+		return config;
+	}
+
+	@Override
+	public ComponentConfiguration getConfigSingleton() {
+		return new NeuronFixedConfig();
 	}
 }

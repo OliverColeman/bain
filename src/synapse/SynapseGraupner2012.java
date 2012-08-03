@@ -1,8 +1,12 @@
 package synapse;
 
+import misc.ComponentConfiguration;
+import misc.Simulation;
+
 /**
  * Implementation of the synapse model described by
  * Graupner, M., Brunel, N.: Calcium-Based Plasticity Model Explains Sensitivity of Synaptic Changes to Spike Pattern, Rate, and Dendritic Location. PNAS. 109, 3991–3996 (2012).
+ * (using the simplified calcium model).
  *
  * @author Oliver J. Coleman
  */
@@ -12,6 +16,7 @@ public class SynapseGraupner2012 extends Synapse {
 	SynapseGraupner2012Config config;
 	
 	double c = 0; // Calcium concentration.
+	double p; // Efficacy state. 
 	int preDelayCount = 0; //Count down until calcium spike after pre-synaptic neuronal spike. 
 	
 	public SynapseGraupner2012() {
@@ -20,51 +25,69 @@ public class SynapseGraupner2012 extends Synapse {
 		this.config = config;
 	}
 	
-	public void setConfig(SynapseConfig config) {
+	public void setConfig(ComponentConfiguration config) {
 		this.config = (SynapseGraupner2012Config) config;
 	}
-	public SynapseConfig getConfig() {
+	public ComponentConfiguration getConfig() {
 		return config;
 	}
 			    
 	public void reset() {
-		strength = 0;
+		p = config.initialP;
+		strength = config.w0 + p * config.wRange;
 		c = 0;
 		preDelayCount = 0;
 	}
 	
+	public void reset(double initCalcium, double initEfficacy) {
+		p = initEfficacy;
+		strength = config.w0 + p * config.wRange;
+		c = initCalcium;
+		preDelayCount = 0;
+	}
+	
 	public double step() {
-		if (preDelayCount > 0) {
+	    // Calcium decay.
+	    c -= c * config.tCDecayMult;
+
+		// If a pre spike occurred (ignore if we're still counting down from a previous spike, not ideal but more efficient).
+	    if (pre.spiked() && preDelayCount == 0) {
+	    	preDelayCount = config.cSpikePreDelayStepCount+1;
+	    }
+	    
+	    if (preDelayCount > 0) {
 	    	preDelayCount--;
 	    	// If it's time to release the delayed calcium spike after a pre-synaptic neuronal spike.
 			if (preDelayCount == 0) {
 	    		c += config.cSpikePre;
 	    	}
 		}
-	    	
-		// If a pre spike occurred (ignore if we're still counting down from a previous spike).
-	    if (pre.spiked() && preDelayCount == 0) {
-	    	preDelayCount = (int) Math.round(config.cSpikePreDelay);
-	    }
+	    
 	    
 	    // If a post spike occurred.
-	    if (post.spiked())
+	    if (post.spiked()) {
 	        c += config.cSpikePost;
-	        
+	    }
+	    
 	    // Update strength.
-	    double delta_s = -strength * (1 - strength) * (config.bistableBoundary - strength);
-	    if (c > config.potThresh)
-	    	delta_s += config.potRate * (1 - strength);
-	    if (c > config.depThresh)
-	    	delta_s -= config.depRate * strength;
-	    //if (c > config.depThresh || c > config.potThresh)
-	    //	delta_s += config.noiseRate * config.timeScaleSqrt * (double) config.rng.nextGaussian();
+	    double delta_s = (-p * (1 - p) * (config.bistableBoundary - p)) * config.getStepPeriod(); // Multiply by inverse of time resolution.
+	    if (c >= config.depThresh || c >= config.potThresh) {
+		    if (c >= config.potThresh) {
+		    	delta_s += config.potRateMult * (1 - p);
+		    	System.out.println("p");
+		    }
+		    if (c >= config.depThresh) {
+		    	delta_s -= config.depRateMult * p;
+		    	System.out.println("d");
+		    }
+		    delta_s += config.noiseMult * config.rng.nextGaussian();
+	    }
 	    
-	    strength += delta_s * config.timeScaleInv;
-	    
-	    // Calcium decay.
-	    c -= c / config.tCDecay;
-	    
+	    p += delta_s * config.timeScaleInv;
+	    if (p > 1) p = 1;
+	    if (p < 0) p = 0;
+	    strength = config.w0 + p * config.wRange;
+	    	    
 	    return pre.getOutput() * strength;
 	}
 	
@@ -74,18 +97,20 @@ public class SynapseGraupner2012 extends Synapse {
 
 	@Override
 	public String[] getStateVariableNames() {
-		String[] names = {"Calcium"};
+		String[] names = {"Calcium", "p", "\u03B8p", "\u03B8d"};
 		return names;
 	}
 
 	@Override
 	public double[] getStateVariableValues() {
-		double[] values = {c};
+		double[] values = {c, p, config.potThresh, config.depThresh};
 		return values;
 	}
 	
 	@Override
-	public SynapseConfig getConfigSingleton() {
+	public ComponentConfiguration getConfigSingleton() {
 		return configSingleton;
 	}
+	
+
 }

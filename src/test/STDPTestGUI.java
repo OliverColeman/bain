@@ -1,15 +1,13 @@
 package test;
 
-import neuron.*;
 import synapse.*;
+import neuron.*;
 import misc.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.text.Format;
-import java.util.*;
-import java.util.Vector;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -28,7 +26,7 @@ import org.jfree.ui.*;
 import org.jfree.chart.axis.*;
 
 /**
- * GUI for experimenting with Synapse odels.
+ * GUI for experimenting with Synapse models.
  * 
  * @author Oliver J. Coleman
  */
@@ -47,6 +45,8 @@ public class STDPTestGUI extends JFrame {
         spikeSettings = new SpikeProtocolSettingsPanel(this);
 		synapseSettings = new SynapseSettingsPanel(this);
 		
+		final JSpinner timeResolutionSpinner = new JSpinner(new SpinnerNumberModel(1000, 0, 100000, 1));
+		
 		JButton goButton = new JButton("Go!");
 		goButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -54,11 +54,10 @@ public class STDPTestGUI extends JFrame {
 				SpikeProtocolSettings settings = spikeSettings.getSpikeProtocolSettings();
 				
 				if (synapse != null && settings != null) {
-					// If the time axis should be in ms.
-					boolean timeAxisInMS = settings.variationDimsCount > 0;
+					int timeResolution = (int) timeResolutionSpinner.getValue();
 					
-					TestResults results = STDPTest.testPattern(synapse, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, settings.repetitions <= 5);
-					JFreeChart resultsPlot = createChart(results);
+					TestResults results = STDPTest.testPattern(synapse, timeResolution, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, settings.repetitions <= 25);
+					JFreeChart resultsPlot = createChart(results, timeResolution);
 					
 					JFrame plotFrame = new JFrame();
 					plotFrame.add(new ChartPanel(resultsPlot));
@@ -77,8 +76,10 @@ public class STDPTestGUI extends JFrame {
         
 		gbc.weightx = 1; gbc.weighty = 0.1; gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.NORTH; gbc.fill = GridBagConstraints.BOTH;
         getContentPane().add(goButton, gbc);
+        gbc.gridx = 1;
+        getContentPane().add(createLabeledComponent("Time resolution (steps per second):", timeResolutionSpinner), gbc);
 		
-		gbc.gridy = 1; gbc.weighty = 1; 
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weighty = 1; gbc.gridwidth = 2; 
 		getContentPane().add(tabPane, gbc);
 		
 		
@@ -97,7 +98,7 @@ public class STDPTestGUI extends JFrame {
 		JSpinner variationDimsSpinner, preSpikeCountSpinner, postSpikeCountSpinner, patternFreqSpinner, patternRepetitionsSpinner;
 		
 		public SpikeProtocolSettingsPanel(final STDPTestGUI gui) {
-			final int initPreSpikeCount = 1, initPostSpikeCount = 2, initPatternFreq = 1, initSpikePatternVariationDimensions = 2, maxSpikePatternVariationDimensions = 2;
+			final int initSpikePatternVariationDimensions = 1, initPreSpikeCount = 1, initPostSpikeCount = initSpikePatternVariationDimensions, initPatternFreq = 1, maxSpikePatternVariationDimensions = 2;
 			JPanel panel = this;
 			
 			JPanel spikeTimingSetterPanel = new JPanel(new GridBagLayout());
@@ -140,7 +141,7 @@ public class STDPTestGUI extends JFrame {
 			patternFreqSpinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
-					int period = (int) Math.round(1000.0 / (double) patternFreqSpinner.getValue());
+					double period = 1.0 / (double) patternFreqSpinner.getValue();
 					for (int d = 0; d < spikeTimingSetters.length; d++) {
 						for (int p = 0; p < spikeTimingSetters[d].length; p++) {
 							spikeTimingSetters[d][p].setPeriod(period);
@@ -169,18 +170,26 @@ public class STDPTestGUI extends JFrame {
 				spikeTimingSetterPairs[d] = new SpikeTimingSetterPair(d > 0);
 				spikeTimingSetterPairs[d].setBorder(createBorder(d == 0 ? "Initial spike pattern" : "Final spike pattern for timing variation dimension " + d));
 				for (int p = 0; p < 2; p++) {
-					spikeTimingSetters[d][p] = new SpikeTimingSetter(p == 0 ? "Pre" : "Post", p == 0 ? initPreSpikeCount : initPostSpikeCount, 1000/initPatternFreq, spikeTimingSetterPairs[d], p);
+					spikeTimingSetters[d][p] = new SpikeTimingSetter(p == 0 ? "Pre" : "Post", p == 0 ? initPreSpikeCount : initPostSpikeCount, 1.0/initPatternFreq, spikeTimingSetterPairs[d], p);
 					spikeTimingSetterPairs[d].add(spikeTimingSetters[d][p]);
 				}
 				
-				spikeTimingSetterPairs[d].setSpikeTime(Constants.PRE, 0, 50);
-				spikeTimingSetterPairs[d].setSpikeTime(Constants.POST, 0, d == 1 ? 50 : 0);
-				spikeTimingSetterPairs[d].setSpikeTime(Constants.POST, 1, d == 2 ? 50: 100);
-				if (d > 0) {
-					spikeTimingSetterPairs[d].setBaseRef(Constants.PRE, 0);
-					spikeTimingSetterPairs[d].setRelativeRef(Constants.POST, d == 1 ? 0 : 1);
+				spikeTimingSetterPairs[d].setSpikeTime(Neuron.PRE, 0, 100);
+				if (initSpikePatternVariationDimensions == 1) {
+					spikeTimingSetterPairs[d].setSpikeTime(Neuron.POST, 0, d == 1 ? 200 : 0);
+					if (d > 0) {
+						spikeTimingSetterPairs[d].setBaseRef(Neuron.PRE, 0);
+						spikeTimingSetterPairs[d].setRelativeRef(Neuron.POST, 0);
+					}
 				}
-				
+				if (initSpikePatternVariationDimensions == 2) {
+					spikeTimingSetterPairs[d].setSpikeTime(Neuron.POST, 0, d == 1 ? 100 : 0);
+					spikeTimingSetterPairs[d].setSpikeTime(Neuron.POST, 1, d == 2 ? 100: 200);
+					if (d > 0) {
+						spikeTimingSetterPairs[d].setBaseRef(Neuron.PRE, 0);
+						spikeTimingSetterPairs[d].setRelativeRef(Neuron.POST, d == 1 ? 0 : 1);
+					}
+				}
 				gbc.gridx = d % 2;
 				gbc.gridy = d / 2;
 				spikeTimingSetterPairs[d].setVisible(d <= initSpikePatternVariationDimensions);
@@ -203,10 +212,10 @@ public class STDPTestGUI extends JFrame {
 		public SpikeProtocolSettings getSpikeProtocolSettings() {
 			SpikeProtocolSettings settings = new SpikeProtocolSettings();
 			settings.variationDimsCount = (int) variationDimsSpinner.getValue();
-			settings.period = (int) Math.round(1000.0 / (double) patternFreqSpinner.getValue());
+			settings.period = 1.0 / (double) patternFreqSpinner.getValue();
 			settings.repetitions = (int) patternRepetitionsSpinner.getValue();
 			settings.spikeCounts = new int[2]; settings.spikeCounts[0] = (int) preSpikeCountSpinner.getValue(); settings.spikeCounts[1] = (int) postSpikeCountSpinner.getValue();
-			settings.patterns = new int[settings.variationDimsCount+1][2][]; //[initial, dim 1, dim 2][pre, post][spike index]
+			settings.patterns = new double[settings.variationDimsCount+1][2][]; //[initial, dim 1, dim 2][pre, post][spike index]
 			settings.refSpikeIndexes = new int[settings.variationDimsCount][2]; //[dim 1, dim 2][pre, post]
 			settings.refSpikePreOrPost = new int[settings.variationDimsCount][2]; //[dim 1, dim 2][pre, post]
 			
@@ -242,8 +251,8 @@ public class STDPTestGUI extends JFrame {
 						}
 					}
 					
-					int baseRefSpikeTimeInitial = settings.patterns[0][settings.refSpikePreOrPost[d-1][0]][settings.refSpikeIndexes[d-1][0]];
-					int baseRefSpikeTimeFinal = settings.patterns[d][settings.refSpikePreOrPost[d-1][0]][settings.refSpikeIndexes[d-1][0]];
+					double baseRefSpikeTimeInitial = settings.patterns[0][settings.refSpikePreOrPost[d-1][0]][settings.refSpikeIndexes[d-1][0]];
+					double baseRefSpikeTimeFinal = settings.patterns[d][settings.refSpikePreOrPost[d-1][0]][settings.refSpikeIndexes[d-1][0]];
 					if (baseRefSpikeTimeInitial != baseRefSpikeTimeFinal) {
 						JOptionPane.showMessageDialog(null, "It is recommended that the initial and final base spike times be the same (and only the relative spike time differs).", "Warning", JOptionPane.WARNING_MESSAGE);
 					}
@@ -257,10 +266,10 @@ public class STDPTestGUI extends JFrame {
 	
 	private class SpikeProtocolSettings {
 		public int variationDimsCount;
-		public int period;
+		public double period;
 		public int repetitions;
 		public int[] spikeCounts; //[pre, post]
-		public int[][][] patterns; //[initial, dim 1, dim 2][pre, post][spike index]
+		public double[][][] patterns; //[initial, dim 1, dim 2][pre, post][spike index]
 		public int[][] refSpikeIndexes; //[dim 1, dim 2][pre, post]
 		public int[][] refSpikePreOrPost; //[dim 1, dim 2][pre, post]
 	}
@@ -279,7 +288,7 @@ public class STDPTestGUI extends JFrame {
 			String[] synapseTypes = {"synapse.SynapsePfister2006", "synapse.SynapseGraupner2012"};
 			for (String t: synapseTypes) {
 				try {
-					Synapse.registerSynapseType(t);
+					Synapse.registerComponentType(t);
 				} catch (Exception e1) { e1.printStackTrace(); }
 			}
 			
@@ -292,7 +301,7 @@ public class STDPTestGUI extends JFrame {
 					panel.validate();
 					
 					try {
-						synapse = Synapse.getSynapseSingleton((String) synapseSelector.getSelectedItem());
+						synapse = (Synapse) Synapse.getComponentSingleton((String) synapseSelector.getSelectedItem());
 						setupSynapseConfig(synapseParamsPanel, synapse);
 						panel.validate();
 					} catch (Exception e1) {
@@ -315,7 +324,7 @@ public class STDPTestGUI extends JFrame {
 		
 		
 		private void setupSynapseConfig(JPanel synapseParamsPanel, Synapse synapse) {
-			final SynapseConfig config = synapse.getConfigSingleton();
+			final ComponentConfiguration config = synapse.getConfigSingleton();
 			
 			if (config != null) {
 				synapse.setConfig(config);
@@ -337,7 +346,7 @@ public class STDPTestGUI extends JFrame {
 								// If custom was not selected
 								if (index < presetNames.length) {
 									try {
-										SynapseConfig preset = config.getPreset(presetSelector.getSelectedIndex());
+										ComponentConfiguration preset = config.getPreset(presetSelector.getSelectedIndex());
 										double[] params = preset.getParameterValues();
 										for (int pi = 0; pi < params.length; pi++) {
 											// Don't set text field if it contains the required value already.
@@ -404,11 +413,9 @@ public class STDPTestGUI extends JFrame {
 	}
 	
 	
-	private static JFreeChart createChart(TestResults results) {
+	private static JFreeChart createChart(TestResults results, int timeResolution) {
 		JFreeChart resultsPlot = null;
 		
-		DecimalFormat timeFormatter = new DecimalFormat();
-		timeFormatter.setMultiplier(1000);
 		
 		if (results.getType() == STDPTest.RESULT_TYPE_STDP) {
 			DefaultXYDataset plotData = new DefaultXYDataset();
@@ -418,12 +425,15 @@ public class STDPTestGUI extends JFrame {
 				}
 			}
 			resultsPlot = ChartFactory.createXYLineChart("", "t (s)", "", plotData, PlotOrientation.VERTICAL, true, true, false);
+			resultsPlot.setBackgroundPaint(Color.WHITE);
 		}
 		
 		else if (results.getType() == STDPTest.RESULT_TYPE_STDP_1D) {
 			DefaultXYDataset plotData = new DefaultXYDataset();
 			plotData.addSeries("Strength", results.getResult("Time delta", "Strength"));
 			resultsPlot = ChartFactory.createXYLineChart("", "\u0394t (ms)", "", plotData, PlotOrientation.VERTICAL, true, true, false);
+			DecimalFormat timeFormatter = new DecimalFormat();
+			timeFormatter.setMultiplier(1000);
 			((NumberAxis) resultsPlot.getXYPlot().getDomainAxis()).setNumberFormatOverride(timeFormatter);
 		}
 		
@@ -433,11 +443,14 @@ public class STDPTestGUI extends JFrame {
 			DefaultXYZDataset plotData = new DefaultXYZDataset();
 			plotData.addSeries("Strength", data);
 			
-			// Set up paint scale.
+			// Set up paint scale, and convert domain axes from seconds to milliseconds (XYBlockRenderer won't deal with fractional values in the domain axes)
 			double min = Double.MAX_VALUE, max = -min;
-			for (int i = 0; i < data[2].length; i++) {
+			for (int i = 0; i < data[0].length; i++) {
 				if (data[2][i] < min) min = data[2][i];
 				if (data[2][i] > max) max = data[2][i];
+				
+				data[0][i] = Math.round(data[0][i] * 1000);
+				data[1][i] = Math.round(data[1][i] * 1000);
 			}
 			XYBlockRenderer renderer = new XYBlockRenderer();
 			double range = Math.max(Math.abs(min), Math.abs(max));
@@ -456,6 +469,8 @@ public class STDPTestGUI extends JFrame {
 			}
 			renderer.setPaintScale(scale);
 			renderer.setSeriesToolTipGenerator(0, new StandardXYZToolTipGenerator());
+			renderer.setBlockWidth(renderer.getBlockWidth() * (1000/timeResolution));
+			renderer.setBlockHeight(renderer.getBlockHeight() * (1000/timeResolution));
 			
 			NumberAxis xAxis = new NumberAxis("\u0394t1 (ms)");
 			NumberAxis yAxis = new NumberAxis("\u0394t2 (ms)");
@@ -532,10 +547,10 @@ public class STDPTestGUI extends JFrame {
 		}
 		
 		public void setSpikeTime(int preOrPost, int spike, int value) {
-			if (preOrPost == Constants.PRE) {
+			if (preOrPost == Neuron.PRE) {
 				pre.setSpikeTime(spike, value);
 			}
-			else if (preOrPost == Constants.POST) {
+			else if (preOrPost == Neuron.POST) {
 				post.setSpikeTime(spike, value);
 			}
 		}
@@ -545,7 +560,8 @@ public class STDPTestGUI extends JFrame {
 	private static class SpikeTimingSetter extends Box implements ChangeListener, ThumbListener {
 		private static final long serialVersionUID = 1L;
 		
-		int spikeCount, period;
+		int spikeCount;
+		double period; //in seconds
 		int preOrPost;
 		protected int lastSelectedSpike = -1;
 		JXMultiThumbSlider<Object> timingSlider;
@@ -554,23 +570,23 @@ public class STDPTestGUI extends JFrame {
 		SpikeTimingSetterPair pair;
 		
 		
-		SpikeTimingSetter(String label, int timingCount, int period, SpikeTimingSetterPair prePostPair, final int preOrPost) {
+		SpikeTimingSetter(String label, int timingCount, double period, SpikeTimingSetterPair prePostPair, final int preOrPost) {
 			super(BoxLayout.Y_AXIS);
 			setBorder(createBorder(label));
 			
 			this.period = period;
 			this.preOrPost = preOrPost;
 			this.pair = prePostPair;
-			if (preOrPost == Constants.PRE) {
+			if (preOrPost == Neuron.PRE) {
 				pair.pre = this;
 			}
-			else if (preOrPost == Constants.POST) {
+			else if (preOrPost == Neuron.POST) {
 				pair.post = this;
 			}
 			
 			timingSlider = new JXMultiThumbSlider<Object>();
 			timingSlider.setMinimumValue(0);
-			timingSlider.setMaximumValue(period);
+			timingSlider.setMaximumValue((int)(period*1000));
 			timingSlider.setTrackRenderer(new SliderTrackRenderer(this));
 			timingSlider.setThumbRenderer(new SliderThumbRenderer(pair, this));
 			timingSlider.addMultiThumbListener(this);
@@ -621,28 +637,29 @@ public class STDPTestGUI extends JFrame {
 			}
 		}
 
-		public int getPeriod() {
+		public double getPeriod() {
 			return period;
 		}
 
-		public void setPeriod(int period) {
+		public void setPeriod(double period) {
 			this.period = period;
-			timingSlider.setMaximumValue(period);
+			int pms = (int)(period*1000);
+			timingSlider.setMaximumValue(pms);
 			for (int i = 0; i < spikeCount; i++) {
-				if ((int) timingSpinners.get(i).getModel().getValue() > period) {
-					timingSpinners.get(i).getModel().setValue(period);
+				if ((int) timingSpinners.get(i).getModel().getValue() > pms) {
+					timingSpinners.get(i).getModel().setValue(pms);
 				}
-				((SpinnerNumberModel) timingSpinners.get(i).getModel()).setMaximum(period);
+				((SpinnerNumberModel) timingSpinners.get(i).getModel()).setMaximum(pms);
 			}
 		}
 
 		
 		public void addSpike() {
 			spikeCount++;
-			int newVal = timingSpinners.isEmpty() ? 0 : (getCurrentMaxTimingValue() + period) / 2;
+			int newVal = timingSpinners.isEmpty() ? 0 : (getCurrentMaxTimingValue() + (int)(period*1000)) / 2;
 			timingSlider.getModel().addThumb(newVal, null);
 			
-			JSpinner newSpinner = new JSpinner(new SpinnerNumberModel(newVal, 0, period, 1));
+			JSpinner newSpinner = new JSpinner(new SpinnerNumberModel(newVal, 0, (int)(period*1000), 1));
 			newSpinner.addChangeListener(this);
 			timingSpinners.add(newSpinner);
 			timingSpinnersBox.add(newSpinner);
@@ -662,10 +679,10 @@ public class STDPTestGUI extends JFrame {
 			return (spikeCount == 0) ? 0 : (int) timingSpinners.lastElement().getValue();
 		}
 		
-		public int[] getSpikeTimings() {
-			int[] timings = new int[spikeCount];
+		public double[] getSpikeTimings() {
+			double[] timings = new double[spikeCount];
 			for (int i = 0; i < spikeCount; i++) {
-				timings[i] = (int) timingSpinners.get(i).getValue();
+				timings[i] = (int) timingSpinners.get(i).getValue() / 1000d;
 			}
 			return timings;
 		}

@@ -1,20 +1,56 @@
-package synapse;
+package misc;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 
 /**
- * A base class for all Synapse configurations. Provides methods to query the configuration for available parameters, 
- * get and set those parameters, and work with preset configurations. 
+ * A base class for all configuration objects for neural network elements (e.g. Neurons and Synapses). 
+ * Provides methods to query the configuration for available parameters, get and set those parameters, and work with preset configurations. 
  * Typically sub-classes will declare a set of instance variables that can be accessed directly by the corresponding 
- * Synapse class for efficiency reasons (rather than using the generic getParameterNames() and getParameterValues() 
- * methods).
- * Sub-classes of Synapse implement the method getConfigSingleton() to provide a reference to the implementation- 
- * specific sub-class of this class.  
+ * components class for efficiency reasons (rather than using the generic getParameterNames() and getParameterValues() methods).
+ * Sub-classes of a components base class typically implement the method getConfigSingleton() to provide a reference to the implementation- 
+ * specific sub-class of this class.
  * 
  * @author Oliver J. Coleman
  */
-public abstract class SynapseConfig {
+public abstract class ComponentConfiguration {
+	protected int timeResolution = 1000;
+	protected double stepPeriod = 1.0 / timeResolution;
+	
+	/**
+	 * Get the current time resolution. This is the number of simulation steps per second.
+	 * Default is 1000, corresponding to a simulation step size of 1 millisecond.
+	 */ 
+	public int getTimeResolution() {
+		return timeResolution;
+	}
+	/**
+	 * Set the current time resolution. This is the number of simulation steps per second.
+	 * Default is 1000, corresponding to a simulation step size of 1 millisecond.
+	 */ 
+	public void setTimeResolution(int timeResolution) {
+		this.timeResolution = timeResolution;
+		init();
+	}
+	
+	/**
+	 * Returns the duration of each simulation step in seconds, based on the time resolution.
+	 */
+	public double getStepPeriod() {
+		return stepPeriod;
+	}
+
+
+	/**
+	 * Initialise values generated from the parameters. 
+	 * This method should be called if any parameters are changed directly (rather than via the setParameterValue method).
+	 * Sub-classes should override this method to update the value of any variables they declare which depend on the values of other parameters.
+	 * This super-class method should be called from an overriding method.
+	 */
+	public void init() {
+		stepPeriod = 1.0 / timeResolution;
+	}
+	
+	
 	/**
 	 * Sub-classes should override this method to provide a list of parameter names.
 	 */
@@ -64,7 +100,8 @@ public abstract class SynapseConfig {
 				this.getClass().getField(parameterLabels[pi]).setDouble(this, params[pi]);
 			}
 		}
-		catch (Exception e) {} // Just ignore exceptions thrown by getField rather than force calling code to deal with handling exceptions. 
+		catch (Exception e) {} // Just ignore exceptions thrown by getField rather than force calling code to deal with handling exceptions.
+		init();
 	}
 	
 	/**
@@ -78,17 +115,18 @@ public abstract class SynapseConfig {
 		try {
 			this.getClass().getField(param).setDouble(this, value);
 		}
-		catch (Exception e) {} // Just ignore exceptions thrown by getField rather than force calling code to deal with handling exceptions. 
+		catch (Exception e) {} // Just ignore exceptions thrown by getField rather than force calling code to deal with handling exceptions.
+		init();
 	}
 	
 	public abstract String[] getPresetNames();
 	
-	public abstract SynapseConfig getPreset(int index);
+	public abstract ComponentConfiguration getPreset(int index);
 	
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof SynapseConfig) {
-			return Arrays.equals(this.getParameterValues(), ((SynapseConfig) other).getParameterValues());
+		if (other instanceof ComponentConfiguration) {
+			return Arrays.equals(this.getParameterValues(), ((ComponentConfiguration) other).getParameterValues());
 		}
 		return false;
 	}

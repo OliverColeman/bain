@@ -1,5 +1,7 @@
 package synapse;
 
+import misc.ComponentConfiguration;
+
 /**
  * Implementation of the synapse model described by
  * Pfister, J.-P., Gerstner, W.: Triplets of Spikes in a Model of Spike Timing-Dependent Plasticity. J. Neurosci. 26, 9673–9682 (2006).
@@ -15,14 +17,14 @@ public class SynapsePfister2006 extends Synapse {
 	
 	public SynapsePfister2006() {
 	}
-	public SynapsePfister2006(SynapseConfig config) {
+	public SynapsePfister2006(ComponentConfiguration config) {
 		this.config = (SynapsePfister2006Config) config;
 	}
 	
-	public void setConfig(SynapseConfig config) {
+	public void setConfig(ComponentConfiguration config) {
 		this.config = (SynapsePfister2006Config) config;
 	}
-	public SynapseConfig getConfig() {
+	public ComponentConfiguration getConfig() {
 		return config;
 	}
 			    
@@ -36,10 +38,10 @@ public class SynapsePfister2006 extends Synapse {
 	
 	public double step() {
 		// Trace decays.
-	    r1 -= r1 / config.tPDecay;
-	    r2 -= r2 / config.tXDecay;
-	    o1 -= o1 / config.tNDecay;
-	    o2 -= o2 / config.tYDecay;
+	    r1 -= r1 * config.tPDecayMult;
+	    r2 -= r2 * config.tXDecayMult;
+	    o1 -= o1 * config.tNDecayMult;
+	    o2 -= o2 * config.tYDecayMult;
 	    
 	    // Need pre-spike values for these traces for strength update rules.
 	    r2p = r2;
@@ -52,11 +54,9 @@ public class SynapsePfister2006 extends Synapse {
 	    
 	    if (pre.spiked()) {
 	    	strength -= o1 * (config.a2N + config.a3N * r2p);
-	    	//System.out.println(-o1 + " * (" + config.a2N + " + " + config.a3N + " * " + r2p + ") = " + (-o1 * (config.a2N + config.a3N * r2p)));
 	    }
 	    if (post.spiked()) {
 	        strength += r1 * (config.a2P + config.a3P * o2p);
-	        //System.out.println(r1 + " * (" + config.a2P + " + " + config.a3P + " * " + o2p + ") = " + (r1 * (config.a2P + config.a3P * o2p)));
 	    }
 	    
 	    //System.out.println(r1 + "\t" + r2 + "\t" + o1 + "\t" + o2 + "\t" + strength);   
@@ -64,13 +64,13 @@ public class SynapsePfister2006 extends Synapse {
 	    return pre.getOutput() * strength;
 	}
 	
-
+	
 	@Override
 	public String[] getStateVariableNames() {
 		String[] names = {"r1", "r2", "o1", "o2", };
 		return names;
 	}
-
+	
 	@Override
 	public double[] getStateVariableValues() {
 		double[] values = {r1, r2, o1, o2};
@@ -78,7 +78,7 @@ public class SynapsePfister2006 extends Synapse {
 	}
 	
 	@Override
-	public SynapseConfig getConfigSingleton() {
+	public ComponentConfiguration getConfigSingleton() {
 		return configSingleton;
 	}
 }

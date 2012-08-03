@@ -1,13 +1,16 @@
 package synapse;
 
+import misc.ComponentConfiguration;
+
 /**
  * Configuration object for SynapsePfister2006.
  * 
  * @author Oliver J. Coleman
  */
-public class SynapsePfister2006Config extends SynapseConfig {
+public class SynapsePfister2006Config extends ComponentConfiguration {
 	// Plasticity model parameters.
 	public double tPDecay, tXDecay, tNDecay, tYDecay, a2N, a2P, a3N, a3P;
+	double tPDecayMult, tXDecayMult, tNDecayMult, tYDecayMult, a2NMult, a2PMult, a3NMult, a3PMult;
 	
 	// Must match all parameter variable names.
 	static String[] parameterLabels = {"tPDecay", "tXDecay", "tNDecay", "tYDecay", "a2N", "a2P", "a3N", "a3P"};
@@ -24,6 +27,18 @@ public class SynapsePfister2006Config extends SynapseConfig {
 		setParameterValues(params);
 	}
 	
+	@Override
+	public void init() {
+		tPDecayMult = (1000 / tPDecay) / timeResolution;
+		tXDecayMult = (1000 / tXDecay) / timeResolution;
+		tNDecayMult = (1000 / tNDecay) / timeResolution;
+		tYDecayMult = (1000 / tYDecay) / timeResolution;
+		a2NMult = (1000 * a2N) / timeResolution;
+		a2PMult = (1000 * a2P) / timeResolution;
+		a3NMult = (1000 * a3N) / timeResolution;
+		a3PMult = (1000 * a3P) / timeResolution;
+	}
+	
 	public String[] getParameterNames() {
 		return parameterLabels;
 	}
@@ -32,7 +47,7 @@ public class SynapsePfister2006Config extends SynapseConfig {
 		return presetNames;
 	}
 	
-	public SynapseConfig getPreset(int index) {
+	public ComponentConfiguration getPreset(int index) {
 		return new SynapsePfister2006Config(presetValues[index]);
 	}
 }
