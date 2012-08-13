@@ -25,7 +25,12 @@ and the references within.
 The latest version is available at, and issues should be posted at,
 https://github.com/OliverColeman/bain
 
-Dependencies: JFreeChart >=1.0.14, SwingX >=1.6.3, Aparapi.
+Dependencies: JFreeChart >=1.0.14, SwingX >=1.6.3, Aparapi. The first two 
+dependencies are only required for the synaptic plasticity testing and
+analysis GUI.
+
+This library is being written as part of my PhD: "Evolving plastic neural 
+networks for online learning". For more details see http://ojcoleman.com.
 
 
 "Using all this knowledge as a key, we may possibly unlock the secrets of the
