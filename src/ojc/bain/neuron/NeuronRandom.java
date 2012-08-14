@@ -4,8 +4,9 @@ import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.NeuronCollection;
 
 /**
- * A ojc.bain.neuron that produces randomised spike trains.
+ * A  that produces randomised spike trains.
  * 
+ * TODO: Refactor to work in NeuronCollection framework.
  * TODO: Allow different probability distributions, use more efficient RNG(s).
  * 
  * @author Oliver J. Coleman

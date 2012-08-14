@@ -34,7 +34,7 @@ import org.jfree.data.xy.XYBarDataset;
 import org.jfree.ui.RectangleEdge;
 
 /**
- * Class to ojc.bain.test the behaviour of a ojc.bain.synapse model on a specific spiking protocol or spiking protocols over
+ * Class to ojc.bain.test the behaviour of a  model on a specific spiking protocol or spiking protocols over
  * some timing adjustment.
  * 
  * @author Oliver J. Coleman
@@ -45,7 +45,7 @@ public class SynapseTest {
 	public static final String RESULT_TYPE_STDP_2D = "STDP 2D";
 
 	/*
-	 * @param ojc.bain.synapse The Synapse to ojc.bain.test.
+	 * @param  The Synapse to ojc.bain.test.
 	 * 
 	 * @param period The period of the spike pattern in milliseconds.
 	 * 
@@ -230,17 +230,17 @@ public class SynapseTest {
 	}
 
 	/**
-	 * Test the behaviour of a ojc.bain.synapse model.
+	 * Test the behaviour of a  model.
 	 * 
-	 * @param sim A Simulation containing two neurons and a single ojc.bain.synapse to be tested. The neurons at index 0 and 1
+	 * @param sim A Simulation containing two neurons and a single  to be tested. The neurons at index 0 and 1
 	 *            should be the pre- and post-synaptic neurons respectively, and will typically produce a fixed firing pattern.
 	 * @param simSteps the number of simulation steps to run the simulation for.
 	 * @param logSpikesAndStateVariables Whether to log pre- and post-synaptic spikes, and any state variables for the
-	 *            ojc.bain.synapse.
+	 *            .
 	 */
 	public static TestResults singleTest(Simulation sim, int simSteps, boolean logSpikesAndStateVariables) {
 		if (sim.getNeurons().getSize() != 2 || sim.getSynapses().getSize() != 1) {
-			throw new IllegalArgumentException("The simulation must contain at least 2 neurons and 1 ojc.bain.synapse.");
+			throw new IllegalArgumentException("The simulation must contain at least 2 neurons and 1 .");
 		}
 
 		int displayTimeResolution = Math.min(1000, sim.getTimeResolution());
@@ -301,7 +301,7 @@ public class SynapseTest {
 	 * @param results The results of the ojc.bain.test.
 	 * @param timeResolution The time resolution which the simulation was run at.
 	 * @param logSpikesAndStateVariables Whether to log pre- and post-synaptic spikes, and any state variables for the
-	 *            ojc.bain.synapse.
+	 *            .
 	 * @param showInFrame Whether to display the result in a frame.
 	 */
 	public static JFreeChart createChart(TestResults results, int timeResolution, boolean logSpikesAndStateVariables, boolean showInFrame) {

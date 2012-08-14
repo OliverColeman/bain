@@ -12,7 +12,7 @@ import com.amd.aparapi.Range;
 /**
  * <p>
  * Base class for all collections of specific types of neural network components to be used in a {@link Simulation}. A type of
- * component (e.g. a ojc.bain.neuron) is contained in a collection so as to allow off-loading parallel computations to a vector
+ * component (e.g. a ) is contained in a collection so as to allow off-loading parallel computations to a vector
  * processor (eg GPU) using Aparapi: simulation calculations should be performed on arrays of primitives containing the state
  * variables, inputs and outputs for the components in the collection.
  * </p>
@@ -89,6 +89,16 @@ public abstract class ComponentCollection extends Kernel {
 	 * @see #outputsAreStale()
 	 */
 	protected boolean outputsStale;
+	
+	/**
+	 * Flag to indicate if the inputs as calculated in an Aparapi kernel have been modified on the GPU (and so would need to be
+	 * transferred back if we're interested in looking at their values). This is only relevant when explicit buffer management
+	 * is being used.
+	 * 
+	 * @see #ensureInputsAreFresh()
+	 * @see #inputsAreStale()
+	 */
+	protected boolean inputsStale;
 
 	public int getSize() {
 		return size;
@@ -137,6 +147,7 @@ public abstract class ComponentCollection extends Kernel {
 		execute(executeRange);
 		stateVariablesStale = true;
 		outputsStale = true;
+		inputsStale = true;
 	}
 
 	/**
@@ -151,6 +162,24 @@ public abstract class ComponentCollection extends Kernel {
 	 * ensure that the values in the array are up to date by invoking ensureOutputsAreFresh()).
 	 */
 	public abstract double[] getOutputs();
+	
+	/**
+	 * Returns the input value of the specified component for the next time step.
+	 */
+	public abstract double getInput(int index);
+
+	/**
+	 * Returns the underlying array of input values. This method is provided for efficiency reasons, the values of the array
+	 * should not be altered directly. The values in the array returned by this method may become stale if the step() method is invoked
+	 * subsequently; to get fresh values this method should be invoked again (this will return the same array but will also
+	 * ensure that the values in the array are up to date by invoking ensureInputsAreFresh()).
+	 */
+	public abstract double[] getInputs();
+	
+	/**
+	 * Add input to the specified component. The given input is added onto the existing input value.
+	 */
+	public abstract void addInput(int index, double input);
 
 	/**
 	 * Ensures the outputs, as provided by {@link #getOutput(int index)} and {@link #getOutputs()} have been fetched from the
@@ -164,6 +193,20 @@ public abstract class ComponentCollection extends Kernel {
 	 */
 	public boolean outputsAreStale() {
 		return outputsStale;
+	}
+	
+	/**
+	 * Ensures the inputs, as provided by {@link #getInput(int index)} and {@link #getInputs()} have been fetched from the
+	 * remote execution hardware (eg GPU) if necessary. See {@link #inputsAreStale()}.
+	 */
+	public abstract void ensureInputsAreFresh();
+
+	/**
+	 * Returns true iff the input values of the components, provided by {@link #getInput(int index)} and {@link #getInputs()}
+	 * have become stale due to being altered on remote execution hardware (eg GPU) and not yet being fetched back.
+	 */
+	public boolean inputsAreStale() {
+		return inputsStale;
 	}
 
 	/**

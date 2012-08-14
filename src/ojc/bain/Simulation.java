@@ -134,7 +134,7 @@ public class Simulation {
 	}
 
 	/**
-	 * Set the time resolution of the simulation. This will reinitialise and reset the ojc.bain.neuron and ojc.bain.synapse
+	 * Set the time resolution of the simulation. This will reinitialise and reset the  and 
 	 * collections.
 	 */
 	public synchronized void setTimeResolution(int timeResolution) {

@@ -5,7 +5,7 @@ import ojc.bain.base.*;
 import com.amd.aparapi.Kernel;
 
 /**
- * A collection of neurons that produce spikes at a fixed frequency. The frequency of spiking for each ojc.bain.neuron is
+ * A collection of neurons that produce spikes at a fixed frequency. The frequency of spiking for each  is
  * determined by its associated {@link FixedFrequencyNeuronConfiguration}.
  * 
  * @author Oliver J. Coleman
@@ -56,6 +56,7 @@ public class FixedFrequencyNeuronCollection extends NeuronCollection<FixedFreque
 		int configID = componentConfigIndexes[neuronID];
 		int spikePeriod = configSpikingPeriod[configID];
 		neuronOutputs[neuronID] = (simStep[0] % spikePeriod == 0) ? 1 : 0;
+		super.run();
 	}
 
 	@Override

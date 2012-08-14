@@ -5,6 +5,7 @@ import ojc.bain.base.ComponentConfiguration;
 /**
  * Configuration for NeuronRandom.
  * 
+ * TODO: Refactor to work in NeuronCollection framework.
  * TODO: Allow different probability distributions, use more efficient RNG(s).
  * 
  * @author Oliver J. Coleman

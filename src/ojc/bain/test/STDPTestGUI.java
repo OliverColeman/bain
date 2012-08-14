@@ -19,7 +19,7 @@ import org.jdesktop.swingx.multislider.*;
 import org.jfree.chart.*;
 
 /**
- * GUI for experimenting with ojc.bain.synapse models.
+ * GUI for experimenting with  models.
  * 
  * @author Oliver J. Coleman
  */
@@ -295,7 +295,7 @@ public class STDPTestGUI extends JFrame {
 			final JPanel panel = this;
 			panel.setLayout(new GridBagLayout());
 
-			String[] synapseTypes = { "ojc.bain.synapse.Pfister2006SynapseCollection", "ojc.bain.synapse.Graupner2012SynapseCollection" };
+			String[] synapseTypes = { ".Pfister2006SynapseCollection", ".Graupner2012SynapseCollection" };
 			for (String t : synapseTypes) {
 				try {
 					SynapseCollection.registerComponentCollectionType(t);
@@ -320,7 +320,7 @@ public class STDPTestGUI extends JFrame {
 						setupSynapseConfig(synapseParamsPanel, synapseConfig);
 						panel.validate();
 					} catch (Exception e1) {
-						JOptionPane.showMessageDialog(null, "Unable to load selected ojc.bain.synapse type.", "Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Unable to load selected  type.", "Error", JOptionPane.ERROR_MESSAGE);
 						e1.printStackTrace();
 						return;
 					}

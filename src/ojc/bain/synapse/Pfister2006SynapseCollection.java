@@ -9,7 +9,7 @@ import ojc.bain.base.SynapseCollection;
 import com.amd.aparapi.Kernel;
 
 /**
- * Implementation of the ojc.bain.synapse model described by Pfister, J.-P., Gerstner, W.: Triplets of Spikes in a Model of
+ * Implementation of the  model described by Pfister, J.-P., Gerstner, W.: Triplets of Spikes in a Model of
  * Spike Timing-Dependent Plasticity. J. Neurosci. 26, 9673–9682 (2006).
  * 
  * @see Pfister2006SynapseConfiguration
@@ -128,7 +128,7 @@ public class Pfister2006SynapseCollection extends SynapseCollection<Pfister2006S
 			efficacy[synapseID] += r1[synapseID] * (a2P[configID] + a3P[configID] * o2p);
 		}
 
-		synapseOutputs[synapseID] = neuronOutputs[preID] * efficacy[synapseID];
+		super.run();
 	}
 
 	@Override

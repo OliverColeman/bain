@@ -7,7 +7,7 @@ import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.NeuronCollection;
 
 /**
- * A ojc.bain.neuron that produces pre-determined spike patterns.
+ * A  that produces pre-determined spike patterns.
  * 
  * @author Oliver J. Coleman
  */
@@ -72,6 +72,7 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 		int configID = componentConfigIndexes[neuronID];
 		int stepInProtocol = (int) (simStep[0] % configSpikePatternPeriod[configID]);
 		neuronOutputs[neuronID] = configSpikeProtocol[configProtocolIndex[configID] + stepInProtocol];
+		super.run();
 	}
 
 	@Override

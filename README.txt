@@ -2,8 +2,13 @@ Bain - a neural network simulator.
 
 Copyright Oliver J. Coleman, 2012.
 
-NOTE: This is an alpha version, it is not quite functional yet 
-(the synapse testing and analysis GUI is, though: ojc.bain.test.STDPTestGUI).
+NOTE: This is an alpha version:
+ - there is no proper facility for adding input to a neural network when it's 
+   running on an OpenCL platform, 
+ - it has not been tested much.
+
+The synapse testing and analysis GUI does seem to work, however: 
+ojc.bain.test.STDPTestGUI).
 
 Bain is designed to simulate large neural network models at a level of fidelity,
 with respect to natural neural networks, greater than typical rate-based models

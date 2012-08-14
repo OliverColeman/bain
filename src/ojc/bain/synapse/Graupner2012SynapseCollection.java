@@ -5,7 +5,7 @@ import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.SynapseCollection;
 
 /**
- * Implementation of the ojc.bain.synapse model described by Graupner, M., Brunel, N.: Calcium-Based Plasticity Model Explains
+ * Implementation of the  model described by Graupner, M., Brunel, N.: Calcium-Based Plasticity Model Explains
  * Sensitivity of Synaptic Changes to Spike Pattern, Rate, and Dendritic Location. PNAS. 109, 3991–3996 (2012). (using the
  * simplified calcium model).
  * 
@@ -164,7 +164,7 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 				delta_s += potRateMult[configID] * (1 - p[synapseID]);
 			if (c[synapseID] >= depThresh[configID])
 				delta_s -= depRateMult[configID] * p[synapseID];
-			// TODO implement RNG
+			// TODO implement RNG (normal/Gaussian distribution).
 			// delta_s += noiseMult[configID] * config.rng.nextGaussian();
 		}
 
@@ -175,7 +175,7 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 			p[synapseID] = 0;
 		efficacy[synapseID] = w0[configID] + p[synapseID] * wRange[configID];
 
-		synapseOutputs[synapseID] = neuronOutputs[preID] * efficacy[synapseID];
+		super.run();
 	}
 
 	@Override
