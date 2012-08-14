@@ -10,6 +10,11 @@ import ojc.bain.base.*;
  * array when the {@link #step()} method is invoked. See {@link ComponentCollection} for details on implementing the step() and
  * run() methods.
  * </p>
+ * <p>
+ * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}. 
+ * Sub-classes will need to override the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if they use custom state variables.  
+ * Sub-classes may wish/need to override the methods: {@link #step()},{@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
+ * </p>
  * 
  * @author Oliver J. Coleman
  */
@@ -55,13 +60,11 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	}
 
 	/**
-	 * Returns true iff the specified spiked in the last time step. The default implementation of this method returns true iff
-	 * the output for the specified is >= 1. Sub-classes may override this method if spiking is represented by some other
-	 * condition.
+	 * Returns true iff the specified spiked in the last time step.
 	 */
 	public boolean spiked(int index) {
 		ensureOutputsAreFresh();
-		return neuronOutputs[index] >= 1;
+		return neuronSpikings[index] == 1;
 	}
 
 	@Override

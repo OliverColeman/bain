@@ -41,7 +41,7 @@ networks for online learning". For more details see http://ojcoleman.com.
 
 
 "Using all this knowledge as a key, we may possibly unlock the secrets of the
-anatomical structure; we may compel the the cells and fibres to disclose their
+anatomical structure; we may compel the cells and fibres to disclose their
 meaning and purpose." Alexander Bain (1873), Mind and Body: The Theories of
 Their Relation, New York: D. Appleton and Company. Also, "Bain" is just one
 letter away from "Brain"... ;) 

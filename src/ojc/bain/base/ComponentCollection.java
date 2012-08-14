@@ -279,5 +279,8 @@ public abstract class ComponentCollection extends Kernel {
 		return typeSingletons.get(className);
 	}
 
+	/**
+	 * Create a new collection of this type of the given size.
+	 */
 	public abstract ComponentCollection createCollection(int size);
 }

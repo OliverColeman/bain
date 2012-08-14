@@ -9,12 +9,9 @@ import java.util.Arrays;
  * neurons in the associated NeuronCollection.
  * </p>
  * <p>
- * Sub-classes must override the {@link #run()} method and then call the super-method <strong>after</strong> they have updated
- * {@link #efficacy}.
- * </p>
- * <p>
- * Unless extra processing, such as transferring additional arrays/buffers to/from a kernel executing on remote hardware (eg
- * GPU), is required, sub-classes need not override the {@link #step()} method.
+ * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}. 
+ * Sub-classes will need to override the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if they use custom state variables.  
+ * Sub-classes may wish/need to override the methods: {@link #step()},{@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
  * </p>
  * 
  * @author Oliver J. Coleman
