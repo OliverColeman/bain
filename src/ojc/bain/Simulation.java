@@ -26,30 +26,100 @@ import com.amd.aparapi.Kernel;
  * <p>
  * To improve performance, ComponentCollection and extensions thereof use the explicit memory management feature of Aparapi.
  * When using SIMD hardware such as a GPU, the data to be processed must be transferred to the device, and the results
- * transferred back to the CPU after the computations have been performed. These transfers take a significant amount of time. To
- * minimise the amount of transfers to and from the SIMD hardware, NeuronCollection and SynapseCollection objects use shared
- * data structures on the SIMD hardware, thus we only transfer neuron and synapse state data to the SIMD hardware at the
- * beginning of a simulation, and input and output data when necessary (see {@link ojc.bain.base.ComponentCollection} for more
- * details). However, for this to work both the neuron and synapse models must be executing on the SIMD hardware. The Simulation
- * class ensures that the neuron and synapse models are either both executing on the SIMD hardware, or both on the CPU (we don't
- * allow for executing one on SIMD hardware and one on the CPU as this would require a lot of data transfer to and from the SIMD
- * hardware, usually negating performance gains from using the SIMD hardware). If performance is important then make sure your
- * model can be converted to OpenCL by Aparapi; a Simulation provides a warning if one or the other of a NeuronCollection or
- * SynapseCollection can not be converted to OpenCL. Finally, for networks consisting of fewer than 512 synapses, the Simulation
- * forces the use of the CPU as this is typically more performant than use of SIMD hardware. In the future the ability to
- * dynamically determine which combination of SIMD and/or CPU processing provides the most performance may be included.
+ * transferred back to the CPU after the computations have been performed. These transfers take a significant amount of time. So
+ * data is only transferred when necessary (eg if it will be used by another kernel, or if it has been requested).
+ * </p>
+ * <p>
+ * If a preferred execution mode is not set (see {@link #setPreferredExecutionMode(Kernel.EXECUTION_MODE preferredExecutionMode)}
+ * ), then for neuron or synapse collections consisting of fewer than {@link #minimumSizeForGPU} neurons or synapses, the
+ * Simulation forces the use of a CPU-based execution mode as this is typically more performant than use of SIMD hardware; if
+ * using a CPU-based execution mode then if the size is greater than or equal to {@link #minimumSizeForJTP} the JTP execution
+ * mode is used, otherwise the SEQ execution mode is used.
+ * </p>
  * 
  * @author Oliver J. Coleman
  */
 public class Simulation {
 	static Simulation singleton = new Simulation(1000);
+	/**
+	 * When automatically selecting an execution mode, this is the minimum number of components in a collection before the GPU
+	 * execution mode is attempted. Default is 1024.
+	 */
+	protected int minimumSizeForGPU = 1024;
+
+	/**
+	 * Get the minimum number of components in a collection before the GPU execution mode is attempted, if using automatic mode
+	 * selection.
+	 */
+	public int getMinimumSizeForGPU() {
+		return minimumSizeForGPU;
+	}
+
+	/**
+	 * Set the minimum number of components in a collection before the GPU execution mode is attempted, if using automatic mode
+	 * selection.
+	 */
+	public void setMinimumSizeForGPU(int minimumSizeForGPU) {
+		if (this.minimumSizeForGPU != minimumSizeForGPU) {
+			this.minimumSizeForGPU = minimumSizeForGPU;
+			selectExecutionModes();
+		}
+	}
+
+	/**
+	 * When automatically selecting an execution mode, this is the minimum number of components in a collection before the JTP
+	 * execution mode is used. Default is 512.
+	 */
+	protected int minimumSizeForJTP = 512;
+
+	/**
+	 * Get the minimum number of components in a collection before the GPU execution mode is attempted, if using automatic mode
+	 * selection.
+	 */
+	public int getMinimumSizeForJTP() {
+		return minimumSizeForJTP;
+	}
+
+	/**
+	 * Set the minimum number of components in a collection before the JTP execution mode is attempted, if using automatic mode
+	 * selection.
+	 */
+	public void setMinimumSizeForJTP(int minimumSizeForJTP) {
+		if (this.minimumSizeForJTP != minimumSizeForJTP) {
+			this.minimumSizeForJTP = minimumSizeForJTP;
+			selectExecutionModes();
+		}
+	}
+
+	/**
+	 * The preferred execution mode, which will override an automatically selected mode if not null.
+	 */
+	protected Kernel.EXECUTION_MODE preferredExecutionMode;
+
+	/**
+	 * Get the preferred execution mode, which will override an automatically selected mode if not null.
+	 */
+	public Kernel.EXECUTION_MODE getPreferredExecutionMode() {
+		return preferredExecutionMode;
+	}
+
+	/**
+	 * Set the preferred execution mode, which will override an automatically selected mode if not null. Set to null to enable
+	 * automatic mode selection.
+	 */
+	public void setPreferredExecutionMode(Kernel.EXECUTION_MODE preferredExecutionMode) {
+		if (this.preferredExecutionMode != preferredExecutionMode) {
+			this.preferredExecutionMode = preferredExecutionMode;
+			selectExecutionModes();
+		}
+	}
 
 	protected long step;
 	protected int timeResolution = 1000;
 	protected double stepPeriod = 1.0 / timeResolution;
 
-	NeuronCollection<? extends ComponentConfiguration> neurons;
-	SynapseCollection<? extends ComponentConfiguration> synapses;
+	protected NeuronCollection<? extends ComponentConfiguration> neurons;
+	protected SynapseCollection<? extends ComponentConfiguration> synapses;
 
 	/**
 	 * Create a new simulation.
@@ -62,6 +132,11 @@ public class Simulation {
 	/**
 	 * Create a new simulation. Sets the time resolution of all given Neurons and Synapses to match that of this Simulation and
 	 * resets them.
+	 * 
+	 * @param timeResolution The number of discrete simulation steps performed for each second of simulation time. A typical
+	 *            resolution is 1000, or 1ms duration for each step.
+	 * @param neurons The NeuronCollection to use in the simulation.
+	 * @param synapses TheSynapseCollection to use in the simulation.
 	 */
 	public Simulation(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses) {
 		this.timeResolution = timeResolution;
@@ -69,6 +144,30 @@ public class Simulation {
 		this.synapses = synapses;
 		neurons.setSimulation(this);
 		synapses.setSimulation(this);
+		selectExecutionModes();
+		init();
+	}
+
+	/**
+	 * Create a new simulation. Sets the time resolution of all given Neurons and Synapses to match that of this Simulation and
+	 * resets them. Allows specifying the preferred execution mode, which will override the automatic selection of a mode based
+	 * on network size.
+	 * 
+	 * @param timeResolution The number of discrete simulation steps performed for each second of simulation time. A typical
+	 *            resolution is 1000, or 1ms duration for each step.
+	 * @param neurons The NeuronCollection to use in the simulation.
+	 * @param synapses TheSynapseCollection to use in the simulation.
+	 * @param preferredExecutionMode The preferred execution mode, which will override the automatic selection of a mode based
+	 *            on network size.
+	 */
+	public Simulation(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses, Kernel.EXECUTION_MODE preferredExecutionMode) {
+		this.timeResolution = timeResolution;
+		this.neurons = neurons;
+		this.synapses = synapses;
+		this.preferredExecutionMode = preferredExecutionMode;
+		neurons.setSimulation(this);
+		synapses.setSimulation(this);
+		selectExecutionModes();
 		init();
 	}
 
@@ -79,49 +178,55 @@ public class Simulation {
 		neurons.init();
 		synapses.init();
 		reset();
+	}
 
-		// Set aparapi execution mode based on network size (assume more synapses than neurons).
-		Kernel.EXECUTION_MODE mode = Kernel.EXECUTION_MODE.GPU;
-		if (synapses.getSize() < 512) {
-			// Don't use JTP, for sizes less than 512 it is slower than SEQ.
-			mode = Kernel.EXECUTION_MODE.SEQ;
-			System.out.println("Using SEQ mode for small network.");
+	protected void selectExecutionModes() {
+		Kernel.EXECUTION_MODE mode = preferredExecutionMode;
+		ComponentCollection[] collections = new ComponentCollection[]{neurons, synapses};
+		for (ComponentCollection c : collections) {
+			if (preferredExecutionMode != null) {
+				c.setExecutionMode(preferredExecutionMode);
+			} else if (c.getSize() < minimumSizeForJTP) {
+				c.setExecutionMode(Kernel.EXECUTION_MODE.SEQ);
+			} else if (c.getSize() < minimumSizeForGPU) {
+				c.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
+			} else {
+				c.setExecutionMode(Kernel.EXECUTION_MODE.GPU);
+			}
 		}
-
-		neurons.setExecutionMode(mode);
-		synapses.setExecutionMode(mode);
-
+	
+		// SHARED BUFFERS NOT IMPLEMENTED IN APARAPI! See https://code.google.com/p/aparapi/issues/detail?id=56
 		// If trying for an OpenCL mode, do a test step to see what execution mode actually gets used.
 		// We can't allow some components to execute in GPU (or CPU?) mode and others not, otherwise buffer sharing used
 		// when on GPU (CPU?) will not work. (and copying buffers/arrays back and forth every step would likely be too slow,
 		// TODO: but perhaps in the future we could allow for this).
-		if (Utility.executionModeIsOpenCL(mode)) {
-			step();
-			// If the execution modes that got used aren't the same, make sure they're compatible.
-			if (neurons.getExecutionMode() != synapses.getExecutionMode()) {
-				if (!Utility.executionModeIsOpenCL(neurons.getExecutionMode())) {
-					System.err.println("Warning: could not run NeuronCollection in OpenCL mode.");
-				}
-				if (!Utility.executionModeIsOpenCL(synapses.getExecutionMode())) {
-					System.err.println("Warning: could not run SynapseCollection in OpenCL mode.");
-				}
-
-				// Determine lowest execution mode of those that were used, and set all components to use it...
-				mode = Utility.getLowestExecutionMode(neurons.getExecutionMode(), synapses.getExecutionMode());
-
-				// ... with the exception of avoiding JTP for component collections of
-				// size < 512 as it's less performant than SEQ.
-				// (We already checked to see if there were less than 512 synapses above.)
-				if (mode == Kernel.EXECUTION_MODE.JTP && neurons.getSize() < 512) {
-					neurons.setExecutionMode(Kernel.EXECUTION_MODE.SEQ);
-				} else {
-					neurons.setExecutionMode(mode);
-				}
-				synapses.setExecutionMode(mode);
-			}
-
-			reset();
-		}
+		// if (Utility.executionModeIsOpenCL(mode)) {
+		// step();
+		// // If the execution modes that got used aren't the same, make sure they're compatible.
+		// if (neurons.getExecutionMode() != synapses.getExecutionMode()) {
+		// if (!Utility.executionModeIsOpenCL(neurons.getExecutionMode())) {
+		// System.err.println("Warning: could not run NeuronCollection in OpenCL mode.");
+		// }
+		// if (!Utility.executionModeIsOpenCL(synapses.getExecutionMode())) {
+		// System.err.println("Warning: could not run SynapseCollection in OpenCL mode.");
+		// }
+		//
+		// // Determine lowest execution mode of those that were used, and set all components to use it...
+		// mode = Utility.getLowestExecutionMode(neurons.getExecutionMode(), synapses.getExecutionMode());
+		//
+		// // ... with the exception of avoiding JTP for component collections of
+		// // size < 512 as it's less performant than SEQ.
+		// // (We already checked to see if there were less than 512 synapses above.)
+		// if (mode == Kernel.EXECUTION_MODE.JTP && neurons.getSize() < 512) {
+		// neurons.setExecutionMode(Kernel.EXECUTION_MODE.SEQ);
+		// } else {
+		// neurons.setExecutionMode(mode);
+		// }
+		// synapses.setExecutionMode(mode);
+		// }
+		//
+		// reset();
+		// }
 	}
 
 	/**
@@ -134,8 +239,7 @@ public class Simulation {
 	}
 
 	/**
-	 * Set the time resolution of the simulation. This will reinitialise and reset the  and 
-	 * collections.
+	 * Set the time resolution of the simulation. This will reinitialise and reset the and collections.
 	 */
 	public synchronized void setTimeResolution(int timeResolution) {
 		this.timeResolution = timeResolution;

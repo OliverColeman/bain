@@ -3,7 +3,7 @@ package ojc.bain.neuron;
 import ojc.bain.base.ComponentConfiguration;
 
 /**
- * A  that produces pre-determined spike patterns.
+ * A that produces pre-determined spike patterns.
  * 
  * @author Oliver J. Coleman
  */

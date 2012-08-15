@@ -9,8 +9,8 @@ import ojc.bain.base.SynapseCollection;
 import com.amd.aparapi.Kernel;
 
 /**
- * Implementation of the  model described by Pfister, J.-P., Gerstner, W.: Triplets of Spikes in a Model of
- * Spike Timing-Dependent Plasticity. J. Neurosci. 26, 9673–9682 (2006).
+ * Implementation of the model described by Pfister, J.-P., Gerstner, W.: Triplets of Spikes in a Model of Spike
+ * Timing-Dependent Plasticity. J. Neurosci. 26, 9673–9682 (2006).
  * 
  * @see Pfister2006SynapseConfiguration
  * 

@@ -9,9 +9,10 @@ import java.util.Arrays;
  * neurons in the associated NeuronCollection.
  * </p>
  * <p>
- * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}. 
- * Sub-classes will need to override the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if they use custom state variables.  
- * Sub-classes may wish/need to override the methods: {@link #step()},{@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
+ * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}.
+ * Sub-classes will need to override the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if
+ * they use custom state variables. Sub-classes may wish/need to override the methods: {@link #step()},
+ * {@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
  * </p>
  * 
  * @author Oliver J. Coleman
@@ -25,30 +26,38 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	/**
 	 * The current output of each synapse.
 	 */
-	protected double[] synapseOutputs; // NOTE: Must have this name to allow sharing buffers in Aparapi kernel.
+	protected double[] synapseOutputs;
 
 	/**
 	 * The {@link ojc.bain.base.NeuronCollection#neuronOutputs} from the associated NeuronCollection.
 	 */
-	protected double[] neuronOutputs;// NOTE: Must have this name to allow sharing buffers in Aparapi kernel with
-										// NeuronCollection
+	protected double[] neuronOutputs;
 
 	/**
 	 * The {@link ojc.bain.base.NeuronCollection#neuronSpikings} from the associated NeuronCollection.
 	 */
-	protected byte[] neuronSpikings;// NOTE: Must have this name to allow sharing buffers in Aparapi kernel with
-									// NeuronCollection
+	protected byte[] neuronSpikings;
 
 	/**
 	 * The {@link ojc.bain.base.NeuronCollection#neuronInputs} from the associated NeuronCollection.
 	 */
-	protected double[] neuronInputs; // NOTE: Must have this name to allow sharing buffers in Aparapi kernel with
-										// NeuronCollection.
+	protected double[] neuronInputs;
 
 	/**
-	 * Indexes of the pre and post synaptic neurons for each synapse.
+	 * Indexes of the pre-synaptic neurons for each synapse.
 	 */
-	protected int[] preIndexes, postIndexes;
+	protected int[] preIndexes;
+
+	/**
+	 * Indexes of the post-synaptic neurons for each synapse.
+	 */
+	protected int[] postIndexes;
+
+	/**
+	 * Flag to indicate if the pre- or post-synaptic connections have changed for any synapse. This is used to determine if we
+	 * need to put() the {@link #preIndexes} and {@link #postIndexes} arrays/buffers when using OpenCL.
+	 */
+	protected boolean preOrPostIndexesModified;
 
 	@Override
 	public void init() {
@@ -65,11 +74,16 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 			put(efficacy);
 			put(preIndexes);
 			put(postIndexes);
+			preOrPostIndexesModified = false;
 		}
 		if (simulation != null) {
 			neuronOutputs = simulation.getNeurons().getOutputs();
 			neuronInputs = simulation.getNeurons().getInputs();
 			neuronSpikings = simulation.getNeurons().getSpikings();
+
+			put(neuronOutputs);
+			put(neuronInputs);
+			put(neuronSpikings);
 		}
 	}
 
@@ -90,11 +104,15 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 
 	@Override
 	public void step() {
-		// get() and put() not necessary, using shared buffer between and kernels (perhaps in future versions we'll allow
-		// kernels to run on disparate platforms).
-		// put(neuronOutputs);
+		put(neuronOutputs);
+		put(neuronSpikings);
+		put(neuronInputs);
+		if (preOrPostIndexesModified) {
+			put(preIndexes);
+			put(postIndexes);
+		}
 		super.step();
-		// get(synapseOutputs);
+		get(neuronInputs);
 	}
 
 	/**
@@ -185,7 +203,7 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	 */
 	public void setPreNeuron(int synapseIndex, int neuronIndex) {
 		preIndexes[synapseIndex] = neuronIndex;
-		put(preIndexes); // In case explicit mode is being used for the Aparapi kernel.
+		preOrPostIndexesModified = true;
 	}
 
 	/**
@@ -206,7 +224,7 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	 */
 	public void setPostNeuron(int synapseIndex, int neuronIndex) {
 		postIndexes[synapseIndex] = neuronIndex;
-		put(postIndexes); // In case explicit mode is being used for the Aparapi kernel.
+		preOrPostIndexesModified = true;
 	}
 
 	/**
@@ -217,6 +235,21 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	 */
 	public int getPostNeuron(int synapseIndex) {
 		return postIndexes[synapseIndex];
+	}
+
+	/**
+	 * Set the pre- and post-synaptic neurons for a synapse.
+	 * 
+	 * @param synapseIndex The index of the synapse to set the pre-synaptic neuron for.
+	 * @param preNeuronIndex The index of the pre-synaptic neuron in the NeuronCollection associated with this
+	 *            SynapseCollection.
+	 * @param postNeuronIndex The index of the post-synaptic neuron in the NeuronCollection associated with this
+	 *            SynapseCollection.
+	 */
+	public void setPreAndPostNeurons(int synapseIndex, int preNeuronIndex, int postNeuronIndex) {
+		preIndexes[synapseIndex] = preNeuronIndex;
+		postIndexes[synapseIndex] = postNeuronIndex;
+		preOrPostIndexesModified = true;
 	}
 
 	/**

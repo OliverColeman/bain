@@ -19,7 +19,7 @@ import org.jdesktop.swingx.multislider.*;
 import org.jfree.chart.*;
 
 /**
- * GUI for experimenting with  models.
+ * GUI for experimenting with models.
  * 
  * @author Oliver J. Coleman
  */

@@ -5,9 +5,9 @@ import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.SynapseCollection;
 
 /**
- * Implementation of the  model described by Graupner, M., Brunel, N.: Calcium-Based Plasticity Model Explains
- * Sensitivity of Synaptic Changes to Spike Pattern, Rate, and Dendritic Location. PNAS. 109, 3991–3996 (2012). (using the
- * simplified calcium model).
+ * Implementation of the model described by Graupner, M., Brunel, N.: Calcium-Based Plasticity Model Explains Sensitivity of
+ * Synaptic Changes to Spike Pattern, Rate, and Dendritic Location. PNAS. 109, 3991–3996 (2012). (using the simplified calcium
+ * model).
  * 
  * NOTE: the noise component of this model is not implemented.
  * 

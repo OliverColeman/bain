@@ -11,9 +11,10 @@ import ojc.bain.base.*;
  * run() methods.
  * </p>
  * <p>
- * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}. 
- * Sub-classes will need to override the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if they use custom state variables.  
- * Sub-classes may wish/need to override the methods: {@link #step()},{@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
+ * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}.
+ * Sub-classes will need to override the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if
+ * they use custom state variables. Sub-classes may wish/need to override the methods: {@link #step()},
+ * {@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
  * </p>
  * 
  * @author Oliver J. Coleman
@@ -32,20 +33,22 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	/**
 	 * The current output values of the neurons.
 	 */
-	protected double[] neuronOutputs; // NOTE: Must have this name to allow sharing buffers in Aparapi kernel with
-										// SynapseCollection.
-
+	protected double[] neuronOutputs;
 	/**
 	 * Boolean values to indicate whether a neuron spiked in the last time step.
 	 */
-	protected byte[] neuronSpikings; // NOTE: Must have this name to allow sharing buffers in Aparapi kernel with
-										// SynapseCollection.
+	protected byte[] neuronSpikings;
 
 	/**
 	 * The current input values of the neurons. Input comprises external input and input via synapses.
 	 */
-	protected double[] neuronInputs; // NOTE: Must have this name to allow sharing buffers in Aparapi kernel with
-										// SynapseCollection.
+	protected double[] neuronInputs;
+
+	/**
+	 * Flag to indicate if any of the inputs to the neurons have been modified. This is used to determine if we need to put()
+	 * the {@link #neuronInputs} array/buffer when using OpenCL.
+	 */
+	protected boolean inputsModified;
 
 	@Override
 	public void init() {
@@ -53,10 +56,14 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 		if (neuronOutputs == null || neuronOutputs.length != size) {
 			neuronOutputs = new double[size];
 			neuronSpikings = new byte[size];
+			neuronInputs = new double[size];
 		}
 		put(neuronOutputs); // In case explicit mode is being used for the Aparapi kernel.
 		put(neuronSpikings);
+		put(neuronInputs);
 		outputsStale = false;
+		inputsStale = false;
+		inputsModified = false;
 	}
 
 	/**
@@ -91,17 +98,21 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 
 	@Override
 	public double getInput(int index) {
+		ensureInputsAreFresh();
 		return neuronInputs[index];
 	}
 
 	@Override
 	public double[] getInputs() {
+		ensureInputsAreFresh();
 		return neuronInputs;
 	}
-	
+
 	@Override
 	public void addInput(int index, double input) {
+		ensureInputsAreFresh();
 		neuronInputs[index] += input;
+		inputsModified = true;
 	}
 
 	/**
@@ -119,15 +130,25 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 		put(neuronOutputs); // In case explicit mode is being used for the Aparapi kernel.
 		put(neuronSpikings); // In case explicit mode is being used for the Aparapi kernel.
 		put(neuronInputs); // In case explicit mode is being used for the Aparapi kernel.
+		outputsStale = false;
+		inputsStale = false;
+		inputsModified = false;
 	}
 
 	@Override
 	public void step() {
-		// get() and put() not necessary, using shared buffer between and kernels (perhaps in future versions we'll allow
-		// kernels to run on disparate platforms).
-		// put(synapseOutputs);
+		put(neuronInputs);
+		// if (inputsModified) {
+		// put(neuronInputs);
+		// }
+
 		super.step();
-		// get(neuronOutputs);
+
+		get(neuronInputs);
+		get(neuronOutputs);
+		get(neuronSpikings);
+		outputsStale = false;
+		inputsStale = false;
 	}
 
 	/**
@@ -160,6 +181,7 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 		if (inputsStale) {
 			get(neuronInputs);
 			inputsStale = false;
+			inputsModified = false;
 		}
 	}
 }
