@@ -37,7 +37,7 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	/**
 	 * Boolean values to indicate whether a neuron spiked in the last time step.
 	 */
-	protected byte[] neuronSpikings;
+	protected boolean[] neuronSpikings;
 
 	/**
 	 * The current input values of the neurons. Input comprises external input and input via synapses.
@@ -55,7 +55,7 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 		super.init();
 		if (neuronOutputs == null || neuronOutputs.length != size) {
 			neuronOutputs = new double[size];
-			neuronSpikings = new byte[size];
+			neuronSpikings = new boolean[size];
 			neuronInputs = new double[size];
 		}
 		put(neuronOutputs); // In case explicit mode is being used for the Aparapi kernel.
@@ -71,7 +71,7 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	 */
 	public boolean spiked(int index) {
 		ensureOutputsAreFresh();
-		return neuronSpikings[index] == 1;
+		return neuronSpikings[index];
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	 * subsequently; to get fresh values this method should be invoked again (this will return the same array but will also
 	 * ensure that the values in the array are up to date by invoking ensureOutputsAreFresh()).
 	 */
-	public byte[] getSpikings() {
+	public boolean[] getSpikings() {
 		return neuronSpikings;
 	}
 
@@ -125,7 +125,7 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	public void reset() {
 		super.reset();
 		Arrays.fill(neuronOutputs, 0);
-		Arrays.fill(neuronSpikings, (byte) 0);
+		Arrays.fill(neuronSpikings, false);
 		Arrays.fill(neuronInputs, 0);
 		put(neuronOutputs); // In case explicit mode is being used for the Aparapi kernel.
 		put(neuronSpikings); // In case explicit mode is being used for the Aparapi kernel.
@@ -164,7 +164,7 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	public void run() {
 		int neuronID = this.getGlobalId();
 		neuronInputs[neuronID] = 0;
-		neuronSpikings[neuronID] = (byte) (neuronOutputs[neuronID] >= 1 ? 1 : 0);
+		neuronSpikings[neuronID] = neuronOutputs[neuronID] >= 1;
 	}
 
 	@Override

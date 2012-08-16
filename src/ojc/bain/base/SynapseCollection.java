@@ -36,7 +36,7 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	/**
 	 * The {@link ojc.bain.base.NeuronCollection#neuronSpikings} from the associated NeuronCollection.
 	 */
-	protected byte[] neuronSpikings;
+	protected boolean[] neuronSpikings;
 
 	/**
 	 * The {@link ojc.bain.base.NeuronCollection#neuronInputs} from the associated NeuronCollection.

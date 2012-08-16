@@ -101,8 +101,8 @@ public class Pfister2006SynapseCollection extends SynapseCollection<Pfister2006S
 		int configID = componentConfigIndexes[synapseID];
 		int preID = preIndexes[synapseID];
 		int postID = postIndexes[synapseID];
-		boolean preSpiked = neuronOutputs[preID] >= 1;
-		boolean postSpiked = neuronOutputs[postID] >= 1;
+		boolean preSpiked = neuronSpikings[preID];
+		boolean postSpiked = neuronSpikings[postID];
 
 		// Trace decays.
 		r1[synapseID] -= r1[synapseID] * tPDecayMult[configID];

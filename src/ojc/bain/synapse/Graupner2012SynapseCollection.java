@@ -131,8 +131,8 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 		int configID = componentConfigIndexes[synapseID];
 		int preID = preIndexes[synapseID];
 		int postID = postIndexes[synapseID];
-		boolean preSpiked = neuronOutputs[preID] >= 1;
-		boolean postSpiked = neuronOutputs[postID] >= 1;
+		boolean preSpiked = neuronSpikings[preID];
+		boolean postSpiked = neuronSpikings[postID];
 
 		// Calcium decay.
 		c[synapseID] -= c[synapseID] * tCDecayMult[configID];
