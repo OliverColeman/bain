@@ -34,29 +34,47 @@ public class STDPTestGUI extends JFrame {
 		super("STDP");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setPreferredSize(new Dimension(1000, 600));
-
+		
+		final STDPTestGUI gui = this;
+		
 		spikeSettings = new SpikeProtocolSettingsPanel(this);
 		synapseSettings = new SynapseSettingsPanel(this);
-
+		
 		final JSpinner timeResolutionSpinner = new JSpinner(new SpinnerNumberModel(1000, 0, 100000, 1));
 
-		JButton goButton = new JButton("Go!");
+		final JButton goButton = new JButton("Go!");
 		goButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SynapseCollection synapse = synapseSettings.getSynapse();
-				SpikeProtocolSettings settings = spikeSettings.getSpikeProtocolSettings();
+				goButton.setEnabled(false);
+				
+				final SynapseCollection synapse = synapseSettings.getSynapse();
+				final SpikeProtocolSettings settings = spikeSettings.getSpikeProtocolSettings();
 
 				if (synapse != null && settings != null) {
-					int timeResolution = (int) timeResolutionSpinner.getValue();
-					boolean logSpikesAndStateVariables = settings.repetitions <= 25;
-
-					TestResults results = SynapseTest.testPattern(synapse, timeResolution, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, logSpikesAndStateVariables);
-					JFreeChart resultsPlot = SynapseTest.createChart(results, timeResolution, logSpikesAndStateVariables, true);
-
-					// JFrame plotFrame = new JFrame();
-					// plotFrame.add(new ChartPanel(resultsPlot));
-					// plotFrame.pack();
-					// plotFrame.setVisible(true);
+					final int timeResolution = (int) timeResolutionSpinner.getValue();
+					final boolean logSpikesAndStateVariables = settings.repetitions <= 25;
+					
+					final JProgressBar progressBar = new JProgressBar();
+					progressBar.setStringPainted(true);
+					final JWindow progressWindow = new JWindow();
+					progressWindow.add(progressBar);
+					progressWindow.pack();
+					progressWindow.setSize(gui.getWidth()/4, gui.getHeight()/8);
+					progressWindow.setLocationRelativeTo(gui);
+					progressWindow.setVisible(true);
+					
+					SwingWorker<TestResults, Object> worker = new SwingWorker<TestResults, Object>() {
+						@Override
+						protected TestResults doInBackground() throws Exception {
+							TestResults results = SynapseTest.testPattern(synapse, timeResolution, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, logSpikesAndStateVariables, progressBar);
+							JFreeChart resultsPlot = SynapseTest.createChart(results, timeResolution, logSpikesAndStateVariables, true);
+							progressWindow.dispose();
+							goButton.setEnabled(true);
+							return results;
+						}
+						
+					};
+					worker.execute();
 				}
 			}
 		});
@@ -83,7 +101,7 @@ public class STDPTestGUI extends JFrame {
 		gbc.weighty = 1;
 		gbc.gridwidth = 2;
 		getContentPane().add(tabPane, gbc);
-
+		
 		// Display the window.
 		pack();
 		setVisible(true);
@@ -97,7 +115,7 @@ public class STDPTestGUI extends JFrame {
 		JSpinner variationDimsSpinner, preSpikeCountSpinner, postSpikeCountSpinner, patternFreqSpinner, patternRepetitionsSpinner;
 
 		public SpikeProtocolSettingsPanel(final STDPTestGUI gui) {
-			final int initSpikePatternVariationDimensions = 1, initPreSpikeCount = 1, initPostSpikeCount = initSpikePatternVariationDimensions, initPatternFreq = 1, maxSpikePatternVariationDimensions = 2;
+			final int initSpikePatternVariationDimensions = 2, initPreSpikeCount = 1, initPostSpikeCount = initSpikePatternVariationDimensions, initPatternFreq = 1, maxSpikePatternVariationDimensions = 2;
 			JPanel panel = this;
 
 			JPanel spikeTimingSetterPanel = new JPanel(new GridBagLayout());

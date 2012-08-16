@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
+import javax.swing.JProgressBar;
 
 import ojc.bain.Simulation;
 import ojc.bain.base.ComponentConfiguration;
@@ -50,14 +51,16 @@ public class SynapseTest {
 	};
 
 	/*
-	 * @param synapse The SynapseCollection containing the synapse to test (the first synapse is used). 
+	 * @param synapse The SynapseCollection containing the synapse to test (the first synapse is used).
 	 * 
-	 * @param period The period of the spike pattern in milliseconds.
+	 * @param timeResolution The time resolution to use in the simulation, see {@link ojc.bain.Simulation}
+	 * 
+	 * @param period The period of the spike pattern in seconds.
 	 * 
 	 * @param repetitions The number of times to apply the spike pattern.
 	 * 
 	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike
-	 * time. The [spike number] array contains the times (ms) of each spike, relative to the beginning of the pattern.
+	 * time. The [spike number] array contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.FixedProtocolNeuronCollection}.
 	 * 
 	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each
 	 * variation dimension, in the form [dim 1, dim 2][reference spike, relative spike] = spike index.
@@ -66,11 +69,13 @@ public class SynapseTest {
 	 * belong to the pre- or post-synaptic neurons, in the form [dim 1, dim 2][base spike, relative spike] = Constants.PRE or
 	 * Constants.POST.
 	 * 
-	 * @param results Container for results.
+	 * @param logSpikesAndStateVariables Whether or not to include logs of spikes and state variables from the synape in the test results.
+	 * 
+	 * @param progressBar If not null, this will be updated to display the progress of the test.
 	 */
 
 	public static TestResults testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost,
-			boolean logSpikesAndStateVariables) throws IllegalArgumentException {
+			boolean logSpikesAndStateVariables, JProgressBar progressBar) throws IllegalArgumentException {
 		int variationDimsCount = patterns.length - 1; // Number of dimensions over which spike timingpatterns vary.
 		if (variationDimsCount > 2) {
 			throw new IllegalArgumentException("The number of variation dimensions may not exceed 2 (patterns.length must be <= 3)");
@@ -160,8 +165,16 @@ public class SynapseTest {
 				double[] time = new double[positionsCount[0]]; // The time delta in seconds [time delta index]
 				// The change in synapse efficacy after all repetitions for each pattern [time delta index]
 				double[] efficacyLog = new double[positionsCount[0]];
-
+				
+				if (progressBar != null) {
+					progressBar.setMaximum(positionsCount[0]);
+				}
+				
 				for (int timeDeltaIndex = 0; timeDeltaIndex < positionsCount[0]; timeDeltaIndex++) {
+					if (progressBar != null) {
+						progressBar.setValue(timeDeltaIndex);
+					}
+					
 					double position = (double) timeDeltaIndex / (positionsCount[0] - 1); // Position in variation dimension 1
 
 					// Generate pre and post spike timing patterns for this position.
@@ -184,7 +197,7 @@ public class SynapseTest {
 
 					time[timeDeltaIndex] = position * timeDeltaInitial[0] + (1 - position) * timeDeltaFinal[0];
 					efficacyLog[timeDeltaIndex] = synapse.getEfficacy(0);
-				}
+				}			
 
 				results.setProperty("type", TYPE.STDP_1D);
 				results.addResult("Efficacy", efficacyLog);
@@ -196,11 +209,19 @@ public class SynapseTest {
 				// [time delta for var dim 1, time delta for var dim 2, synapse efficacy][result index]
 				double[][] efficacyLog = new double[3][(positionsCount[0]) * (positionsCount[1])];
 
+				if (progressBar != null) {
+					progressBar.setMaximum(efficacyLog[0].length);
+				}
+				
 				double[] position = new double[2]; // Position in variation dimensions 1 and 2
 				for (int timeDeltaIndex1 = 0, resultIndex = 0; timeDeltaIndex1 < positionsCount[0]; timeDeltaIndex1++) {
 					position[0] = (double) timeDeltaIndex1 / (positionsCount[0] - 1);
 
 					for (int timeDeltaIndex2 = 0; timeDeltaIndex2 < positionsCount[1]; timeDeltaIndex2++, resultIndex++) {
+						if (progressBar != null) {
+							progressBar.setValue(resultIndex);
+						}
+						
 						position[1] = (double) timeDeltaIndex2 / (positionsCount[1] - 1);
 
 						// Generate pre and post spike timing patterns for this position.
