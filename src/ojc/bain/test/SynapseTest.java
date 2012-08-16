@@ -40,12 +40,17 @@ import org.jfree.ui.RectangleEdge;
  * @author Oliver J. Coleman
  */
 public class SynapseTest {
-	public static final String RESULT_TYPE_STDP = "STDP";
-	public static final String RESULT_TYPE_STDP_1D = "STDP 1D";
-	public static final String RESULT_TYPE_STDP_2D = "STDP 2D";
+	/**
+	 * The type of test results.
+	 */
+	public static enum TYPE {
+	      STDP,
+	      STDP_1D,
+	      STDP_2D;
+	};
 
 	/*
-	 * @param The Synapse to ojc.bain.test.
+	 * @param synapse The SynapseCollection containing the synapse to test (the first synapse is used). 
 	 * 
 	 * @param period The period of the spike pattern in milliseconds.
 	 * 
@@ -90,6 +95,9 @@ public class SynapseTest {
 		int simSteps = (int) Math.round(period * repetitions * timeResolution);
 
 		int displayTimeResolution = Math.min(1000, timeResolution);
+		
+		results.setProperty("simulation time resolution", timeResolution);
+		results.setProperty("display time resolution", displayTimeResolution);
 
 		long startTime = System.currentTimeMillis();
 
@@ -178,7 +186,7 @@ public class SynapseTest {
 					efficacyLog[timeDeltaIndex] = synapse.getEfficacy(0);
 				}
 
-				results.setType(RESULT_TYPE_STDP_1D);
+				results.setProperty("type", TYPE.STDP_1D);
 				results.addResult("Efficacy", efficacyLog);
 				results.addResult("Time delta", time);
 
@@ -186,14 +194,14 @@ public class SynapseTest {
 			} else {
 				// The change in synapse efficacy after all repetitions for each pattern
 				// [time delta for var dim 1, time delta for var dim 2, synapse efficacy][result index]
-				double[][] efficacyLog = new double[3][(positionsCount[0] + 1) * (positionsCount[1] + 1)];
+				double[][] efficacyLog = new double[3][(positionsCount[0]) * (positionsCount[1])];
 
 				double[] position = new double[2]; // Position in variation dimensions 1 and 2
 				for (int timeDeltaIndex1 = 0, resultIndex = 0; timeDeltaIndex1 < positionsCount[0]; timeDeltaIndex1++) {
-					position[0] = (double) timeDeltaIndex1 / positionsCount[0];
+					position[0] = (double) timeDeltaIndex1 / (positionsCount[0] - 1);
 
 					for (int timeDeltaIndex2 = 0; timeDeltaIndex2 < positionsCount[1]; timeDeltaIndex2++, resultIndex++) {
-						position[1] = (double) timeDeltaIndex2 / positionsCount[1];
+						position[1] = (double) timeDeltaIndex2 / (positionsCount[1] - 1);
 
 						// Generate pre and post spike timing patterns for this position.
 						for (int p = 0; p < 2; p++) {
@@ -210,6 +218,7 @@ public class SynapseTest {
 						preConfig.fireChangeEvent();
 						postConfig.fireChangeEvent();
 
+						sim.reset();
 						sim.run(simSteps);
 
 						efficacyLog[0][resultIndex] = (1 - position[0]) * timeDeltaInitial[0] + position[0] * timeDeltaFinal[0];
@@ -218,7 +227,7 @@ public class SynapseTest {
 					}
 				}
 
-				results.setType(RESULT_TYPE_STDP_2D);
+				results.setProperty("type", TYPE.STDP_2D);
 				results.addResult("Time delta 1", "Time delta 2", "Efficacy", efficacyLog);
 			}
 		}
@@ -279,7 +288,7 @@ public class SynapseTest {
 		}
 
 		TestResults results = new TestResults();
-		results.setType(RESULT_TYPE_STDP);
+		results.setProperty("type", TYPE.STDP);
 		results.addResult("Efficacy", efficacyLog);
 		results.addResult("Time", timeLog);
 		if (logSpikesAndStateVariables) {
@@ -305,7 +314,7 @@ public class SynapseTest {
 	public static JFreeChart createChart(TestResults results, int timeResolution, boolean logSpikesAndStateVariables, boolean showInFrame) {
 		JFreeChart resultsPlot = null;
 
-		if (results.getType() == SynapseTest.RESULT_TYPE_STDP) {
+		if (results.getProperty("type") == TYPE.STDP) {
 			CombinedDomainXYPlot combinedPlot = new CombinedDomainXYPlot(new NumberAxis("t (s)"));
 			XYToolTipGenerator tooltipGen = new StandardXYToolTipGenerator();
 			XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
@@ -342,7 +351,7 @@ public class SynapseTest {
 			resultsPlot.setBackgroundPaint(Color.WHITE);
 		}
 
-		else if (results.getType() == SynapseTest.RESULT_TYPE_STDP_1D) {
+		else if (results.getProperty("type") == TYPE.STDP_1D) {
 			DefaultXYDataset plotData = new DefaultXYDataset();
 			plotData.addSeries("Efficacy", results.getResult("Time delta", "Efficacy"));
 			resultsPlot = ChartFactory.createXYLineChart("", "\u0394t (ms)", "", plotData, PlotOrientation.VERTICAL, true, true, false);
@@ -351,7 +360,7 @@ public class SynapseTest {
 			((NumberAxis) resultsPlot.getXYPlot().getDomainAxis()).setNumberFormatOverride(timeFormatter);
 		}
 
-		else if (results.getType() == SynapseTest.RESULT_TYPE_STDP_2D) {
+		else if (results.getProperty("type") == TYPE.STDP_2D) {
 			double[][] data = results.getResult("Time delta 1", "Time delta 2", "Efficacy");
 
 			DefaultXYZDataset plotData = new DefaultXYZDataset();
@@ -361,35 +370,48 @@ public class SynapseTest {
 			// milliseconds (XYBlockRenderer won't deal with fractional values
 			// in the domain axes)
 			double min = Double.MAX_VALUE, max = -min;
+			double[] efficacy = data[2]; 
 			for (int i = 0; i < data[0].length; i++) {
-				if (data[2][i] < min)
-					min = data[2][i];
-				if (data[2][i] > max)
-					max = data[2][i];
+				if (efficacy[i] < min)
+					min = efficacy[i];
+				if (efficacy[i] > max)
+					max = efficacy[i];
 
 				data[0][i] = Math.round(data[0][i] * 1000);
 				data[1][i] = Math.round(data[1][i] * 1000);
 			}
+			
 			XYBlockRenderer renderer = new XYBlockRenderer();
+			
 			double range = Math.max(Math.abs(min), Math.abs(max));
-			min = min < 0 ? -range : 0;
-			max = max > 0 ? range : 0;
+			double rangeBase = 0;
+			if (min < 0) min = -range;
+			if (max > 0) max = range;
+			// If the value range does not cross the zero point, don't use a zero-based range.
+			if ((min > 0) || (max < 0)) {
+				range = Math.abs(max - min);
+				rangeBase = Math.min(Math.abs(min), Math.abs(max));
+			}
+			
 			LookupPaintScale scale = new LookupPaintScale(min, max, Color.WHITE);
 			if (min < 0) {
-				for (double c = 0; c <= 1; c += 1.0 / 255) {
-					scale.add(-c * range * 1.01, new Color(0, (float) c, (float) c));
+				for (int ci = 0; ci <= 255; ci ++) {
+					double v = -(ci/255.0) * range - rangeBase;
+					scale.add(v, new Color(0, ci, ci));
 				}
 			}
 			if (max > 0) {
-				for (double c = 0; c <= 1; c += 1.0 / 255) {
-					scale.add(c * range * 1.01, new Color((float) c, (float) c, 0));
+				for (int ci = 0; ci <= 255; ci ++) {
+					double v = (ci/255.0) * range + rangeBase;
+					scale.add(v, new Color(ci, ci, 0));
 				}
 			}
 			renderer.setPaintScale(scale);
 			renderer.setSeriesToolTipGenerator(0, new StandardXYZToolTipGenerator());
-			renderer.setBlockWidth(renderer.getBlockWidth() * (1000 / timeResolution));
-			renderer.setBlockHeight(renderer.getBlockHeight() * (1000 / timeResolution));
-
+			int displayResolution = (int) results.getProperty("display time resolution");
+			renderer.setBlockWidth(1000.0 / displayResolution);
+			renderer.setBlockHeight(1000.0 / displayResolution);
+			
 			NumberAxis xAxis = new NumberAxis("\u0394t1 (ms)");
 			NumberAxis yAxis = new NumberAxis("\u0394t2 (ms)");
 

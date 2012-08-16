@@ -182,7 +182,7 @@ public class Simulation {
 
 	protected void selectExecutionModes() {
 		Kernel.EXECUTION_MODE mode = preferredExecutionMode;
-		ComponentCollection[] collections = new ComponentCollection[]{neurons, synapses};
+		ComponentCollection[] collections = new ComponentCollection[] { neurons, synapses };
 		for (ComponentCollection c : collections) {
 			if (preferredExecutionMode != null) {
 				c.setExecutionMode(preferredExecutionMode);
@@ -194,7 +194,7 @@ public class Simulation {
 				c.setExecutionMode(Kernel.EXECUTION_MODE.GPU);
 			}
 		}
-	
+
 		// SHARED BUFFERS NOT IMPLEMENTED IN APARAPI! See https://code.google.com/p/aparapi/issues/detail?id=56
 		// If trying for an OpenCL mode, do a test step to see what execution mode actually gets used.
 		// We can't allow some components to execute in GPU (or CPU?) mode and others not, otherwise buffer sharing used

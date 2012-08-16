@@ -3,45 +3,50 @@ package ojc.bain.test;
 import java.util.*;
 
 /**
- * Class for storing ojc.bain.test results consisting of arrays of doubles. Each array of doubles is referenced by a String
- * label. A TestResults object may be given a type name to describe what it represents. The TestResults class extends HashMap,
- * so all HashMap methods may be used. Result labels and arrays correspond to the keys and values in the HashMap.
+ * <p>
+ * Class for storing test results consisting of arrays of doubles. Each array of doubles is referenced by a String label. 
+ * The TestResults class extends HashMap, so all
+ * HashMap methods may be used. Result labels and arrays correspond to the keys and values in the HashMap.
+ * </p>
+ * 
+ * <p>
+ * TestResults also embeds a Properties object, available via {@link TestResults#getProperties()}, which is generally used to
+ * describe the parameters or other details of the test.
+ * </p>
  * 
  * @author Oliver J. Coleman
  */
 public class TestResults extends HashMap<String, double[]> {
 	private static final long serialVersionUID = 1L;
 
-	String type;
-
-	/**
-	 * Creates a new TestResults object.
-	 * 
-	 * @param type The name of the type of results this TestResults object represents.
-	 */
-	public TestResults(String type) {
-		this.type = type;
-	}
-
+	HashMap<String, Object> testProperties = new HashMap<String, Object>();
+	
 	/**
 	 * Creates a new TestResults object.
 	 */
 	public TestResults() {
-		this.type = "";
 	}
 
 	/**
-	 * Get the name of the type of results this TestResults object represents. May be the empty String or null.
+	 * Set a test property value, for example a parameter used in a test.
 	 */
-	public String getType() {
-		return type;
+	public void setProperty(String name, Object property) {
+		testProperties.put(name, property);
 	}
-
+	
 	/**
-	 * Sets the name of the type of results this TestResults object represents. May be the empty String or null.
+	 * Get a test property value, for example a parameter used in a test.
 	 */
-	public void setType(String type) {
-		this.type = type;
+	public Object getProperty(String name) {
+		return testProperties.get(name);
+	}
+	
+	/**
+	 * Get the properties of the test.
+	 * @return a HashMap object which may be queried or have mappings set on it.
+	 */
+	public HashMap<String, Object> getProperties() {
+		return testProperties;
 	}
 
 	/**
