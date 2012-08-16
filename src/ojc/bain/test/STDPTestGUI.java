@@ -115,7 +115,7 @@ public class STDPTestGUI extends JFrame {
 		JSpinner variationDimsSpinner, preSpikeCountSpinner, postSpikeCountSpinner, patternFreqSpinner, patternRepetitionsSpinner;
 
 		public SpikeProtocolSettingsPanel(final STDPTestGUI gui) {
-			final int initSpikePatternVariationDimensions = 2, initPreSpikeCount = 1, initPostSpikeCount = initSpikePatternVariationDimensions, initPatternFreq = 1, maxSpikePatternVariationDimensions = 2;
+			final int initSpikePatternVariationDimensions = 1, initPreSpikeCount = 1, initPostSpikeCount = initSpikePatternVariationDimensions, initPatternFreq = 1, maxSpikePatternVariationDimensions = 2;
 			JPanel panel = this;
 
 			JPanel spikeTimingSetterPanel = new JPanel(new GridBagLayout());

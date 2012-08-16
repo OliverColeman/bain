@@ -47,4 +47,8 @@ public class SimulationTest {
 
 		return neurons.getOutputs();
 	}
+	
+	public static void main(String[] args) {
+		testCoreFramework(Kernel.EXECUTION_MODE.GPU);
+	}
 }
