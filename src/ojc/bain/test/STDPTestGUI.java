@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.text.Format;
+import java.util.Arrays;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -27,42 +28,43 @@ public class STDPTestGUI extends JFrame {
 	private static final long serialVersionUID = 1L;
 	static final int margin = 8;
 
-	SpikeProtocolSettingsPanel spikeSettings;
-	SynapseSettingsPanel synapseSettings;
+	final STDPTestGUI gui;
+	final SpikeProtocolSettingsPanel spikeSettings;
+	final SynapseSettingsPanel synapseSettings;
 
 	public STDPTestGUI() {
 		super("STDP");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setPreferredSize(new Dimension(1000, 600));
-		
-		final STDPTestGUI gui = this;
-		
+		setPreferredSize(new Dimension(1000, 650));
+
+		gui = this;
+
 		spikeSettings = new SpikeProtocolSettingsPanel(this);
 		synapseSettings = new SynapseSettingsPanel(this);
-		
+
 		final JSpinner timeResolutionSpinner = new JSpinner(new SpinnerNumberModel(1000, 0, 100000, 1));
 
 		final JButton goButton = new JButton("Go!");
 		goButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				goButton.setEnabled(false);
-				
+
 				final SynapseCollection synapse = synapseSettings.getSynapse();
 				final SpikeProtocolSettings settings = spikeSettings.getSpikeProtocolSettings();
 
 				if (synapse != null && settings != null) {
 					final int timeResolution = (int) timeResolutionSpinner.getValue();
 					final boolean logSpikesAndStateVariables = settings.repetitions <= 25;
-					
+
 					final JProgressBar progressBar = new JProgressBar();
 					progressBar.setStringPainted(true);
 					final JWindow progressWindow = new JWindow();
 					progressWindow.add(progressBar);
 					progressWindow.pack();
-					progressWindow.setSize(gui.getWidth()/4, gui.getHeight()/8);
+					progressWindow.setSize(gui.getWidth() / 4, gui.getHeight() / 8);
 					progressWindow.setLocationRelativeTo(gui);
 					progressWindow.setVisible(true);
-					
+
 					SwingWorker<TestResults, Object> worker = new SwingWorker<TestResults, Object>() {
 						@Override
 						protected TestResults doInBackground() throws Exception {
@@ -72,7 +74,7 @@ public class STDPTestGUI extends JFrame {
 							goButton.setEnabled(true);
 							return results;
 						}
-						
+
 					};
 					worker.execute();
 				}
@@ -101,8 +103,7 @@ public class STDPTestGUI extends JFrame {
 		gbc.weighty = 1;
 		gbc.gridwidth = 2;
 		getContentPane().add(tabPane, gbc);
-		
-		// Display the window.
+
 		pack();
 		setVisible(true);
 	}
@@ -115,15 +116,15 @@ public class STDPTestGUI extends JFrame {
 		JSpinner variationDimsSpinner, preSpikeCountSpinner, postSpikeCountSpinner, patternFreqSpinner, patternRepetitionsSpinner;
 
 		public SpikeProtocolSettingsPanel(final STDPTestGUI gui) {
-			final int initSpikePatternVariationDimensions = 1, initPreSpikeCount = 1, initPostSpikeCount = initSpikePatternVariationDimensions, initPatternFreq = 1, maxSpikePatternVariationDimensions = 2;
-			JPanel panel = this;
+			SpikeProtocolSettings initSettings = spikeProtocolSettingsPresets[0];
+			final int maxSpikePatternVariationDimensions = 2;
 
 			JPanel spikeTimingSetterPanel = new JPanel(new GridBagLayout());
 			final SpikeTimingSetterPair[] spikeTimingSetterPairs = new SpikeTimingSetterPair[maxSpikePatternVariationDimensions + 1];
 			final SpikeTimingSetter[][] spikeTimingSetters = new SpikeTimingSetter[maxSpikePatternVariationDimensions + 1][2]; // [dimension][pre,
 																																// post]
 
-			final JSpinner variationDimsSpinner = new JSpinner(new SpinnerNumberModel(initSpikePatternVariationDimensions, 0, maxSpikePatternVariationDimensions, 1));
+			final JSpinner variationDimsSpinner = new JSpinner(new SpinnerNumberModel(initSettings.variationDimsCount, 0, maxSpikePatternVariationDimensions, 1));
 			variationDimsSpinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
@@ -134,7 +135,7 @@ public class STDPTestGUI extends JFrame {
 				}
 			});
 
-			final JSpinner preSpikeCountSpinner = new JSpinner(new SpinnerNumberModel(initPreSpikeCount, 0, 10, 1));
+			final JSpinner preSpikeCountSpinner = new JSpinner(new SpinnerNumberModel(initSettings.spikeCounts[0], 0, 10, 1));
 			preSpikeCountSpinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
@@ -144,7 +145,7 @@ public class STDPTestGUI extends JFrame {
 					}
 				}
 			});
-			final JSpinner postSpikeCountSpinner = new JSpinner(new SpinnerNumberModel(initPostSpikeCount, 0, 10, 1));
+			final JSpinner postSpikeCountSpinner = new JSpinner(new SpinnerNumberModel(initSettings.spikeCounts[1], 0, 10, 1));
 			postSpikeCountSpinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
@@ -176,6 +177,31 @@ public class STDPTestGUI extends JFrame {
 			fieldsPanel.add(createLabeledComponent("Pattern presentation frequency (Hz):", patternFreqSpinner));
 			fieldsPanel.add(createLabeledComponent("# pattern repetitions:", patternRepetitionsSpinner));
 
+			final JComboBox<String> presetSelector = new JComboBox<String>(spikeProtocolSettingsPresetNames);
+			presetSelector.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					SpikeProtocolSettings settings = spikeProtocolSettingsPresets[presetSelector.getSelectedIndex()];
+
+					variationDimsSpinner.setValue(settings.variationDimsCount);
+					preSpikeCountSpinner.setValue(settings.spikeCounts[0]);
+					postSpikeCountSpinner.setValue(settings.spikeCounts[1]);
+					patternFreqSpinner.setValue(1.0 / settings.period);
+					patternRepetitionsSpinner.setValue(settings.repetitions);
+					for (int d = 0; d <= settings.variationDimsCount; d++) {
+						for (int p = 0; p < 2; p++) {
+							for (int s = 0; s < settings.spikeCounts[p]; s++) {
+								spikeTimingSetterPairs[d].setSpikeTime(p, s, (int) Math.round(settings.patterns[d][p][s] * 1000));
+							}
+							if (d > 0) {
+								spikeTimingSetterPairs[d].setBaseRef(settings.refSpikePreOrPost[d - 1][0], settings.refSpikeIndexes[d - 1][0]);
+								spikeTimingSetterPairs[d].setRelativeRef(settings.refSpikePreOrPost[d - 1][1], settings.refSpikeIndexes[d - 1][1]);
+							}
+						}
+
+					}
+				}
+			});
+
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.weightx = 1;
 			gbc.weighty = 1;
@@ -184,40 +210,27 @@ public class STDPTestGUI extends JFrame {
 			gbc.anchor = GridBagConstraints.NORTH;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 
-			panel.add(fieldsPanel); // , gbc);
+			add(createLabeledComponent("Spike protocol preset: ", presetSelector));
+
+			add(fieldsPanel);
 
 			for (int d = 0; d < maxSpikePatternVariationDimensions + 1; d++) {
 				spikeTimingSetterPairs[d] = new SpikeTimingSetterPair(d > 0);
 				spikeTimingSetterPairs[d].setBorder(createBorder(d == 0 ? "Initial spike pattern" : "Final spike pattern for timing variation dimension " + d));
 				for (int p = 0; p < 2; p++) {
-					spikeTimingSetters[d][p] = new SpikeTimingSetter(p == 0 ? "Pre" : "Post", p == 0 ? initPreSpikeCount : initPostSpikeCount, 1.0 / initPatternFreq, spikeTimingSetterPairs[d], p);
+					spikeTimingSetters[d][p] = new SpikeTimingSetter(p == 0 ? "Pre" : "Post", p == 0 ? initSettings.spikeCounts[0] : initSettings.spikeCounts[1], initSettings.period, spikeTimingSetterPairs[d], p);
 					spikeTimingSetterPairs[d].add(spikeTimingSetters[d][p]);
-				}
-
-				spikeTimingSetterPairs[d].setSpikeTime(NeuronCollection.PRE, 0, 50);
-				if (initSpikePatternVariationDimensions == 1) {
-					spikeTimingSetterPairs[d].setSpikeTime(NeuronCollection.POST, 0, d == 1 ? 100 : 0);
-					if (d > 0) {
-						spikeTimingSetterPairs[d].setBaseRef(NeuronCollection.PRE, 0);
-						spikeTimingSetterPairs[d].setRelativeRef(NeuronCollection.POST, 0);
-					}
-				}
-				if (initSpikePatternVariationDimensions == 2) {
-					spikeTimingSetterPairs[d].setSpikeTime(NeuronCollection.POST, 0, d == 1 ? 50 : 0);
-					spikeTimingSetterPairs[d].setSpikeTime(NeuronCollection.POST, 1, d == 2 ? 50 : 100);
-					if (d > 0) {
-						spikeTimingSetterPairs[d].setBaseRef(NeuronCollection.PRE, 0);
-						spikeTimingSetterPairs[d].setRelativeRef(NeuronCollection.POST, d == 1 ? 0 : 1);
-					}
 				}
 				gbc.gridx = d % 2;
 				gbc.gridy = d / 2;
-				spikeTimingSetterPairs[d].setVisible(d <= initSpikePatternVariationDimensions);
+				spikeTimingSetterPairs[d].setVisible(d <= initSettings.variationDimsCount);
 				spikeTimingSetterPanel.add(spikeTimingSetterPairs[d], gbc);
 			}
 
 			spikeTimingSetterPanel.setPreferredSize(new Dimension(1000, 400));
-			panel.add(spikeTimingSetterPanel);
+			add(spikeTimingSetterPanel);
+
+			presetSelector.setSelectedIndex(0);
 
 			this.spikeTimingSetters = spikeTimingSetters;
 			this.spikeTimingSetterPairs = spikeTimingSetterPairs;
@@ -264,8 +277,7 @@ public class STDPTestGUI extends JFrame {
 							return null;
 						}
 
-						// Ensure that a spikes timing only varies over at most
-						// one dimension.
+						// Ensure that a spikes timing only varies over at most one dimension.
 						for (int si = 0; si < settings.spikeCounts[p]; si++) {
 							// If the spikes time in variation dimension d is
 							// different to the initial spike time.
@@ -287,20 +299,36 @@ public class STDPTestGUI extends JFrame {
 					}
 				}
 			}
-
 			return settings;
 		}
 	}
 
-	private class SpikeProtocolSettings {
+	protected static String[] spikeProtocolSettingsPresetNames = new String[] { "Double", "Triple 1" };
+	protected static SpikeProtocolSettings[] spikeProtocolSettingsPresets = new SpikeProtocolSettings[] {
+			new SpikeProtocolSettings(1, 1, 60, new int[] { 1, 1 }, new double[][][] { { { 0.05 }, { 0.0 } }, { { 0.05 }, { 0.1 } } }, new int[][] { { 0, 0 } }, new int[][] { { 0, 1 } }),
+			new SpikeProtocolSettings(2, 1, 60, new int[] { 1, 2 }, new double[][][] { { { 0.05 }, { 0.0, 0.1 } }, { { 0.05 }, { 0.05, 0.1 } }, { { 0.05 }, { 0.0, 0.05 } } }, new int[][] { { 0, 0 }, { 0, 1 } }, new int[][] { { 0, 1 }, { 0, 1 } }), };
+
+	protected static class SpikeProtocolSettings {
 		public int variationDimsCount;
 		public double period;
 		public int repetitions;
 		public int[] spikeCounts; // [pre, post]
-		// [initial, dim 1, dim 2][pre, post][spike index]
-		public double[][][] patterns;
-		public int[][] refSpikeIndexes; // [dim 1, dim 2][pre, post]
-		public int[][] refSpikePreOrPost; // [dim 1, dim 2][pre, post]
+		public double[][][] patterns; // [initial, dim 1, dim 2][pre, post][spike index] = time
+		public int[][] refSpikeIndexes; // [dim 1, dim 2][base, relative] = spike index
+		public int[][] refSpikePreOrPost; // [dim 1, dim 2][base, relative] = PRE or POST
+
+		public SpikeProtocolSettings() {
+		}
+
+		public SpikeProtocolSettings(int variationDimsCount, double period, int repetitions, int[] spikeCounts, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost) {
+			this.variationDimsCount = variationDimsCount;
+			this.period = period;
+			this.repetitions = repetitions;
+			this.spikeCounts = spikeCounts;
+			this.patterns = patterns;
+			this.refSpikeIndexes = refSpikeIndexes;
+			this.refSpikePreOrPost = refSpikePreOrPost;
+		}
 	}
 
 	private class SynapseSettingsPanel extends JPanel {

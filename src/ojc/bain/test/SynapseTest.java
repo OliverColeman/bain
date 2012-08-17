@@ -104,7 +104,7 @@ public class SynapseTest {
 		results.setProperty("simulation time resolution", timeResolution);
 		results.setProperty("display time resolution", displayTimeResolution);
 
-		long startTime = System.currentTimeMillis();
+		//long startTime = System.currentTimeMillis();
 
 		// If we're just testing a single spike pattern. // Handle separately as logging is quite different from testing spike
 		// patterns with gradually altered spike times.
@@ -253,8 +253,8 @@ public class SynapseTest {
 			}
 		}
 
-		long finishTime = System.currentTimeMillis();
-		System.out.println("Took " + ((finishTime - startTime) / 1000f) + "s");
+		//long finishTime = System.currentTimeMillis();
+		//System.out.println("Took " + ((finishTime - startTime) / 1000f) + "s");
 
 		return results;
 	}
