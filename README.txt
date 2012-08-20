@@ -9,7 +9,7 @@ with respect to natural neural networks, greater than typical rate-based models
 used in computer science but lower than biophysical models used in neuroscience.
 It aims to provide a framework to allow plugging in parameterised
 functional/computational models for neurons, synapses and neuromodulators
-neuromodulator functionality coming soon).
+(neuromodulator functionality coming soon). Arbitrary topologies are supported.
 
 Bain is designed to make use of SIMD hardware (eg GPUs), via OpenCL and
 Aparapi, thus by "large" in the previous paragraph we mean thousands to millions
@@ -38,9 +38,10 @@ networks for online learning". For more details see http://ojcoleman.com.
 
 "Using all this knowledge as a key, we may possibly unlock the secrets of the
 anatomical structure; we may compel the cells and fibres to disclose their
-meaning and purpose." Alexander Bain (1873), Mind and Body: The Theories of
-Their Relation, New York: D. Appleton and Company. Also, "Bain" is just one
-letter away from "Brain"... ;) 
+meaning and purpose." Alexander Bain (who first proposed that thoughts and body 
+activity resulted from interactions among neurons within the brain), 1873, 
+Mind and Body: The Theories of Their Relation, New York: D. Appleton and Company.
+Also, "Bain" is just one letter away from "Brain"... ;) 
 
 Bain is licensed under the GNU General Public License v3. A copy of the license
 is included in the distribution. Please note that Bain is distributed WITHOUT 
