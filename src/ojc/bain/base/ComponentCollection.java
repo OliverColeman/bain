@@ -11,25 +11,22 @@ import com.amd.aparapi.Range;
 
 /**
  * <p>
- * Base class for all collections of specific types of neural network components to be used in a {@link Simulation}. A type of
- * component (e.g. a ) is contained in a collection so as to allow off-loading parallel computations to a vector processor (eg
- * GPU) using Aparapi: simulation calculations should be performed on arrays of primitives containing the state variables,
- * inputs and outputs for the components in the collection.
+ * Base class for all collections of specific types of neural network components to be used in a {@link Simulation}. A type of component (e.g. a ) is contained
+ * in a collection so as to allow off-loading parallel computations to a vector processor (eg GPU) using Aparapi: simulation calculations should be performed on
+ * arrays of primitives containing the state variables, inputs and outputs for the components in the collection.
  * </p>
  * 
  * <p>
- * Rather than extending from this class directly, generally implementations should extend a more specific collection sub-class,
- * such as {@link ojc.bain.base.NeuronCollection} or {@link ojc.bain.base.SynapseCollection}, which provide some useful
- * functionality and an API for working with that type of component. This allows it to be used alongside other standard
- * collection types and within classes like {@link ojc.bain.Simulation}.
+ * Rather than extending from this class directly, generally implementations should extend a more specific collection sub-class, such as
+ * {@link ojc.bain.base.NeuronCollection} or {@link ojc.bain.base.SynapseCollection}, which provide some useful functionality and an API for working with that
+ * type of component. This allows it to be used alongside other standard collection types and within classes like {@link ojc.bain.Simulation}.
  * </p>
  * 
  * <p>
- * The computations for a collection should be performed in the run() method, which overrides the com.amd.aparapi.Kernel run()
- * method. The {@link #step()} method invokes com.amd.aparapi.Kernel.execute(size*), which invokes the run() method. See the
- * Aparapi documentation for more details, and sub-classes of NeuronCollection and SynapseCollection for examples. For
- * performance reasons, the step() method invokes execute() with {@link #sizePower2} rather than the actual {@link #size}. This
- * means that a sub-class must either:
+ * The computations for a collection should be performed in the run() method, which overrides the com.amd.aparapi.Kernel run() method. The {@link #step()}
+ * method invokes com.amd.aparapi.Kernel.execute(size*), which invokes the run() method. See the Aparapi documentation for more details, and sub-classes of
+ * NeuronCollection and SynapseCollection for examples. For performance reasons, the step() method invokes execute() with {@link #sizePower2} rather than the
+ * actual {@link #size}. This means that a sub-class must either:
  * <ol>
  * <li>force the size to be a power of 2; or</li>
  * <li>add logic to the run() method such that it skips components whose index is &gt;= size; or</li>
@@ -38,12 +35,11 @@ import com.amd.aparapi.Range;
  * </p>
  * 
  * <p>
- * It is assumed that the Aparapi kernel is set to use explicit buffer management, meaning that the required arrays/buffers must
- * be sent to and retrieved from the execution hardware (eg GPU) manually using get() and put() (defined in
- * com.amd.aparapi.Kernel) as necessary. Sub-classes of this class, including ConfigurableComponentCollection, NeuronCollection
- * and SynapseCollection, do this for the arrays/buffers they declare, which is one reason that when overriding methods such as
- * {@link #init()}, {@link #reset()} and {@link #step()} the super-method should be invoked from within the overriding method.
- * See {@link #ensureOutputsAreFresh()} and {@link #ensureStateVariablesAreFresh()}.
+ * It is assumed that the Aparapi kernel is set to use explicit buffer management, meaning that the required arrays/buffers must be sent to and retrieved from
+ * the execution hardware (eg GPU) manually using get() and put() (defined in com.amd.aparapi.Kernel) as necessary. Sub-classes of this class, including
+ * ConfigurableComponentCollection, NeuronCollection and SynapseCollection, do this for the arrays/buffers they declare, which is one reason that when
+ * overriding methods such as {@link #init()}, {@link #reset()} and {@link #step()} the super-method should be invoked from within the overriding method. See
+ * {@link #ensureOutputsAreFresh()} and {@link #ensureStateVariablesAreFresh()}.
  * </p>
  * 
  * @see <a href="http://aparapi.googlecode.com/">Aparapi home page</a>
@@ -74,16 +70,14 @@ public abstract class ComponentCollection extends Kernel {
 	protected Simulation simulation;
 
 	/**
-	 * Flag to indicate if the state variables used in an Aparapi kernel have been modified on the GPU (and so would need to be
-	 * transferred back if we're interested in looking at their values). This is only relevant when explicit buffer management
-	 * is being used.
+	 * Flag to indicate if the state variables used in an Aparapi kernel have been modified on the GPU (and so would need to be transferred back if we're
+	 * interested in looking at their values). This is only relevant when explicit buffer management is being used.
 	 */
 	protected boolean stateVariablesStale;
 
 	/**
-	 * Flag to indicate if the outputs as calculated in an Aparapi kernel have been modified on the GPU (and so would need to be
-	 * transferred back if we're interested in looking at their values). This is only relevant when explicit buffer management
-	 * is being used.
+	 * Flag to indicate if the outputs as calculated in an Aparapi kernel have been modified on the GPU (and so would need to be transferred back if we're
+	 * interested in looking at their values). This is only relevant when explicit buffer management is being used.
 	 * 
 	 * @see #ensureOutputsAreFresh()
 	 * @see #outputsAreStale()
@@ -91,9 +85,8 @@ public abstract class ComponentCollection extends Kernel {
 	protected boolean outputsStale;
 
 	/**
-	 * Flag to indicate if the inputs as calculated in an Aparapi kernel have been modified on the GPU (and so would need to be
-	 * transferred back if we're interested in looking at their values). This is only relevant when explicit buffer management
-	 * is being used.
+	 * Flag to indicate if the inputs as calculated in an Aparapi kernel have been modified on the GPU (and so would need to be transferred back if we're
+	 * interested in looking at their values). This is only relevant when explicit buffer management is being used.
 	 * 
 	 * @see #ensureInputsAreFresh()
 	 * @see #inputsAreStale()
@@ -121,9 +114,9 @@ public abstract class ComponentCollection extends Kernel {
 	}
 
 	/**
-	 * Initialise the collection. This method should be called from a sub-classes constructor. Sub-classes should override this
-	 * method to generate pre-calculated values used during the simulation, and call this super-method. Arrays/buffers
-	 * initialised here and used in the run() method/kernel should be transferred to the execution hardware using put().
+	 * Initialise the collection. This method should be called from a sub-classes constructor. Sub-classes should override this method to generate
+	 * pre-calculated values used during the simulation, and call this super-method. Arrays/buffers initialised here and used in the run() method/kernel should
+	 * be transferred to the execution hardware using put().
 	 */
 	public void init() {
 		setExplicit(true);
@@ -131,17 +124,15 @@ public abstract class ComponentCollection extends Kernel {
 	}
 
 	/**
-	 * Reset the components to their initial state. Sub-classes should override this method if they have state variables that
-	 * may be reset to an initial state. Arrays/buffers reset here and used in the run() method/kernel should be transferred to
-	 * the execution hardware using put().
+	 * Reset the components to their initial state. Sub-classes should override this method if they have state variables that may be reset to an initial state.
+	 * Arrays/buffers reset here and used in the run() method/kernel should be transferred to the execution hardware using put().
 	 */
 	public void reset() {
 	}
 
 	/**
-	 * Update the model over one time step. Sub-classes should call this super method. The step() method will invoke the
-	 * overridden run() method which defines the Aparapi kernel. This method sets {@link #stateVariablesStale} and
-	 * {@link #outputsStale} to true.
+	 * Update the model over one time step. Sub-classes should call this super method. The step() method will invoke the overridden run() method which defines
+	 * the Aparapi kernel. This method sets {@link #stateVariablesStale} and {@link #outputsStale} to true.
 	 */
 	public void step() {
 		execute(executeRange);
@@ -156,10 +147,9 @@ public abstract class ComponentCollection extends Kernel {
 	public abstract double getOutput(int index);
 
 	/**
-	 * Returns the underlying array of output values. This method is provided for efficiency reasons, the values of the array
-	 * should not be altered. The values in the array returned by this method may become stale if the step() method is invoked
-	 * subsequently; to get fresh values this method should be invoked again (this will return the same array but will also
-	 * ensure that the values in the array are up to date by invoking ensureOutputsAreFresh()).
+	 * Returns the underlying array of output values. This method is provided for efficiency reasons, the values of the array should not be altered. The values
+	 * in the array returned by this method may become stale if the step() method is invoked subsequently; to get fresh values this method should be invoked
+	 * again (this will return the same array but will also ensure that the values in the array are up to date by invoking ensureOutputsAreFresh()).
 	 */
 	public abstract double[] getOutputs();
 
@@ -169,10 +159,9 @@ public abstract class ComponentCollection extends Kernel {
 	public abstract double getInput(int index);
 
 	/**
-	 * Returns the underlying array of input values. This method is provided for efficiency reasons, the values of the array
-	 * should not be altered directly. The values in the array returned by this method may become stale if the step() method is
-	 * invoked subsequently; to get fresh values this method should be invoked again (this will return the same array but will
-	 * also ensure that the values in the array are up to date by invoking ensureInputsAreFresh()).
+	 * Returns the underlying array of input values. This method is provided for efficiency reasons, the values of the array should not be altered directly. The
+	 * values in the array returned by this method may become stale if the step() method is invoked subsequently; to get fresh values this method should be
+	 * invoked again (this will return the same array but will also ensure that the values in the array are up to date by invoking ensureInputsAreFresh()).
 	 */
 	public abstract double[] getInputs();
 
@@ -182,60 +171,58 @@ public abstract class ComponentCollection extends Kernel {
 	public abstract void addInput(int index, double input);
 
 	/**
-	 * Ensures the outputs, as provided by {@link #getOutput(int index)} and {@link #getOutputs()} have been fetched from the
-	 * remote execution hardware (eg GPU) if necessary. See {@link #outputsAreStale()}.
+	 * Ensures the outputs, as provided by {@link #getOutput(int index)} and {@link #getOutputs()} have been fetched from the remote execution hardware (eg GPU)
+	 * if necessary. See {@link #outputsAreStale()}.
 	 */
 	public abstract void ensureOutputsAreFresh();
 
 	/**
-	 * Returns true iff the output values of the components, provided by {@link #getOutput(int index)} and {@link #getOutputs()}
-	 * have become stale due to being altered on remote execution hardware (eg GPU) and not yet being fetched back.
+	 * Returns true iff the output values of the components, provided by {@link #getOutput(int index)} and {@link #getOutputs()} have become stale due to being
+	 * altered on remote execution hardware (eg GPU) and not yet being fetched back.
 	 */
 	public boolean outputsAreStale() {
 		return outputsStale;
 	}
 
 	/**
-	 * Ensures the inputs, as provided by {@link #getInput(int index)} and {@link #getInputs()} have been fetched from the
-	 * remote execution hardware (eg GPU) if necessary. See {@link #inputsAreStale()}.
+	 * Ensures the inputs, as provided by {@link #getInput(int index)} and {@link #getInputs()} have been fetched from the remote execution hardware (eg GPU) if
+	 * necessary. See {@link #inputsAreStale()}.
 	 */
 	public abstract void ensureInputsAreFresh();
 
 	/**
-	 * Returns true iff the input values of the components, provided by {@link #getInput(int index)} and {@link #getInputs()}
-	 * have become stale due to being altered on remote execution hardware (eg GPU) and not yet being fetched back.
+	 * Returns true iff the input values of the components, provided by {@link #getInput(int index)} and {@link #getInputs()} have become stale due to being
+	 * altered on remote execution hardware (eg GPU) and not yet being fetched back.
 	 */
 	public boolean inputsAreStale() {
 		return inputsStale;
 	}
 
 	/**
-	 * Returns true iff the state variables of the components, provided by {@link #getStateVariableValues(int index)} have
-	 * become stale due to being altered on remote execution hardware (eg GPU) and not yet being fetched back.
+	 * Returns true iff the state variables of the components, provided by {@link #getStateVariableValues(int index)} have become stale due to being altered on
+	 * remote execution hardware (eg GPU) and not yet being fetched back.
 	 */
 	public boolean stateVariablesAreStale() {
 		return stateVariablesStale;
 	}
 
 	/**
-	 * Ensure the state variable values have been fetched from the remote execution hardware (eg GPU) if necessary. See
-	 * {@link #stateVariablesStale}.
+	 * Ensure the state variable values have been fetched from the remote execution hardware (eg GPU) if necessary. See {@link #stateVariablesStale}.
 	 */
 	public abstract void ensureStateVariablesAreFresh();
 
 	/**
-	 * Get an array containing the names of all the internal state variables. Sub-classes may override this to allow the
-	 * component to be used for testing or educational purposes.
+	 * Get an array containing the names of all the internal state variables. Sub-classes may override this to allow the component to be used for testing or
+	 * educational purposes.
 	 */
 	public String[] getStateVariableNames() {
 		return null;
 	}
 
 	/**
-	 * Get an array containing the values of all the internal state variables, in the same order as that given by
-	 * getStateVariableNames(). Sub-classes may override this to allow the component to be used for testing or educational
-	 * purposes. The overriding method should ensure the state variables are up to date by invoking
-	 * {@link #ensureStateVariablesAreFresh()}.
+	 * Get an array containing the values of all the internal state variables, in the same order as that given by getStateVariableNames(). Sub-classes may
+	 * override this to allow the component to be used for testing or educational purposes. The overriding method should ensure the state variables are up to
+	 * date by invoking {@link #ensureStateVariablesAreFresh()}.
 	 */
 	public double[] getStateVariableValues(int componentIndex) {
 		return null;
@@ -254,8 +241,8 @@ public abstract class ComponentCollection extends Kernel {
 	}
 
 	/**
-	 * Calling this method makes the specified component type available in the list of component types given by
-	 * getComponentTypes() and the getComponentCollectionSingleton() method.
+	 * Calling this method makes the specified component type available in the list of component types given by getComponentTypes() and the
+	 * getComponentCollectionSingleton() method.
 	 * 
 	 * @param className The class of the Synapse type.
 	 * @throws ClassNotFoundException

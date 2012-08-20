@@ -33,8 +33,8 @@ public class FixedProtocolNeuronConfiguration extends ComponentConfiguration {
 	 * Create a FixedProtocolNeuronConfiguration with a custom firing pattern.
 	 * 
 	 * @param spikePatternPeriod The total length of the pattern (s).
-	 * @param spikeTimings An array containing the times (s) of each spike, relative to the beginning of the pattern. The
-	 *            maximum length of this array is {@link #MAX_NUMBER_OF_SPIKES}, elements after this are ignored.
+	 * @param spikeTimings An array containing the times (s) of each spike, relative to the beginning of the pattern. The maximum length of this array is
+	 *            {@link #MAX_NUMBER_OF_SPIKES}, elements after this are ignored.
 	 */
 	public FixedProtocolNeuronConfiguration(double spikePatternPeriod, double[] spikeTimings) {
 		this.spikePatternPeriod = spikePatternPeriod;

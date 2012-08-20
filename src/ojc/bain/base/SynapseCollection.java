@@ -4,15 +4,13 @@ import java.util.Arrays;
 
 /**
  * <p>
- * Base class for all synapse collections. A SynapseCollection is expected to be used in conjunction with a
- * {@link NeuronCollection}; The methods to set and get the pre- and post-synaptic neurons for a synapse reference the index of
- * neurons in the associated NeuronCollection.
+ * Base class for all synapse collections. A SynapseCollection is expected to be used in conjunction with a {@link NeuronCollection}; The methods to set and get
+ * the pre- and post-synaptic neurons for a synapse reference the index of neurons in the associated NeuronCollection.
  * </p>
  * <p>
- * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}.
- * Sub-classes will need to override the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if
- * they use custom state variables. Sub-classes may wish/need to override the methods: {@link #step()},
- * {@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
+ * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}. Sub-classes will need to override
+ * the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if they use custom state variables. Sub-classes may wish/need to
+ * override the methods: {@link #step()}, {@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
  * </p>
  * 
  * @author Oliver J. Coleman
@@ -54,8 +52,8 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	protected int[] postIndexes;
 
 	/**
-	 * Flag to indicate if the pre- or post-synaptic connections have changed for any synapse. This is used to determine if we
-	 * need to put() the {@link #preIndexes} and {@link #postIndexes} arrays/buffers when using OpenCL.
+	 * Flag to indicate if the pre- or post-synaptic connections have changed for any synapse. This is used to determine if we need to put() the
+	 * {@link #preIndexes} and {@link #postIndexes} arrays/buffers when using OpenCL.
 	 */
 	protected boolean preOrPostIndexesModified;
 
@@ -88,10 +86,9 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	}
 
 	/**
-	 * Resets all synapses to their initial state. Sub-classes should override this method if state variables other than the
-	 * efficacy and synapseOutputs must be reset, or if they should be set to something other than 0. The overriding method
-	 * should invoke this super-method (before doing anything else). Arrays/buffers reset here and used in the run()
-	 * method/kernel should be transferred to the execution hardware using put().
+	 * Resets all synapses to their initial state. Sub-classes should override this method if state variables other than the efficacy and synapseOutputs must be
+	 * reset, or if they should be set to something other than 0. The overriding method should invoke this super-method (before doing anything else).
+	 * Arrays/buffers reset here and used in the run() method/kernel should be transferred to the execution hardware using put().
 	 */
 	@Override
 	public void reset() {
@@ -104,7 +101,7 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 
 	@Override
 	public void step() {
-		put(neuronOutputs);
+		// put(neuronOutputs);
 		put(neuronSpikings);
 		put(neuronInputs);
 		if (preOrPostIndexesModified) {
@@ -116,9 +113,8 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	}
 
 	/**
-	 * Implements the basic infrastructure for processing a synapse by updating the values of {@link #synapseOutputs} and
-	 * {@link #neuronInputs}. Sub-classes must override this method and call the super-method <strong>after</strong> they have
-	 * updated {@link #efficacy}.
+	 * Implements the basic infrastructure for processing a synapse by updating the values of {@link #synapseOutputs} and {@link #neuronInputs}. Sub-classes
+	 * must override this method and call the super-method <strong>after</strong> they have updated {@link #efficacy}.
 	 */
 	@Override
 	public void run() {
@@ -146,9 +142,9 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	}
 
 	/**
-	 * {@inheritDoc} A SynapseCollection uses the outputs of pre-synaptic neurons as inputs, thus it does not provide a
-	 * reference to an internal array. Instead an array is generated with an element for each neuron, and the output values for
-	 * each pre-synaptic neuron copied into it. Consider using {@link #getInputs(double[])}.
+	 * {@inheritDoc} A SynapseCollection uses the outputs of pre-synaptic neurons as inputs, thus it does not provide a reference to an internal array. Instead
+	 * an array is generated with an element for each neuron, and the output values for each pre-synaptic neuron copied into it. Consider using
+	 * {@link #getInputs(double[])}.
 	 */
 	@Override
 	public double[] getInputs() {
@@ -156,8 +152,8 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	}
 
 	/**
-	 * Produces the same output as {@link #getInputs} but accepts an array to put the data in. If the the given array has length
-	 * less than {@link #getSize()}, or is null, a new array is created.
+	 * Produces the same output as {@link #getInputs} but accepts an array to put the data in. If the the given array has length less than {@link #getSize()},
+	 * or is null, a new array is created.
 	 */
 	public double[] getInputs(double[] inputs) {
 		ensureInputsAreFresh();
@@ -171,9 +167,8 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	}
 
 	/**
-	 * SynapseCollection implements this as an empty method as it generally does not make sense to add external input to a
-	 * synapse. Sub-classes may override this method if it is necessary for them to supply input other than from a pre-synaptic
-	 * neuron.
+	 * SynapseCollection implements this as an empty method as it generally does not make sense to add external input to a synapse. Sub-classes may override
+	 * this method if it is necessary for them to supply input other than from a pre-synaptic neuron.
 	 */
 	@Override
 	public void addInput(int index, double input) {
@@ -241,10 +236,8 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 	 * Set the pre- and post-synaptic neurons for a synapse.
 	 * 
 	 * @param synapseIndex The index of the synapse to set the pre-synaptic neuron for.
-	 * @param preNeuronIndex The index of the pre-synaptic neuron in the NeuronCollection associated with this
-	 *            SynapseCollection.
-	 * @param postNeuronIndex The index of the post-synaptic neuron in the NeuronCollection associated with this
-	 *            SynapseCollection.
+	 * @param preNeuronIndex The index of the pre-synaptic neuron in the NeuronCollection associated with this SynapseCollection.
+	 * @param postNeuronIndex The index of the post-synaptic neuron in the NeuronCollection associated with this SynapseCollection.
 	 */
 	public void setPreAndPostNeurons(int synapseIndex, int preNeuronIndex, int postNeuronIndex) {
 		preIndexes[synapseIndex] = preNeuronIndex;

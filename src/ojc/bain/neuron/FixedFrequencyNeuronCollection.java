@@ -5,8 +5,8 @@ import ojc.bain.base.*;
 import com.amd.aparapi.Kernel;
 
 /**
- * A collection of neurons that produce spikes at a fixed frequency. The frequency of spiking for each is determined by its
- * associated {@link FixedFrequencyNeuronConfiguration}.
+ * A collection of neurons that produce spikes at a fixed frequency. The frequency of spiking for each is determined by its associated
+ * {@link FixedFrequencyNeuronConfiguration}.
  * 
  * @author Oliver J. Coleman
  */

@@ -11,8 +11,8 @@ import ojc.bain.synapse.FixedSynapseCollection;
 public class SimulationTest {
 	/**
 	 * Tests the core framework by creating a simple neural network from a {@link ojc.bain.neuron.LinearNeuronCollection} and
-	 * {@link ojc.bain.synapse.FixedSynapseCollection} that tests communication between neurons and synapses over several
-	 * simulation steps, using standard and OpenCL execution platforms if available.
+	 * {@link ojc.bain.synapse.FixedSynapseCollection} that tests communication between neurons and synapses over several simulation steps, using standard and
+	 * OpenCL execution platforms if available.
 	 * 
 	 * @param mode The Aprarapi execution mode to use.
 	 */
@@ -47,7 +47,7 @@ public class SimulationTest {
 
 		return neurons.getOutputs();
 	}
-	
+
 	public static void main(String[] args) {
 		testCoreFramework(Kernel.EXECUTION_MODE.GPU);
 	}

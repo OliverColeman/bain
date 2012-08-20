@@ -4,10 +4,9 @@ import java.util.Vector;
 
 /**
  * <p>
- * Base class for all collections of configurable neural network components. A ConfigurableComponentCollection may reference
- * zero, one or more {@link ComponentConfiguration}s by adding them via {@link #addConfiguration(ComponentConfiguration)}. Each
- * component in the collection may use one of these configurations, this is set via
- * {@link #setComponentConfiguration(int componentIndex, int configurationIndex)}.
+ * Base class for all collections of configurable neural network components. A ConfigurableComponentCollection may reference zero, one or more
+ * {@link ComponentConfiguration}s by adding them via {@link #addConfiguration(ComponentConfiguration)}. Each component in the collection may use one of these
+ * configurations, this is set via {@link #setComponentConfiguration(int componentIndex, int configurationIndex)}.
  * </p>
  * 
  * <p>
@@ -72,8 +71,8 @@ public abstract class ConfigurableComponentCollection<C extends ComponentConfigu
 	}
 
 	/**
-	 * Set the configuration for a component. Parameterised implementations of a component should be accompanied by a
-	 * configuration class extending ComponentConfiguration that allows specifying these parameters.
+	 * Set the configuration for a component. Parameterised implementations of a component should be accompanied by a configuration class extending
+	 * ComponentConfiguration that allows specifying these parameters.
 	 */
 	public void setComponentConfiguration(int componentIndex, int configurationIndex) {
 		componentConfigIndexes[componentIndex] = configurationIndex;

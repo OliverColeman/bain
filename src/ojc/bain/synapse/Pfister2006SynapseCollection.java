@@ -9,8 +9,8 @@ import ojc.bain.base.SynapseCollection;
 import com.amd.aparapi.Kernel;
 
 /**
- * Implementation of the model described by Pfister, J.-P., Gerstner, W.: Triplets of Spikes in a Model of Spike
- * Timing-Dependent Plasticity. J. Neurosci. 26, 9673–9682 (2006).
+ * Implementation of the model described by Pfister, J.-P., Gerstner, W.: Triplets of Spikes in a Model of Spike Timing-Dependent Plasticity. J. Neurosci. 26,
+ * 9673–9682 (2006).
  * 
  * @see Pfister2006SynapseConfiguration
  * 
@@ -115,10 +115,12 @@ public class Pfister2006SynapseCollection extends SynapseCollection<Pfister2006S
 		double o2p = o2[synapseID];
 
 		if (preSpiked) {
-			r1[synapseID] = r2[synapseID] = 1;
+			r1[synapseID] = 1;
+			r2[synapseID] = 1;
 		}
 		if (postSpiked) {
-			o1[synapseID] = o2[synapseID] = 1;
+			o1[synapseID] = 1;
+			o2[synapseID] = 1;
 		}
 
 		if (preSpiked) {

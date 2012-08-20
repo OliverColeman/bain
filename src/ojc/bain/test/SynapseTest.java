@@ -35,8 +35,7 @@ import org.jfree.data.xy.XYBarDataset;
 import org.jfree.ui.RectangleEdge;
 
 /**
- * Class to ojc.bain.test the behaviour of a model on a specific spiking protocol or spiking protocols over some timing
- * adjustment.
+ * Class to ojc.bain.test the behaviour of a model on a specific spiking protocol or spiking protocols over some timing adjustment.
  * 
  * @author Oliver J. Coleman
  */
@@ -45,9 +44,7 @@ public class SynapseTest {
 	 * The type of test results.
 	 */
 	public static enum TYPE {
-	      STDP,
-	      STDP_1D,
-	      STDP_2D;
+		STDP, STDP_1D, STDP_2D;
 	};
 
 	/*
@@ -59,23 +56,21 @@ public class SynapseTest {
 	 * 
 	 * @param repetitions The number of times to apply the spike pattern.
 	 * 
-	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike
-	 * time. The [spike number] array contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.FixedProtocolNeuronCollection}.
+	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array
+	 * contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.FixedProtocolNeuronCollection}.
 	 * 
-	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each
-	 * variation dimension, in the form [dim 1, dim 2][reference spike, relative spike] = spike index.
+	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each variation dimension, in the form [dim 1,
+	 * dim 2][reference spike, relative spike] = spike index.
 	 * 
-	 * @param refSpikePreOrPost Array specifying whether the timing variation reference spikes specified by refSpikeIndexes
-	 * belong to the pre- or post-synaptic neurons, in the form [dim 1, dim 2][base spike, relative spike] = Constants.PRE or
-	 * Constants.POST.
+	 * @param refSpikePreOrPost Array specifying whether the timing variation reference spikes specified by refSpikeIndexes belong to the pre- or post-synaptic
+	 * neurons, in the form [dim 1, dim 2][base spike, relative spike] = Constants.PRE or Constants.POST.
 	 * 
 	 * @param logSpikesAndStateVariables Whether or not to include logs of spikes and state variables from the synape in the test results.
 	 * 
 	 * @param progressBar If not null, this will be updated to display the progress of the test.
 	 */
 
-	public static TestResults testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost,
-			boolean logSpikesAndStateVariables, JProgressBar progressBar) throws IllegalArgumentException {
+	public static TestResults testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost, boolean logSpikesAndStateVariables, JProgressBar progressBar) throws IllegalArgumentException {
 		int variationDimsCount = patterns.length - 1; // Number of dimensions over which spike timingpatterns vary.
 		if (variationDimsCount > 2) {
 			throw new IllegalArgumentException("The number of variation dimensions may not exceed 2 (patterns.length must be <= 3)");
@@ -100,11 +95,11 @@ public class SynapseTest {
 		int simSteps = (int) Math.round(period * repetitions * timeResolution);
 
 		int displayTimeResolution = Math.min(1000, timeResolution);
-		
+
 		results.setProperty("simulation time resolution", timeResolution);
 		results.setProperty("display time resolution", displayTimeResolution);
 
-		//long startTime = System.currentTimeMillis();
+		// long startTime = System.currentTimeMillis();
 
 		// If we're just testing a single spike pattern. // Handle separately as logging is quite different from testing spike
 		// patterns with gradually altered spike times.
@@ -165,16 +160,16 @@ public class SynapseTest {
 				double[] time = new double[positionsCount[0]]; // The time delta in seconds [time delta index]
 				// The change in synapse efficacy after all repetitions for each pattern [time delta index]
 				double[] efficacyLog = new double[positionsCount[0]];
-				
+
 				if (progressBar != null) {
 					progressBar.setMaximum(positionsCount[0]);
 				}
-				
+
 				for (int timeDeltaIndex = 0; timeDeltaIndex < positionsCount[0]; timeDeltaIndex++) {
 					if (progressBar != null) {
 						progressBar.setValue(timeDeltaIndex);
 					}
-					
+
 					double position = (double) timeDeltaIndex / (positionsCount[0] - 1); // Position in variation dimension 1
 
 					// Generate pre and post spike timing patterns for this position.
@@ -197,7 +192,7 @@ public class SynapseTest {
 
 					time[timeDeltaIndex] = position * timeDeltaInitial[0] + (1 - position) * timeDeltaFinal[0];
 					efficacyLog[timeDeltaIndex] = synapse.getEfficacy(0);
-				}			
+				}
 
 				results.setProperty("type", TYPE.STDP_1D);
 				results.addResult("Efficacy", efficacyLog);
@@ -212,7 +207,7 @@ public class SynapseTest {
 				if (progressBar != null) {
 					progressBar.setMaximum(efficacyLog[0].length);
 				}
-				
+
 				double[] position = new double[2]; // Position in variation dimensions 1 and 2
 				for (int timeDeltaIndex1 = 0, resultIndex = 0; timeDeltaIndex1 < positionsCount[0]; timeDeltaIndex1++) {
 					position[0] = (double) timeDeltaIndex1 / (positionsCount[0] - 1);
@@ -221,7 +216,7 @@ public class SynapseTest {
 						if (progressBar != null) {
 							progressBar.setValue(resultIndex);
 						}
-						
+
 						position[1] = (double) timeDeltaIndex2 / (positionsCount[1] - 1);
 
 						// Generate pre and post spike timing patterns for this position.
@@ -253,8 +248,8 @@ public class SynapseTest {
 			}
 		}
 
-		//long finishTime = System.currentTimeMillis();
-		//System.out.println("Took " + ((finishTime - startTime) / 1000f) + "s");
+		// long finishTime = System.currentTimeMillis();
+		// System.out.println("Took " + ((finishTime - startTime) / 1000f) + "s");
 
 		return results;
 	}
@@ -262,8 +257,8 @@ public class SynapseTest {
 	/**
 	 * Test the behaviour of a model.
 	 * 
-	 * @param sim A Simulation containing two neurons and a single to be tested. The neurons at index 0 and 1 should be the pre-
-	 *            and post-synaptic neurons respectively, and will typically produce a fixed firing pattern.
+	 * @param sim A Simulation containing two neurons and a single to be tested. The neurons at index 0 and 1 should be the pre- and post-synaptic neurons
+	 *            respectively, and will typically produce a fixed firing pattern.
 	 * @param simSteps the number of simulation steps to run the simulation for.
 	 * @param logSpikesAndStateVariables Whether to log pre- and post-synaptic spikes, and any state variables for the .
 	 */
@@ -391,7 +386,7 @@ public class SynapseTest {
 			// milliseconds (XYBlockRenderer won't deal with fractional values
 			// in the domain axes)
 			double min = Double.MAX_VALUE, max = -min;
-			double[] efficacy = data[2]; 
+			double[] efficacy = data[2];
 			for (int i = 0; i < data[0].length; i++) {
 				if (efficacy[i] < min)
 					min = efficacy[i];
@@ -401,29 +396,31 @@ public class SynapseTest {
 				data[0][i] = Math.round(data[0][i] * 1000);
 				data[1][i] = Math.round(data[1][i] * 1000);
 			}
-			
+
 			XYBlockRenderer renderer = new XYBlockRenderer();
-			
+
 			double range = Math.max(Math.abs(min), Math.abs(max));
 			double rangeBase = 0;
-			if (min < 0) min = -range;
-			if (max > 0) max = range;
+			if (min < 0)
+				min = -range;
+			if (max > 0)
+				max = range;
 			// If the value range does not cross the zero point, don't use a zero-based range.
 			if ((min > 0) || (max < 0)) {
 				range = Math.abs(max - min);
 				rangeBase = Math.min(Math.abs(min), Math.abs(max));
 			}
-			
+
 			LookupPaintScale scale = new LookupPaintScale(min, max, Color.WHITE);
 			if (min < 0) {
-				for (int ci = 0; ci <= 255; ci ++) {
-					double v = -(ci/255.0) * range - rangeBase;
+				for (int ci = 0; ci <= 255; ci++) {
+					double v = -(ci / 255.0) * range - rangeBase;
 					scale.add(v, new Color(0, ci, ci));
 				}
 			}
 			if (max > 0) {
-				for (int ci = 0; ci <= 255; ci ++) {
-					double v = (ci/255.0) * range + rangeBase;
+				for (int ci = 0; ci <= 255; ci++) {
+					double v = (ci / 255.0) * range + rangeBase;
 					scale.add(v, new Color(ci, ci, 0));
 				}
 			}
@@ -432,7 +429,7 @@ public class SynapseTest {
 			int displayResolution = (int) results.getProperty("display time resolution");
 			renderer.setBlockWidth(1000.0 / displayResolution);
 			renderer.setBlockHeight(1000.0 / displayResolution);
-			
+
 			NumberAxis xAxis = new NumberAxis("\u0394t1 (ms)");
 			NumberAxis yAxis = new NumberAxis("\u0394t2 (ms)");
 

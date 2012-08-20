@@ -12,29 +12,26 @@ import com.amd.aparapi.Kernel;
 
 /**
  * <p>
- * The main class for running a neural network simulation. A Simulation is run at a specified time resolution, which is the
- * number of discrete simulation steps performed for each second of simulation time. A typical resolution is 1000, or 1ms
- * duration for each step.
+ * The main class for running a neural network simulation. A Simulation is run at a specified time resolution, which is the number of discrete simulation steps
+ * performed for each second of simulation time. A typical resolution is 1000, or 1ms duration for each step.
  * </p>
  * 
  * <p>
- * A Simulation consists of a {@link ojc.bain.base.NeuronCollection} and a {@link ojc.bain.base.SynapseCollection}. These
- * collections of neural network components are designed to be executable on SIMD hardware (eg a GPU) via OpenCL via Aparapi
- * (See {@link ojc.bain.base.ComponentCollection} for more details).
+ * A Simulation consists of a {@link ojc.bain.base.NeuronCollection} and a {@link ojc.bain.base.SynapseCollection}. These collections of neural network
+ * components are designed to be executable on SIMD hardware (eg a GPU) via OpenCL via Aparapi (See {@link ojc.bain.base.ComponentCollection} for more details).
  * </p>
  * 
  * <p>
- * To improve performance, ComponentCollection and extensions thereof use the explicit memory management feature of Aparapi.
- * When using SIMD hardware such as a GPU, the data to be processed must be transferred to the device, and the results
- * transferred back to the CPU after the computations have been performed. These transfers take a significant amount of time. So
- * data is only transferred when necessary (eg if it will be used by another kernel, or if it has been requested).
+ * To improve performance, ComponentCollection and extensions thereof use the explicit memory management feature of Aparapi. When using SIMD hardware such as a
+ * GPU, the data to be processed must be transferred to the device, and the results transferred back to the CPU after the computations have been performed.
+ * These transfers take a significant amount of time. So data is only transferred when necessary (eg if it will be used by another kernel, or if it has been
+ * requested).
  * </p>
  * <p>
- * If a preferred execution mode is not set (see {@link #setPreferredExecutionMode(Kernel.EXECUTION_MODE preferredExecutionMode)}
- * ), then for neuron or synapse collections consisting of fewer than {@link #minimumSizeForGPU} neurons or synapses, the
- * Simulation forces the use of a CPU-based execution mode as this is typically more performant than use of SIMD hardware; if
- * using a CPU-based execution mode then if the size is greater than or equal to {@link #minimumSizeForJTP} the JTP execution
- * mode is used, otherwise the SEQ execution mode is used.
+ * If a preferred execution mode is not set (see {@link #setPreferredExecutionMode(Kernel.EXECUTION_MODE preferredExecutionMode)} ), then for neuron or synapse
+ * collections consisting of fewer than {@link #minimumSizeForGPU} neurons or synapses, the Simulation forces the use of a CPU-based execution mode as this is
+ * typically more performant than use of SIMD hardware; if using a CPU-based execution mode then if the size is greater than or equal to
+ * {@link #minimumSizeForJTP} the JTP execution mode is used, otherwise the SEQ execution mode is used.
  * </p>
  * 
  * @author Oliver J. Coleman
@@ -42,22 +39,20 @@ import com.amd.aparapi.Kernel;
 public class Simulation {
 	static Simulation singleton = new Simulation(1000);
 	/**
-	 * When automatically selecting an execution mode, this is the minimum number of components in a collection before the GPU
-	 * execution mode is attempted. Default is 1024.
+	 * When automatically selecting an execution mode, this is the minimum number of components in a collection before the GPU execution mode is attempted.
+	 * Default is 8192.
 	 */
-	protected int minimumSizeForGPU = 1024;
+	protected int minimumSizeForGPU = 8192;
 
 	/**
-	 * Get the minimum number of components in a collection before the GPU execution mode is attempted, if using automatic mode
-	 * selection.
+	 * Get the minimum number of components in a collection before the GPU execution mode is attempted, if using automatic mode selection.
 	 */
 	public int getMinimumSizeForGPU() {
 		return minimumSizeForGPU;
 	}
 
 	/**
-	 * Set the minimum number of components in a collection before the GPU execution mode is attempted, if using automatic mode
-	 * selection.
+	 * Set the minimum number of components in a collection before the GPU execution mode is attempted, if using automatic mode selection.
 	 */
 	public void setMinimumSizeForGPU(int minimumSizeForGPU) {
 		if (this.minimumSizeForGPU != minimumSizeForGPU) {
@@ -67,22 +62,20 @@ public class Simulation {
 	}
 
 	/**
-	 * When automatically selecting an execution mode, this is the minimum number of components in a collection before the JTP
-	 * execution mode is used. Default is 512.
+	 * When automatically selecting an execution mode, this is the minimum number of components in a collection before the JTP execution mode is used. Default
+	 * is Integer.MAX_VALUE (currently disabled, JTP is sloooow, for various reasons).
 	 */
-	protected int minimumSizeForJTP = 512;
+	protected int minimumSizeForJTP = Integer.MAX_VALUE; // 1048576;
 
 	/**
-	 * Get the minimum number of components in a collection before the GPU execution mode is attempted, if using automatic mode
-	 * selection.
+	 * Get the minimum number of components in a collection before the GPU execution mode is attempted, if using automatic mode selection.
 	 */
 	public int getMinimumSizeForJTP() {
 		return minimumSizeForJTP;
 	}
 
 	/**
-	 * Set the minimum number of components in a collection before the JTP execution mode is attempted, if using automatic mode
-	 * selection.
+	 * Set the minimum number of components in a collection before the JTP execution mode is attempted, if using automatic mode selection.
 	 */
 	public void setMinimumSizeForJTP(int minimumSizeForJTP) {
 		if (this.minimumSizeForJTP != minimumSizeForJTP) {
@@ -104,8 +97,7 @@ public class Simulation {
 	}
 
 	/**
-	 * Set the preferred execution mode, which will override an automatically selected mode if not null. Set to null to enable
-	 * automatic mode selection.
+	 * Set the preferred execution mode, which will override an automatically selected mode if not null. Set to null to enable automatic mode selection.
 	 */
 	public void setPreferredExecutionMode(Kernel.EXECUTION_MODE preferredExecutionMode) {
 		if (this.preferredExecutionMode != preferredExecutionMode) {
@@ -130,11 +122,10 @@ public class Simulation {
 	}
 
 	/**
-	 * Create a new simulation. Sets the time resolution of all given Neurons and Synapses to match that of this Simulation and
-	 * resets them.
+	 * Create a new simulation. Sets the time resolution of all given Neurons and Synapses to match that of this Simulation and resets them.
 	 * 
-	 * @param timeResolution The number of discrete simulation steps performed for each second of simulation time. A typical
-	 *            resolution is 1000, or 1ms duration for each step.
+	 * @param timeResolution The number of discrete simulation steps performed for each second of simulation time. A typical resolution is 1000, or 1ms duration
+	 *            for each step.
 	 * @param neurons The NeuronCollection to use in the simulation.
 	 * @param synapses TheSynapseCollection to use in the simulation.
 	 */
@@ -149,16 +140,14 @@ public class Simulation {
 	}
 
 	/**
-	 * Create a new simulation. Sets the time resolution of all given Neurons and Synapses to match that of this Simulation and
-	 * resets them. Allows specifying the preferred execution mode, which will override the automatic selection of a mode based
-	 * on network size.
+	 * Create a new simulation. Sets the time resolution of all given Neurons and Synapses to match that of this Simulation and resets them. Allows specifying
+	 * the preferred execution mode, which will override the automatic selection of a mode based on network size.
 	 * 
-	 * @param timeResolution The number of discrete simulation steps performed for each second of simulation time. A typical
-	 *            resolution is 1000, or 1ms duration for each step.
+	 * @param timeResolution The number of discrete simulation steps performed for each second of simulation time. A typical resolution is 1000, or 1ms duration
+	 *            for each step.
 	 * @param neurons The NeuronCollection to use in the simulation.
 	 * @param synapses TheSynapseCollection to use in the simulation.
-	 * @param preferredExecutionMode The preferred execution mode, which will override the automatic selection of a mode based
-	 *            on network size.
+	 * @param preferredExecutionMode The preferred execution mode, which will override the automatic selection of a mode based on network size.
 	 */
 	public Simulation(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses, Kernel.EXECUTION_MODE preferredExecutionMode) {
 		this.timeResolution = timeResolution;
@@ -183,6 +172,7 @@ public class Simulation {
 	protected void selectExecutionModes() {
 		Kernel.EXECUTION_MODE mode = preferredExecutionMode;
 		ComponentCollection[] collections = new ComponentCollection[] { neurons, synapses };
+		// TODO below code doesn't work when minimumSizeForJTP > minimumSizeForGPU
 		for (ComponentCollection c : collections) {
 			if (preferredExecutionMode != null) {
 				c.setExecutionMode(preferredExecutionMode);
@@ -270,9 +260,8 @@ public class Simulation {
 	}
 
 	/**
-	 * Run the simulation for the given number of steps. This should be used in preference to using a loop of a fixed number of
-	 * iterations that only calls step() as it allows for more efficient use of OpenCL execution by avoiding unnecessary buffer
-	 * transfers between each step.
+	 * Run the simulation for the given number of steps. This should be used in preference to using a loop of a fixed number of iterations that only calls
+	 * step() as it allows for more efficient use of OpenCL execution by avoiding unnecessary buffer transfers between each step.
 	 */
 	public synchronized void run(int steps) {
 		for (int s = 0; s < steps; s++) {
@@ -324,16 +313,14 @@ public class Simulation {
 
 	public static void main(String[] args) {
 		/*
-		 * int timeResolution = 1000; //1 simulation step every 1ms. int simDuration = 1; //1 second int simSteps = simDuration
-		 * * timeResolution;
+		 * int timeResolution = 1000; //1 simulation step every 1ms. int simDuration = 1; //1 second int simSteps = simDuration * timeResolution;
 		 * 
 		 * NeuronCollectionFixedFrequency neurons = new NeuronCollectionFixedFrequency(2); neurons.addConfiguration(new
-		 * NeuronConfigurationFixedFrequency(0.09)); neurons.addConfiguration(new NeuronConfigurationFixedFrequency(0.1));
-		 * neurons.setComponentConfiguration(0, 0); neurons.setComponentConfiguration(0, 1);
+		 * NeuronConfigurationFixedFrequency(0.09)); neurons.addConfiguration(new NeuronConfigurationFixedFrequency(0.1)); neurons.setComponentConfiguration(0,
+		 * 0); neurons.setComponentConfiguration(0, 1);
 		 * 
-		 * SynapseCollectionPfister2006 synapses = new SynapseCollectionPfister2006(1);
-		 * synapses.addConfiguration((SynapseConfigurationPfister2006) synapses.getConfigSingleton().getPreset(0));
-		 * synapses.setComponentConfiguration(0, 0); synapses.setPreNeuron(0, 0); synapses.setPostNeuron(0, 1);
+		 * SynapseCollectionPfister2006 synapses = new SynapseCollectionPfister2006(1); synapses.addConfiguration((SynapseConfigurationPfister2006)
+		 * synapses.getConfigSingleton().getPreset(0)); synapses.setComponentConfiguration(0, 0); synapses.setPreNeuron(0, 0); synapses.setPostNeuron(0, 1);
 		 * 
 		 * Simulation sim = new Simulation(1000, neurons, synapses);
 		 * 

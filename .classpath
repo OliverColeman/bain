@@ -9,6 +9,7 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/data/ai/PhD/software/lib/aparapi"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/swingx-all-1.6.3.jar"/>
+	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/SizeOf/SizeOf.jar"/>
+	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/swingx-all-1.6.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -6,15 +6,13 @@ import ojc.bain.base.*;
 
 /**
  * <p>
- * Base class for all collections neurons. Sub-classes should update the values of the {@link #neuronOutputs neuronOutputs}
- * array when the {@link #step()} method is invoked. See {@link ComponentCollection} for details on implementing the step() and
- * run() methods.
+ * Base class for all collections neurons. Sub-classes should update the values of the {@link #neuronOutputs neuronOutputs} array when the {@link #step()}
+ * method is invoked. See {@link ComponentCollection} for details on implementing the step() and run() methods.
  * </p>
  * <p>
- * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}.
- * Sub-classes will need to override the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if
- * they use custom state variables. Sub-classes may wish/need to override the methods: {@link #step()},
- * {@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
+ * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)} {@link #getConfigSingleton()}. Sub-classes will need to override
+ * the methods {@link #init()},{@link #reset()} and {@link #ensureStateVariablesAreFresh()} if they use custom state variables. Sub-classes may wish/need to
+ * override the methods: {@link #step()}, {@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
  * </p>
  * 
  * @author Oliver J. Coleman
@@ -45,8 +43,8 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	protected double[] neuronInputs;
 
 	/**
-	 * Flag to indicate if any of the inputs to the neurons have been modified. This is used to determine if we need to put()
-	 * the {@link #neuronInputs} array/buffer when using OpenCL.
+	 * Flag to indicate if any of the inputs to the neurons have been modified. This is used to determine if we need to put() the {@link #neuronInputs}
+	 * array/buffer when using OpenCL.
 	 */
 	protected boolean inputsModified;
 
@@ -87,10 +85,9 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	}
 
 	/**
-	 * Returns the underlying array of spikings. This method is provided for efficiency reasons, the values of the array should
-	 * not be altered. The values in the array returned by this method may become stale if the step() method is invoked
-	 * subsequently; to get fresh values this method should be invoked again (this will return the same array but will also
-	 * ensure that the values in the array are up to date by invoking ensureOutputsAreFresh()).
+	 * Returns the underlying array of spikings. This method is provided for efficiency reasons, the values of the array should not be altered. The values in
+	 * the array returned by this method may become stale if the step() method is invoked subsequently; to get fresh values this method should be invoked again
+	 * (this will return the same array but will also ensure that the values in the array are up to date by invoking ensureOutputsAreFresh()).
 	 */
 	public boolean[] getSpikings() {
 		return neuronSpikings;
@@ -116,10 +113,9 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	}
 
 	/**
-	 * {@inheritDoc} The implementation of this method in NeuronCollection resets the values for {@link #neuronOutputs},
-	 * {@link #neuronSpikings} and {@link #neuronInputs} to 0. If any of these values should be set to something other than 0,
-	 * then this method should be overridden, and this super-method called from the overriding method before setting the values
-	 * to the correct value and calling put([modified array]) with the relevant array.
+	 * {@inheritDoc} The implementation of this method in NeuronCollection resets the values for {@link #neuronOutputs}, {@link #neuronSpikings} and
+	 * {@link #neuronInputs} to 0. If any of these values should be set to something other than 0, then this method should be overridden, and this super-method
+	 * called from the overriding method before setting the values to the correct value and calling put([modified array]) with the relevant array.
 	 */
 	@Override
 	public void reset() {
@@ -145,18 +141,17 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 		super.step();
 
 		get(neuronInputs);
-		get(neuronOutputs);
+		// get(neuronOutputs);
 		get(neuronSpikings);
-		outputsStale = false;
+		outputsStale = true;
 		inputsStale = false;
 	}
 
 	/**
-	 * Implements the basic infrastructure for processing a neuron by resetting the value of {@link #neuronInputs} and setting
-	 * the value for {@link #neuronSpikings}. Sub-classes must override this method and call the super-method
-	 * <strong>after</strong> they have made use of the value in neuronInputs. Alternatively, if neuronInputs should be reset to
-	 * something other than 0 or a neuron spike is represented by something other than a value of 1 in neuronOutputs, then this
-	 * super-method need not be called and the overriding method should instead reset the values for neuronInputs and set the
+	 * Implements the basic infrastructure for processing a neuron by resetting the value of {@link #neuronInputs} and setting the value for
+	 * {@link #neuronSpikings}. Sub-classes must override this method and call the super-method <strong>after</strong> they have made use of the value in
+	 * neuronInputs. Alternatively, if neuronInputs should be reset to something other than 0 or a neuron spike is represented by something other than a value
+	 * of 1 in neuronOutputs, then this super-method need not be called and the overriding method should instead reset the values for neuronInputs and set the
 	 * value for neuronSpikings.
 	 * 
 	 */

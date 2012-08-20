@@ -3,8 +3,7 @@ package ojc.bain.misc;
 import java.util.Random;
 
 /**
- * This class implements the ziggurat algorithm for normal distributed random numbers as provided by George Marsaglia and Wai
- * Wan Tsang in 2000.
+ * This class implements the ziggurat algorithm for normal distributed random numbers as provided by George Marsaglia and Wai Wan Tsang in 2000.
  * 
  * @author Andreas Schouten (andreas@schouten-blog.de)
  */
