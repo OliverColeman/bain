@@ -3,8 +3,6 @@ package ojc.bain.test;
 import java.text.DecimalFormat;
 import java.text.Format;
 
-import net.sourceforge.sizeof.SizeOf;
-
 import com.amd.aparapi.Kernel;
 
 import ojc.bain.Simulation;
