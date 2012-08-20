@@ -8,17 +8,19 @@ Bain is designed to simulate large neural network models at a level of fidelity,
 with respect to natural neural networks, greater than typical rate-based models
 used in computer science but lower than biophysical models used in neuroscience.
 It aims to provide a framework to allow plugging in parameterised
-functional/computational models for neurons, synapses and neuromodulators.
+functional/computational models for neurons, synapses and neuromodulators
+neuromodulator functionality coming soon).
 
 Bain is designed to make use of SIMD hardware (eg GPUs), via OpenCL and
 Aparapi, thus by "large" in the previous paragraph we mean thousands to millions
-of neurons and synapses (although it will work equally well with small networks
-just using the CPU). Aparapi allows writing Java code that follows certain
-conventions and restrictions that it will then turn into OpenCL at run-time. If
-no OpenCL compatible platforms are available then Aparapi falls back to using a
-Java Thread Pool automatically. Thus to add a new model of a neural network
-component, one only need extend the appropriate base class and implement a few
-methods, without thinking (very much) about OpenCL, thread pools, etcetera.
+of neurons and synapses (although it will also work efficiently with small 
+networks just using the CPU). Aparapi allows writing Java code that follows 
+certain conventions and restrictions that it will then turn into OpenCL at 
+run-time. If no OpenCL compatible platforms are available then Aparapi falls 
+back to using a Java Thread Pool or regular sequential operation automatically. 
+Thus to add a new model of a neural network component, one only need extend the 
+appropriate base class and implement a few methods, without thinking (very much) 
+about OpenCL, thread pools, etcetera.
 
 To get started, read the API documentation starting with ojc.bain.Simulation,
 and the references within.
