@@ -30,7 +30,8 @@ class and implement a few methods, without thinking (very much) about OpenCL,
 thread pools, etcetera.
 
 To get started, read the API documentation starting with ojc.bain.Simulation,
-and the references within.
+and the references within. API documentation is available at 
+http://olivercoleman.github.com/bain/
 
 The latest version is available at, and issues should be posted at,
 https://github.com/OliverColeman/bain
