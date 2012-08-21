@@ -22,7 +22,7 @@ requirements:
 <li>Make use of SIMD hardware (eg GPUs) for large networks via OpenCL and 
      Aparapi.</li>
 <li>Be written in Java.</li>
-</ol></p>
+</ul></p>
      
 <p>Aparapi allows writing Java code that follows certain conventions and 
 restrictions that it will then turn into OpenCL at run-time. If no OpenCL 
