@@ -357,20 +357,22 @@ public class SynapseTest {
 				combinedPlot.add(new XYPlot(traceData, null, new NumberAxis("Traces"), xyRenderer), 3);
 			}
 			resultsPlot = new JFreeChart("Synapse ojc.bain.test", null, combinedPlot, true); // ChartFactory.createXYLineChart("",
-			// "t (s)",
-			// "",
-			// plotData,
-			// PlotOrientation.VERTICAL,
-			// true,
-			// true,
-			// false);
 			resultsPlot.setBackgroundPaint(Color.WHITE);
+			resultsPlot.getPlot().setBackgroundPaint(Color.WHITE);
+			((XYPlot) resultsPlot.getPlot()).setRangeGridlinePaint(Color.LIGHT_GRAY);
+			((XYPlot) resultsPlot.getPlot()).setDomainGridlinePaint(Color.LIGHT_GRAY);
+			
 		}
 
 		else if (results.getProperty("type") == TYPE.STDP_1D) {
 			DefaultXYDataset plotData = new DefaultXYDataset();
 			plotData.addSeries("Efficacy", results.getResult("Time delta", "Efficacy"));
 			resultsPlot = ChartFactory.createXYLineChart("", "\u0394t (ms)", "", plotData, PlotOrientation.VERTICAL, true, true, false);
+			resultsPlot.setBackgroundPaint(Color.WHITE);
+			resultsPlot.getPlot().setBackgroundPaint(Color.WHITE);
+			((XYPlot) resultsPlot.getPlot()).setRangeGridlinePaint(Color.LIGHT_GRAY);
+			((XYPlot) resultsPlot.getPlot()).setDomainGridlinePaint(Color.LIGHT_GRAY);
+			
 			DecimalFormat timeFormatter = new DecimalFormat();
 			timeFormatter.setMultiplier(1000);
 			((NumberAxis) resultsPlot.getXYPlot().getDomainAxis()).setNumberFormatOverride(timeFormatter);
