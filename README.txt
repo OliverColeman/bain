@@ -11,7 +11,9 @@ requirements:
      science but lower than biophysical models used in neuroscience.
  - Provide a framework to allow easily plugging in parameterised functional/
      computational models for neurons, synapses and neuromodulators 
-     (neuromodulator functionality coming soon).
+     (neuromodulator functionality coming soon). The framework is designed 
+     for spiking neuron models and plastic synapses, but can also be used
+     for rate-based and fixed-weight models.
  - Support arbitrary topologies.
  - Simulate small to large neural networks (tens of neurons/synapses to 
      millions of neurons/synapses), efficiently and with high performance.

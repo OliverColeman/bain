@@ -1,7 +1,5 @@
 package ojc.bain.neuron;
 
-import java.util.Arrays;
-
 import ojc.bain.base.ComponentCollection;
 import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.NeuronCollection;
@@ -15,9 +13,9 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 	long[] simStep = new long[1]; // Current simulation step.
 
 	// Config parameters.
-	long[] configSpikePatternPeriod; // Duration of protocol, in number of simulation steps.
+	int[] configSpikePatternPeriod; // Duration of protocol, in number of simulation steps.
 	int[] configProtocolIndex; // Index into configSpikeProtocol for start of each protocol.
-	byte[] configSpikeProtocol; // Look-up table for protocol, one element for each simulation step (for each protocol).
+	byte[] configSpikeProtocol; // Look-up table for protocol, one element for each simulation step (for each protocol, packed array).
 
 	public FixedProtocolNeuronCollection(int size) {
 		this.size = size;
@@ -27,7 +25,7 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 	public void init() {
 		super.init();
 		if (simulation != null) {
-			configSpikePatternPeriod = new long[configs.size()];
+			configSpikePatternPeriod = new int[configs.size()];
 			configProtocolIndex = new int[configs.size()];
 
 			int totalDurations = 0;

@@ -71,7 +71,7 @@ public class SynapseTest {
 	 */
 
 	public static TestResults testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost, boolean logSpikesAndStateVariables, JProgressBar progressBar) throws IllegalArgumentException {
-		int variationDimsCount = patterns.length - 1; // Number of dimensions over which spike timingpatterns vary.
+		int variationDimsCount = patterns.length - 1; // Number of dimensions over which spike timing patterns vary.
 		if (variationDimsCount > 2) {
 			throw new IllegalArgumentException("The number of variation dimensions may not exceed 2 (patterns.length must be <= 3)");
 		}

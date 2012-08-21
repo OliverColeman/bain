@@ -9,11 +9,6 @@ import ojc.bain.base.ComponentConfiguration;
  */
 public class FixedProtocolNeuronConfiguration extends ComponentConfiguration {
 	/**
-	 * The maximum number of spikes a protocol may contain.
-	 */
-	public static final int MAX_NUMBER_OF_SPIKES = 100;
-
-	/**
 	 * Presentation period of spike pattern, in seconds.
 	 */
 	public double spikePatternPeriod;
@@ -33,8 +28,7 @@ public class FixedProtocolNeuronConfiguration extends ComponentConfiguration {
 	 * Create a FixedProtocolNeuronConfiguration with a custom firing pattern.
 	 * 
 	 * @param spikePatternPeriod The total length of the pattern (s).
-	 * @param spikeTimings An array containing the times (s) of each spike, relative to the beginning of the pattern. The maximum length of this array is
-	 *            {@link #MAX_NUMBER_OF_SPIKES}, elements after this are ignored.
+	 * @param spikeTimings An array containing the times (s) of each spike, relative to the beginning of the pattern.
 	 */
 	public FixedProtocolNeuronConfiguration(double spikePatternPeriod, double[] spikeTimings) {
 		this.spikePatternPeriod = spikePatternPeriod;

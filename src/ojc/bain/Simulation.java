@@ -119,6 +119,7 @@ public class Simulation {
 	public Simulation(int timeResolution) {
 		step = 0;
 		this.timeResolution = timeResolution;
+		stepPeriod = 1.0 / timeResolution;
 	}
 
 	/**
@@ -131,6 +132,7 @@ public class Simulation {
 	 */
 	public Simulation(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses) {
 		this.timeResolution = timeResolution;
+		stepPeriod = 1.0 / timeResolution;
 		this.neurons = neurons;
 		this.synapses = synapses;
 		neurons.setSimulation(this);
@@ -151,6 +153,7 @@ public class Simulation {
 	 */
 	public Simulation(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses, Kernel.EXECUTION_MODE preferredExecutionMode) {
 		this.timeResolution = timeResolution;
+		stepPeriod = 1.0 / timeResolution;
 		this.neurons = neurons;
 		this.synapses = synapses;
 		this.preferredExecutionMode = preferredExecutionMode;
@@ -233,6 +236,7 @@ public class Simulation {
 	 */
 	public synchronized void setTimeResolution(int timeResolution) {
 		this.timeResolution = timeResolution;
+		stepPeriod = 1.0 / timeResolution;
 		init();
 	}
 

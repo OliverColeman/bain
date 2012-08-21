@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -67,14 +68,24 @@ public class STDPTestGUI extends JPanel {
 
 					SwingWorker<TestResults, Object> worker = new SwingWorker<TestResults, Object>() {
 						@Override
-						protected TestResults doInBackground() throws Exception {
+						protected TestResults doInBackground() {
 							TestResults results = SynapseTest.testPattern(synapse, timeResolution, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, logSpikesAndStateVariables, progressBar);
 							JFreeChart resultsPlot = SynapseTest.createChart(results, timeResolution, logSpikesAndStateVariables, true);
 							progressWindow.dispose();
 							goButton.setEnabled(true);
 							return results;
 						}
-
+						
+					    protected void done() {
+					    	// Deal with exception thrown in doInBackground()
+					    	// See http://stackoverflow.com/questions/6523623/gracefull-exception-handling-in-swing-worker
+					        try {
+					            get();
+					        } catch (Exception e) {
+					            e.getCause().printStackTrace();
+					            String msg = String.format("Unexpected problem: %s", e.getCause().toString());
+					            JOptionPane.showMessageDialog(gui, msg, "Error", JOptionPane.ERROR_MESSAGE);
+					        }					    }
 					};
 					worker.execute();
 				}
