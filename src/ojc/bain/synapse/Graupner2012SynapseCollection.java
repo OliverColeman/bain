@@ -159,10 +159,20 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 		// Update strength ( * stepPeriod[0] to multiply by inverse of time resolution).
 		double delta_s = (-p[synapseID] * (1 - p[synapseID]) * (bistableBoundary[configID] - p[synapseID])) * stepPeriod[0];
 		if (c[synapseID] >= depThresh[configID] || c[synapseID] >= potThresh[configID]) {
-			if (c[synapseID] >= potThresh[configID])
-				delta_s += potRateMult[configID] * (1 - p[synapseID]);
-			if (c[synapseID] >= depThresh[configID])
-				delta_s -= depRateMult[configID] * p[synapseID];
+			// Determine what the next calcium concentration will likely be, to allow proportional potentiation or depression if it crosses one of the
+			// thresholds between this step and the next.
+			double nextC = c[synapseID] - c[synapseID] * tCDecayMult[configID];
+
+			if (c[synapseID] >= potThresh[configID]) {
+				// If the next calcium decay will drop the calcium below the potentiation threshold, then apply the potentiation proportionately.
+				double scaling = (nextC >= potThresh[configID]) ? 1 : ((c[synapseID] - potThresh[configID]) / (c[synapseID] - nextC));
+				delta_s += potRateMult[configID] * (1 - p[synapseID]) * scaling;
+			}
+			if (c[synapseID] >= depThresh[configID]) {
+				// If the next calcium decay will drop the calcium below the depression threshold, then apply the depression proportionately.
+				double scaling = (nextC >= depThresh[configID]) ? 1 : ((c[synapseID] - depThresh[configID]) / (c[synapseID] - nextC));
+				delta_s -= depRateMult[configID] * p[synapseID] * scaling;
+			}
 			// TODO implement RNG (normal/Gaussian distribution).
 			// delta_s += noiseMult[configID] * config.rng.nextGaussian();
 		}

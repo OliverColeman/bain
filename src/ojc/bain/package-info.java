@@ -46,11 +46,11 @@ analysis GUI.</p>
 networks for online learning". For more details see http://ojcoleman.com.</p>
 
 <p>
-"Using all this knowledge as a key, we may possibly unlock the secrets of the
+<em>"Using all this knowledge as a key, we may possibly unlock the secrets of the
 anatomical structure; we may compel the cells and fibres to disclose their
-meaning and purpose." Alexander Bain (who first proposed that thoughts and body 
+meaning and purpose."</em> Alexander Bain (who first proposed that thoughts and body 
 activity resulted from interactions among neurons within the brain), 1873, 
-Mind and Body: The Theories of Their Relation, New York: D. Appleton and Company.
+<em>Mind and Body: The Theories of Their Relation</em>, New York: D. Appleton and Company.
 Also, "Bain" is just one letter away from "Brain"... ;) </p>
 
 <p>Bain is licensed under the GNU General Public License v3. A copy of the license
