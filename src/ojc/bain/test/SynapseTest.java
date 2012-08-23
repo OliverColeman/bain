@@ -63,7 +63,7 @@ public class SynapseTest {
 	 * @param logSpikesAndStateVariables Whether to record pre- and post-synaptic spikes and any state variables exposed by the synapse model in the test
 	 *            results.
 	 * @param simStepsNoSpikes The number of simulation steps to run the simulation for with no spiking after the normal spike test. This is useful for testing models which change the efficacy in the absence of spikes.
-	 * @return For a single spike protocol, a TestResults object with type {@link #TEST.STDP} consisting of series labelled "Time" and "Efficacy" and if
+	 * @return For a single spike protocol, a TestResults object with type {@link TYPE#STDP} consisting of series labelled "Time" and "Efficacy" and if
 	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
 	 */
 	public static TestResults singleTest(Simulation sim, long simSteps, boolean logSpikesAndStateVariables, long simStepsNoSpikes) {
@@ -170,10 +170,10 @@ public class SynapseTest {
 	 * @param logSpikesAndStateVariables Whether to record pre- and post-synaptic spikes and any state variables exposed by the synapse model in the test
 	 *            results.
 	 * @param progressMonitor If not null, this will be updated with the current progress.
-	 * @return For a single spike protocol, a TestResults object with type {@link #TEST.STDP} consisting of series labelled "Time" and "Efficacy" and if
+	 * @return For a single spike protocol, a TestResults object with type {@link TYPE#STDP} consisting of series labelled "Time" and "Efficacy" and if
 	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
-	 *         For a protocol varied over one dimension, a TestResults object with type {@link #TEST.STDP_1D} consisting of series labelled "Time delta" and "Efficacy".
-	 *         For a protocol varied over two dimensions, a TestResults object with type {@link #TEST.STDP_2D} consisting of series labelled "Time delta 1",
+	 *         For a protocol varied over one dimension, a TestResults object with type {@link TYPE#STDP_1D} consisting of series labelled "Time delta" and "Efficacy".
+	 *         For a protocol varied over two dimensions, a TestResults object with type {@link TYPE#STDP_2D} consisting of series labelled "Time delta 1",
 	 *         "Time delta 2" and "Efficacy".
 	 */
 	public static TestResults testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost, boolean logSpikesAndStateVariables, ProgressMonitor progressMonitor) throws IllegalArgumentException {
@@ -382,10 +382,10 @@ public class SynapseTest {
 	 * @param logSpikesAndStateVariables Whether to record pre- and post-synaptic spikes and any state variables exposed by the synapse model in the test
 	 *            results.
 	 * @param progressMonitor If not null, this will be updated to display the progress of the test.
-	 * @return For a single spike protocol, a TestResults object with type {@link #TEST.STDP} consisting of series labelled "Time" and "Efficacy" and if
+	 * @return For a single spike protocol, a TestResults object with type {@link TYPE#STDP} consisting of series labelled "Time" and "Efficacy" and if
 	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
-	 *         For a protocol varied over one dimension, a TestResults object with type {@link #TEST.STDP_1D} consisting of series labelled "Time delta" and "Efficacy".
-	 *         For a protocol varied over two dimensions, a TestResults object with type {@link #TEST.STDP_2D} consisting of series labelled "Time delta 1",
+	 *         For a protocol varied over one dimension, a TestResults object with type {@link TYPE#STDP_1D} consisting of series labelled "Time delta" and "Efficacy".
+	 *         For a protocol varied over two dimensions, a TestResults object with type {@link TYPE#STDP_2D} consisting of series labelled "Time delta 1",
 	 *         "Time delta 2" and "Efficacy".
 	 */
 	public static TestResults[] testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, String[] configurationLabels, ComponentConfiguration[] configurations, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost, boolean logSpikesAndStateVariables, ProgressMonitor progressMonitor) throws IllegalArgumentException {
@@ -437,7 +437,7 @@ public class SynapseTest {
 	 * Plot the results produced by the testing methods in this class.
 	 * 
 	 * @param results The results of one or more tests. They must all have the same type {@link TYPE}. If more than one result is to be plotted then only
-	 *            {@link TYPE.STDP} or {@link TYPE.STDP_1D} are supported, and it is assumed that they all have the same pre- and post-synaptic spike patterns.
+	 *            {@link TYPE#STDP} or {@link TYPE#STDP_1D} are supported, and it is assumed that they all have the same pre- and post-synaptic spike patterns.
 	 * @param singlePlot If plotting more than one TestResult then whether to show the results on a single plot (true) or separate plots (false).
 	 * @param timeResolution The time resolution which the simulation was run at.
 	 * @param logSpikesAndStateVariables Whether to include pre- and post-synaptic spikes and any state variables exposed by the synapse model in the plot. This
