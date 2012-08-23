@@ -57,5 +57,5 @@ Also, "Bain" is just one letter away from "Brain"... ;) </p>
 is included in the distribution. Please note that Bain is distributed WITHOUT 
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
 FOR A PARTICULAR PURPOSE. Please refer to the license for details.</p>
-*/
+ */
 package ojc.bain;

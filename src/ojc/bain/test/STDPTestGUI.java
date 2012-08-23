@@ -44,53 +44,73 @@ public class STDPTestGUI extends JPanel {
 		final JSpinner timeResolutionSpinner = new JSpinner(new SpinnerNumberModel(1000, 0, 100000, 1));
 		timeResolutionSpinner.setToolTipText("<html>This is the number of steps per second of simulation time. The more steps, the more accurate the simulation.<br />A typical value is 1000, corresponding to a step duration of 1 millisecond.</html>");
 
-		final JButton goButton = new JButton("Go!");
-		goButton.setToolTipText("<html>Click here to run the test using the current settings.<br />This can take several minutes or more, depending on the time resolution, number of variation dimensions, and total time differential in each variation dimension.</html>");
-		goButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				goButton.setEnabled(false);
+		final JButton testSpecifiedButton = new JButton("<html>Test on specified synapse settings</html>");
+		testSpecifiedButton.setToolTipText("<html>Click here to run the test using the current settings.<br />This can take several minutes or more, depending on the time resolution, number of variation dimensions, and total time differential in each variation dimension.</html>");
 
+		final JButton testPresetsSingleButton = new JButton("<html>Test on all synapse presets,<br />single plot</html>");
+		testPresetsSingleButton.setToolTipText("<html>Click here to run the test on each preset available for the selected synapse.<br />This can take several minutes or more, depending on the time resolution, number of variation dimensions, and total time differential in each variation dimension.</html>");
+
+		final JButton testPresetsSeparateButton = new JButton("<html>Test on all synapse presets,<br />separate plots</html>");
+		testPresetsSeparateButton.setToolTipText("<html>Click here to run the test on each preset available for the selected synapse.<br />This can take several minutes or more, depending on the time resolution, number of variation dimensions, and total time differential in each variation dimension.</html>");
+
+		ActionListener testButtonActionListenter = new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
 				final SynapseCollection synapse = synapseSettings.getSynapse();
 				final SpikeProtocolSettings settings = spikeSettings.getSpikeProtocolSettings();
 
-				if (synapse != null && settings != null) {
-					final int timeResolution = (int) timeResolutionSpinner.getValue();
-					final boolean logSpikesAndStateVariables = settings.repetitions <= 25;
-
-					final JProgressBar progressBar = new JProgressBar();
-					progressBar.setStringPainted(true);
-					final JWindow progressWindow = new JWindow();
-					progressWindow.add(progressBar);
-					progressWindow.pack();
-					progressWindow.setSize(gui.getWidth() / 4, gui.getHeight() / 8);
-					progressWindow.setLocationRelativeTo(gui);
-					progressWindow.setVisible(true);
-
-					SwingWorker<TestResults, Object> worker = new SwingWorker<TestResults, Object>() {
-						@Override
-						protected TestResults doInBackground() {
-							TestResults results = SynapseTest.testPattern(synapse, timeResolution, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, logSpikesAndStateVariables, progressBar);
-							JFreeChart resultsPlot = SynapseTest.createChart(results, timeResolution, logSpikesAndStateVariables, true);
-							progressWindow.dispose();
-							goButton.setEnabled(true);
-							return results;
-						}
-						
-					    protected void done() {
-					    	// Deal with exception thrown in doInBackground()
-					    	// See http://stackoverflow.com/questions/6523623/gracefull-exception-handling-in-swing-worker
-					        try {
-					            get();
-					        } catch (Exception e) {
-					            e.getCause().printStackTrace();
-					            String msg = String.format("Unexpected problem: %s", e.getCause().toString());
-					            JOptionPane.showMessageDialog(gui, msg, "Error", JOptionPane.ERROR_MESSAGE);
-					        }					    }
-					};
-					worker.execute();
+				// If something is wrong with the selected synapse or settings.
+				if (synapse == null || settings == null) {
+					JOptionPane.showMessageDialog(gui, "Can not perform tests, the synapse or settings could not be loaded", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
 				}
+
+				testSpecifiedButton.setEnabled(false);
+				testPresetsSingleButton.setEnabled(false);
+				testPresetsSeparateButton.setEnabled(false);
+
+				final int timeResolution = (int) timeResolutionSpinner.getValue();
+
+				final ProgressMonitor progressMonitor = new ProgressMonitor(gui, null, "Performing test...", 0, 0);
+
+				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+					@Override
+					protected Void doInBackground() {
+						if (e.getSource() == testSpecifiedButton) {
+							boolean logSpikesAndStateVariables = settings.repetitions <= 25;
+							TestResults results = SynapseTest.testPattern(synapse, timeResolution, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, logSpikesAndStateVariables, progressMonitor);
+							JFreeChart resultsPlot = SynapseTest.createChart(results, timeResolution, logSpikesAndStateVariables, true);
+						} else {
+							ComponentConfiguration config = synapse.getConfigSingleton();
+							TestResults[] results = SynapseTest.testPattern(synapse, config.getPresetNames(), config.getPresets(), timeResolution, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, false, progressMonitor);
+							boolean singlePlot = e.getSource() == testPresetsSingleButton;
+							JFreeChart resultsPlot = SynapseTest.createChart(results, singlePlot, timeResolution, false, true);
+						}
+						return null;
+					}
+
+					protected void done() {
+						progressMonitor.close();
+						// Deal with exception thrown in doInBackground()
+						// See http://stackoverflow.com/questions/6523623/gracefull-exception-handling-in-swing-worker
+						try {
+							get();
+						} catch (Exception e) {
+							e.getCause().printStackTrace();
+							String msg = String.format("Unexpected problem: %s", e.getCause().toString());
+							JOptionPane.showMessageDialog(gui, msg, "Error", JOptionPane.ERROR_MESSAGE);
+						}
+						testSpecifiedButton.setEnabled(true);
+						testPresetsSingleButton.setEnabled(true);
+						testPresetsSeparateButton.setEnabled(true);
+					}
+				};
+				worker.execute();
 			}
-		});
+		};
+
+		testSpecifiedButton.addActionListener(testButtonActionListenter);
+		testPresetsSingleButton.addActionListener(testButtonActionListenter);
+		testPresetsSeparateButton.addActionListener(testButtonActionListenter);
 
 		JTabbedPane tabPane = new JTabbedPane();
 		tabPane.addTab("Spiking protocol", spikeSettings);
@@ -99,20 +119,25 @@ public class STDPTestGUI extends JPanel {
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 
-		gbc.weightx = 1;
+		gbc.weightx = 4;
 		gbc.weighty = 0.1;
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.NORTH;
 		gbc.fill = GridBagConstraints.BOTH;
-		add(goButton, gbc);
+		add(testSpecifiedButton, gbc);
 		gbc.gridx = 1;
-		add(createLabeledComponent("Time resolution (steps per second):", timeResolutionSpinner), gbc);
+		add(testPresetsSingleButton, gbc);
+		gbc.gridx = 2;
+		add(testPresetsSeparateButton, gbc);
+		gbc.gridx = 3;
+		gbc.weightx = 1;
+		add(createLabeledComponent("Resolution:", timeResolutionSpinner), gbc);
 
 		gbc.gridx = 0;
 		gbc.gridy = 1;
 		gbc.weighty = 1;
-		gbc.gridwidth = 2;
+		gbc.gridwidth = 4;
 		add(tabPane, gbc);
 
 		// setVisible(true);
@@ -135,7 +160,7 @@ public class STDPTestGUI extends JPanel {
 																																// post]
 
 			final JSpinner variationDimsSpinner = new JSpinner(new SpinnerNumberModel(initSettings.variationDimsCount, 0, maxSpikePatternVariationDimensions, 1));
-			variationDimsSpinner.setToolTipText("<html>The spiking protocol can be varied over none, one or two dimensions. For one and two variation dimensions, spiking protocols are generated by interpolating between the initial and final protocols.<br />" + "For none, the plot will show how the synapse efficacy changes over time as the protocol is presented, and will also plot the state variables and spikes if \"# protocol repetitions\" is less than 26.<br />" + "For one and two variation dimensions, the plot will show the final efficacy after the spiking protocol has been presented \"# protocol repetitions\" times, for each variation of the protocol.</html>");
+			variationDimsSpinner.setToolTipText("<html>The spiking protocol can be varied over none, one or two dimensions. For one and two variation dimensions, spiking protocols are generated by interpolating between the initial and final protocols.<br />" + "For none, the plot will show how the synapse efficacy changes over time as the protocol is presented, and will also plot the state variables and spikes if <em># protocol repetitions</em> is less than 26 and a single test is being performed by clicking on the <em>Test on specified synapse settings</em> button.<br />" + "For one and two variation dimensions, the plot will show the final efficacy after the spiking protocol has been presented <em># protocol repetitions</em> times, for each variation of the protocol.</html>");
 			variationDimsSpinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
@@ -345,14 +370,14 @@ public class STDPTestGUI extends JPanel {
 	private class SynapseSettingsPanel extends JPanel {
 		private static final long serialVersionUID = 1L;
 
-		SynapseCollection synapse;
+		SynapseCollection synapseSingleton;
 		ComponentConfiguration synapseConfig;
 
 		public SynapseSettingsPanel(final STDPTestGUI gui) {
 			final JPanel panel = this;
 			panel.setLayout(new GridBagLayout());
 
-			String[] synapseTypes = { "ojc.bain.synapse.Pfister2006SynapseCollection", "ojc.bain.synapse.Graupner2012SynapseCollection" };
+			String[] synapseTypes = { "ojc.bain.synapse.Pfister2006SynapseCollection", "ojc.bain.synapse.Graupner2012SynapseCollection" , "ojc.bain.synapse.Graupner2012SimplifiedSynapseCollection"};
 			for (String t : synapseTypes) {
 				try {
 					SynapseCollection.registerComponentCollectionType(t);
@@ -370,10 +395,8 @@ public class STDPTestGUI extends JPanel {
 					panel.validate();
 
 					try {
-						SynapseCollection synapseSingleton = (SynapseCollection) SynapseCollection.getComponentCollectionSingleton((String) synapseSelector.getSelectedItem());
-						synapse = (SynapseCollection) synapseSingleton.createCollection(1);
-						synapseConfig = synapse.getConfigSingleton().createConfiguration();
-						synapse.addConfiguration(synapseConfig);
+						synapseSingleton = (SynapseCollection) SynapseCollection.getComponentCollectionSingleton((String) synapseSelector.getSelectedItem());
+						synapseConfig = synapseSingleton.getConfigSingleton().createConfiguration();
 						setupSynapseConfig(synapseParamsPanel, synapseConfig);
 						panel.validate();
 					} catch (Exception e1) {
@@ -503,6 +526,8 @@ public class STDPTestGUI extends JPanel {
 		}
 
 		public SynapseCollection getSynapse() {
+			SynapseCollection synapse = (SynapseCollection) synapseSingleton.createCollection(1);
+			synapse.addConfiguration(synapseConfig);
 			return synapse;
 		}
 	}
@@ -615,9 +640,7 @@ public class STDPTestGUI extends JPanel {
 				}
 			});
 			timingSlider.setPreferredSize(new Dimension(200, 20));
-			timingSlider.setToolTipText("<html>Set the spike protocol by dragging the spikes. Use the text boxes below to specify exact timings.<br />" + 
-					"If one or two variation dimenions are selected then for the purposes of showing spike time deltas in the plot axis you can set a base (cyan) and<br />" +
-					"reference (pink) spike in the final spike protocols by clicking on a spike with the left or right mouse button respectively (see presets for examples).");
+			timingSlider.setToolTipText("<html>Set the spike protocol by dragging the spikes. Use the text boxes below to specify exact timings.<br />" + "If one or two variation dimenions are selected then for the purposes of showing spike time deltas in the plot axis you can set a base (cyan) and<br />" + "reference (pink) spike in the final spike protocols by clicking on a spike with the left or right mouse button respectively (see presets for examples).");
 			add(timingSlider);
 
 			timingSpinnersBox = new Box(BoxLayout.X_AXIS);

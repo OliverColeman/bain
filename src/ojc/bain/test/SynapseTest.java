@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
+import javax.swing.ProgressMonitor;
 
 import ojc.bain.Simulation;
 import ojc.bain.base.ComponentConfiguration;
@@ -35,45 +36,154 @@ import org.jfree.data.xy.XYBarDataset;
 import org.jfree.ui.RectangleEdge;
 
 /**
- * Class to ojc.bain.test the behaviour of a model on a specific spiking protocol or spiking protocols over some timing adjustment.
+ * Class to test the behaviour of synapse models on given spiking protocols.
  * 
  * @author Oliver J. Coleman
  */
 public class SynapseTest {
 	/**
 	 * The type of test results.
+	 * 
+	 * <ul>
+	 * <li>STDP denotes a Spike-Timing-Depedent Plasticity test.</li>
+	 * <li>1D and 2D denote a test for which variables are varied over 1 or 2 dimensions respectively.</li>
+	 * </ul>
 	 */
 	public static enum TYPE {
 		STDP, STDP_1D, STDP_2D;
 	};
 
-	/*
-	 * @param synapse The SynapseCollection containing the synapse to test (the first synapse is used).
+	/**
+	 * Test the behaviour of a synapse model.
 	 * 
-	 * @param timeResolution The time resolution to use in the simulation, see {@link ojc.bain.Simulation}
-	 * 
-	 * @param period The period of the spike pattern in seconds.
-	 * 
-	 * @param repetitions The number of times to apply the spike pattern.
-	 * 
-	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array
-	 * contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.FixedProtocolNeuronCollection}.
-	 * 
-	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each variation dimension, in the form [dim 1,
-	 * dim 2][reference spike, relative spike] = spike index.
-	 * 
-	 * @param refSpikePreOrPost Array specifying whether the timing variation reference spikes specified by refSpikeIndexes belong to the pre- or post-synaptic
-	 * neurons, in the form [dim 1, dim 2][base spike, relative spike] = Constants.PRE or Constants.POST.
-	 * 
-	 * @param logSpikesAndStateVariables Whether or not to include logs of spikes and state variables from the synape in the test results.
-	 * 
-	 * @param progressBar If not null, this will be updated to display the progress of the test.
+	 * @param sim A Simulation containing two neurons and a single synapse to be tested. The neurons at index 0 and 1 should be the pre- and post-synaptic
+	 *            neurons respectively, and are typically configured to produce a fixed firing pattern (though any neuron type and firing pattern are
+	 *            permitted).
+	 * @param simSteps The number of simulation steps to run the simulation for.
+	 * @param logSpikesAndStateVariables Whether to record pre- and post-synaptic spikes and any state variables exposed by the synapse model in the test
+	 *            results.
+	 * @param simStepsNoSpikes The number of simulation steps to run the simulation for with no spiking after the normal spike test. This is useful for testing models which change the efficacy in the absence of spikes.
+	 * @return For a single spike protocol, a TestResults object with type {@link #TEST.STDP} consisting of series labelled "Time" and "Efficacy" and if
+	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
 	 */
+	public static TestResults singleTest(Simulation sim, long simSteps, boolean logSpikesAndStateVariables, long simStepsNoSpikes) {
+		if (sim.getNeurons().getSize() != 2 || sim.getSynapses().getSize() != 1) {
+			throw new IllegalArgumentException("The simulation must contain at least 2 neurons and 1 .");
+		}
+		
+		simStepsNoSpikes = Math.max(0, simStepsNoSpikes);
 
-	public static TestResults testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost, boolean logSpikesAndStateVariables, JProgressBar progressBar) throws IllegalArgumentException {
+		int displayTimeResolution = Math.min(1000, sim.getTimeResolution());
+
+		int logStepCount = sim.getTimeResolution() / displayTimeResolution;
+		int logSize = (int) ((simSteps + simStepsNoSpikes) / logStepCount);
+
+		double[] timeLog = new double[logSize];
+		double[] efficacyLog = new double[logSize];
+		double[][] prePostLogs = null, traceLogs = null;
+		double[] stateVars;
+		if (logSpikesAndStateVariables) {
+			prePostLogs = new double[2][logSize];
+			traceLogs = new double[sim.getSynapses().getStateVariableNames().length][logSize];
+		}
+
+		int logIndex = 0;
+		long step = 0;
+		for (; step < simSteps; step++) {
+			double time = sim.getTime();
+			sim.step();
+
+			if (step % logStepCount == 0) {
+				timeLog[logIndex] = time;
+				efficacyLog[logIndex] = sim.getSynapses().getEfficacy(0);
+				// If we're only testing a few repetitions, include some extra
+				// data.
+				if (logSpikesAndStateVariables) {
+					prePostLogs[0][logIndex] = sim.getNeurons().getOutput(0);
+					prePostLogs[1][logIndex] = sim.getNeurons().getOutput(1);
+					stateVars = sim.getSynapses().getStateVariableValues(0);
+					for (int v = 0; v < stateVars.length; v++) {
+						traceLogs[v][logIndex] = stateVars[v];
+					}
+				}
+				logIndex++;
+			}
+		}
+
+		if (simStepsNoSpikes > 0) {
+			FixedProtocolNeuronConfiguration config = new FixedProtocolNeuronConfiguration(100, new double[] {});
+			sim.getNeurons().setConfiguration(0, config);
+			sim.getNeurons().setComponentConfiguration(0, 0);
+			sim.getNeurons().setComponentConfiguration(1, 0);
+	
+			for (; step < simSteps + simStepsNoSpikes; step++) {
+				double time = sim.getTime();
+				sim.step();
+	
+				if (step % logStepCount == 0) {
+					timeLog[logIndex] = time;
+					efficacyLog[logIndex] = sim.getSynapses().getEfficacy(0);
+					// If we're only testing a few repetitions, include some extra data.
+					if (logSpikesAndStateVariables) {
+						prePostLogs[0][logIndex] = sim.getNeurons().getOutput(0);
+						prePostLogs[1][logIndex] = sim.getNeurons().getOutput(1);
+						stateVars = sim.getSynapses().getStateVariableValues(0);
+						for (int v = 0; v < stateVars.length; v++) {
+							traceLogs[v][logIndex] = stateVars[v];
+						}
+					}
+					logIndex++;
+				}
+			}
+		}
+
+		TestResults results = new TestResults();
+		results.setProperty("type", TYPE.STDP);
+		results.addResult("Efficacy", efficacyLog);
+		results.addResult("Time", timeLog);
+		if (logSpikesAndStateVariables) {
+			results.addResult("Pre-synaptic spikes", prePostLogs[0]);
+			results.addResult("Post-synaptic spikes", prePostLogs[1]);
+			String[] stateVariableNames = sim.getSynapses().getStateVariableNames();
+			for (int v = 0; v < stateVariableNames.length; v++) {
+				results.addResult(stateVariableNames[v], traceLogs[v]);
+			}
+		}
+
+		return results;
+	}
+
+	/**
+	 * Test a synapse on the specified spiking protocol or a series of spiking protocols derived from initial and final protocols by interpolation over one or
+	 * two dimensions.
+	 * 
+	 * @param synapse The SynapseCollection containing the synapse to test (the first synapse is used).
+	 * @param timeResolution The time resolution to use in the simulation, see {@link ojc.bain.Simulation}
+	 * @param period The period of the spike pattern in seconds.
+	 * @param repetitions The number of times to apply the spike pattern.
+	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array
+	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.FixedProtocolNeuronCollection}.
+	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each variation dimension, in the form [dim 1,
+	 *            dim 2][reference spike, relative spike] = spike index.
+	 * @param refSpikePreOrPost Array specifying whether the timing variation reference spikes specified by refSpikeIndexes belong to the pre- or post-synaptic
+	 *            neurons, in the form [dim 1, dim 2][base spike, relative spike] = Constants.PRE or Constants.POST.
+	 * @param logSpikesAndStateVariables Whether to record pre- and post-synaptic spikes and any state variables exposed by the synapse model in the test
+	 *            results.
+	 * @param progressMonitor If not null, this will be updated with the current progress.
+	 * @return For a single spike protocol, a TestResults object with type {@link #TEST.STDP} consisting of series labelled "Time" and "Efficacy" and if
+	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
+	 *         For a protocol varied over one dimension, a TestResults object with type {@link #TEST.STDP_1D} consisting of series labelled "Time delta" and "Efficacy".
+	 *         For a protocol varied over two dimensions, a TestResults object with type {@link #TEST.STDP_2D} consisting of series labelled "Time delta 1",
+	 *         "Time delta 2" and "Efficacy".
+	 */
+	public static TestResults testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost, boolean logSpikesAndStateVariables, ProgressMonitor progressMonitor) throws IllegalArgumentException {
 		int variationDimsCount = patterns.length - 1; // Number of dimensions over which spike timing patterns vary.
 		if (variationDimsCount > 2) {
 			throw new IllegalArgumentException("The number of variation dimensions may not exceed 2 (patterns.length must be <= 3)");
+		}
+
+		if (progressMonitor != null) {
+			progressMonitor.setMinimum(0);
 		}
 
 		TestResults results = new TestResults();
@@ -104,7 +214,7 @@ public class SynapseTest {
 		// If we're just testing a single spike pattern. // Handle separately as logging is quite different from testing spike
 		// patterns with gradually altered spike times.
 		if (variationDimsCount == 0) {
-			results = singleTest(sim, simSteps, logSpikesAndStateVariables);
+			results = singleTest(sim, simSteps, logSpikesAndStateVariables, 0);
 		} else { // We're testing spike patterns with gradually altered spike times over one or two dimensions.
 
 			int[] spikeCounts = { patterns[0][0].length, patterns[0][1].length };
@@ -161,13 +271,13 @@ public class SynapseTest {
 				// The change in synapse efficacy after all repetitions for each pattern [time delta index]
 				double[] efficacyLog = new double[positionsCount[0]];
 
-				if (progressBar != null) {
-					progressBar.setMaximum(positionsCount[0]);
+				if (progressMonitor != null) {
+					progressMonitor.setMaximum(positionsCount[0]);
 				}
 
 				for (int timeDeltaIndex = 0; timeDeltaIndex < positionsCount[0]; timeDeltaIndex++) {
-					if (progressBar != null) {
-						progressBar.setValue(timeDeltaIndex);
+					if (progressMonitor != null) {
+						progressMonitor.setProgress(timeDeltaIndex);
 					}
 
 					double position = (double) timeDeltaIndex / (positionsCount[0] - 1); // Position in variation dimension 1
@@ -204,8 +314,8 @@ public class SynapseTest {
 				// [time delta for var dim 1, time delta for var dim 2, synapse efficacy][result index]
 				double[][] efficacyLog = new double[3][(positionsCount[0]) * (positionsCount[1])];
 
-				if (progressBar != null) {
-					progressBar.setMaximum(efficacyLog[0].length);
+				if (progressMonitor != null) {
+					progressMonitor.setMaximum(efficacyLog[0].length);
 				}
 
 				double[] position = new double[2]; // Position in variation dimensions 1 and 2
@@ -213,8 +323,8 @@ public class SynapseTest {
 					position[0] = (double) timeDeltaIndex1 / (positionsCount[0] - 1);
 
 					for (int timeDeltaIndex2 = 0; timeDeltaIndex2 < positionsCount[1]; timeDeltaIndex2++, resultIndex++) {
-						if (progressBar != null) {
-							progressBar.setValue(resultIndex);
+						if (progressMonitor != null) {
+							progressMonitor.setProgress(resultIndex);
 						}
 
 						position[1] = (double) timeDeltaIndex2 / (positionsCount[1] - 1);
@@ -248,72 +358,64 @@ public class SynapseTest {
 			}
 		}
 
-		// long finishTime = System.currentTimeMillis();
-		// System.out.println("Took " + ((finishTime - startTime) / 1000f) + "s");
-
 		return results;
 	}
 
 	/**
-	 * Test the behaviour of a model.
+	 * Test a synapse on the specified spiking protocol or a series of spiking protocols derived from initial and final protocols by interpolation over one or
+	 * two dimensions. The synapse is tested over all specified parameter configurations.
 	 * 
-	 * @param sim A Simulation containing two neurons and a single to be tested. The neurons at index 0 and 1 should be the pre- and post-synaptic neurons
-	 *            respectively, and will typically produce a fixed firing pattern.
-	 * @param simSteps the number of simulation steps to run the simulation for.
-	 * @param logSpikesAndStateVariables Whether to log pre- and post-synaptic spikes, and any state variables for the .
+	 * @param synapse The SynapseCollection containing the synapse to test (the first synapse is used). The first configuration (at index 0) in the collection
+	 *            will be replaced with each configuration specified by the <em>configurations</em> argument.
+	 * @param configurationLabels An array containing the labels for each parameter configuration to test on. These are used to label the data sets in the
+	 *            returned TestResults.
+	 * @param configurations An array containing the parameter configurations to test on.
+	 * @param timeResolution The time resolution to use in the simulation, see {@link ojc.bain.Simulation}
+	 * @param period The period of the spike pattern in seconds.
+	 * @param repetitions The number of times to apply the spike pattern.
+	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array
+	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.FixedProtocolNeuronCollection}.
+	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each variation dimension, in the form [dim 1,
+	 *            dim 2][reference spike, relative spike] = spike index.
+	 * @param refSpikePreOrPost Array specifying whether the timing variation reference spikes specified by refSpikeIndexes belong to the pre- or post-synaptic
+	 *            neurons, in the form [dim 1, dim 2][base spike, relative spike] = Constants.PRE or Constants.POST.
+	 * @param logSpikesAndStateVariables Whether to record pre- and post-synaptic spikes and any state variables exposed by the synapse model in the test
+	 *            results.
+	 * @param progressMonitor If not null, this will be updated to display the progress of the test.
+	 * @return For a single spike protocol, a TestResults object with type {@link #TEST.STDP} consisting of series labelled "Time" and "Efficacy" and if
+	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
+	 *         For a protocol varied over one dimension, a TestResults object with type {@link #TEST.STDP_1D} consisting of series labelled "Time delta" and "Efficacy".
+	 *         For a protocol varied over two dimensions, a TestResults object with type {@link #TEST.STDP_2D} consisting of series labelled "Time delta 1",
+	 *         "Time delta 2" and "Efficacy".
 	 */
-	public static TestResults singleTest(Simulation sim, int simSteps, boolean logSpikesAndStateVariables) {
-		if (sim.getNeurons().getSize() != 2 || sim.getSynapses().getSize() != 1) {
-			throw new IllegalArgumentException("The simulation must contain at least 2 neurons and 1 .");
+	public static TestResults[] testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, String[] configurationLabels, ComponentConfiguration[] configurations, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost, boolean logSpikesAndStateVariables, ProgressMonitor progressMonitor) throws IllegalArgumentException {
+		int configCount = configurationLabels.length;
+		TestResults[] results = new TestResults[configCount];
+
+		if (synapse.getConfigurationCount() == 0) {
+			synapse.addConfiguration(configurations[0]);
 		}
 
-		int displayTimeResolution = Math.min(1000, sim.getTimeResolution());
-
-		int logStepCount = sim.getTimeResolution() / displayTimeResolution;
-		int logSize = simSteps / logStepCount;
-
-		double[] timeLog = new double[logSize];
-		double[] efficacyLog = new double[logSize];
-		double[][] prePostLogs = null, traceLogs = null;
-		double[] stateVars;
-		if (logSpikesAndStateVariables) {
-			prePostLogs = new double[2][logSize];
-			traceLogs = new double[sim.getSynapses().getStateVariableNames().length][logSize];
+		ProgressMonitor progressMonitorSub = null;
+		if (progressMonitor != null) {
+			progressMonitor.setMinimum(0);
+			progressMonitor.setMaximum(configCount);
+			progressMonitor.setMillisToDecideToPopup(0);
+			progressMonitorSub = new ProgressMonitor(null, null, "Performing test...", 0, 0);
 		}
 
-		int logIndex = 0;
-		for (int step = 0; step < simSteps; step++) {
-			double time = sim.getTime();
-			sim.step();
-
-			if (step % logStepCount == 0) {
-				timeLog[logIndex] = time;
-				efficacyLog[logIndex] = sim.getSynapses().getEfficacy(0);
-				// If we're only testing a few repetitions, include some extra
-				// data.
-				if (logSpikesAndStateVariables) {
-					prePostLogs[0][logIndex] = sim.getNeurons().getOutput(0);
-					prePostLogs[1][logIndex] = sim.getNeurons().getOutput(1);
-					stateVars = sim.getSynapses().getStateVariableValues(0);
-					for (int v = 0; v < stateVars.length; v++) {
-						traceLogs[v][logIndex] = stateVars[v];
-					}
-				}
-				logIndex++;
+		for (int c = 0; c < configCount; c++) {
+			if (progressMonitor != null) {
+				progressMonitor.setProgress(c);
+				progressMonitor.setNote("Testing " + configurationLabels[c]);
 			}
+			synapse.setConfiguration(0, configurations[c]);
+			results[c] = testPattern(synapse, timeResolution, period, repetitions, patterns, refSpikeIndexes, refSpikePreOrPost, logSpikesAndStateVariables, progressMonitorSub);
+			results[c].setProperty("label", configurationLabels[c]);
 		}
 
-		TestResults results = new TestResults();
-		results.setProperty("type", TYPE.STDP);
-		results.addResult("Efficacy", efficacyLog);
-		results.addResult("Time", timeLog);
-		if (logSpikesAndStateVariables) {
-			results.addResult("Pre-synaptic spikes", prePostLogs[0]);
-			results.addResult("Post-synaptic spikes", prePostLogs[1]);
-			String[] stateVariableNames = sim.getSynapses().getStateVariableNames();
-			for (int v = 0; v < stateVariableNames.length; v++) {
-				results.addResult(stateVariableNames[v], traceLogs[v]);
-			}
+		if (progressMonitorSub != null) {
+			progressMonitorSub.close();
 		}
 
 		return results;
@@ -322,64 +424,131 @@ public class SynapseTest {
 	/**
 	 * Plot the results produced by the testing methods in this class.
 	 * 
-	 * @param results The results of the ojc.bain.test.
+	 * @param results The results of the test.
 	 * @param timeResolution The time resolution which the simulation was run at.
-	 * @param logSpikesAndStateVariables Whether to log pre- and post-synaptic spikes, and any state variables for the .
+	 * @param logSpikesAndStateVariables Whether to include pre- and post-synaptic spikes and any state variables exposed by the synapse model in the plot.
 	 * @param showInFrame Whether to display the result in a frame.
 	 */
 	public static JFreeChart createChart(TestResults results, int timeResolution, boolean logSpikesAndStateVariables, boolean showInFrame) {
+		return createChart(new TestResults[] { results }, true, timeResolution, logSpikesAndStateVariables, showInFrame);
+	}
+
+	/**
+	 * Plot the results produced by the testing methods in this class.
+	 * 
+	 * @param results The results of one or more tests. They must all have the same type {@link TYPE}. If more than one result is to be plotted then only
+	 *            {@link TYPE.STDP} or {@link TYPE.STDP_1D} are supported, and it is assumed that they all have the same pre- and post-synaptic spike patterns.
+	 * @param singlePlot If plotting more than one TestResult then whether to show the results on a single plot (true) or separate plots (false).
+	 * @param timeResolution The time resolution which the simulation was run at.
+	 * @param logSpikesAndStateVariables Whether to include pre- and post-synaptic spikes and any state variables exposed by the synapse model in the plot. This
+	 *            is ignored if more than one result is to be plotted.
+	 * @param showInFrame Whether to display the result in a frame.
+	 */
+	public static JFreeChart createChart(TestResults[] results, boolean singlePlot, int timeResolution, boolean logSpikesAndStateVariables, boolean showInFrame) {
 		JFreeChart resultsPlot = null;
+		int resultsCount = results.length;
 
-		if (results.getProperty("type") == TYPE.STDP) {
+		// Make sure they're all the same type.
+		for (int ri = 0; ri < results.length; ri++) {
+			if (ri < resultsCount - 1 && results[ri].getProperty("type") != results[ri + 1].getProperty("type")) {
+				throw new IllegalArgumentException("All results must have the same type.");
+			}
+			if (resultsCount > 1 && results[ri].getProperty("type") != TYPE.STDP && results[ri].getProperty("type") != TYPE.STDP_1D) {
+				throw new IllegalArgumentException("Multiple results can only be plotted for types STDP or STDP_1D.");
+			}
+		}
+
+		TYPE type = (TYPE) results[0].getProperty("type");
+
+		XYToolTipGenerator tooltipGen = new StandardXYToolTipGenerator();
+
+		if (type == TYPE.STDP) {
 			CombinedDomainXYPlot combinedPlot = new CombinedDomainXYPlot(new NumberAxis("t (s)"));
-			XYToolTipGenerator tooltipGen = new StandardXYToolTipGenerator();
-			XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
-			xyRenderer.setBaseToolTipGenerator(tooltipGen);
 
-			DefaultXYDataset efficacyData = new DefaultXYDataset();
-			efficacyData.addSeries("Efficacy", results.getResult("Time", "Efficacy"));
+			if (singlePlot) { // Plot all result sets together.
+				DefaultXYDataset efficacyData = new DefaultXYDataset();
+				for (TestResults result : results) {
+					String efficacyLabel = (resultsCount == 1) ? "Efficacy" : "" + result.getProperty("label");
+					efficacyData.addSeries(efficacyLabel, result.getResult("Time", "Efficacy"));
+				}
+				XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+				xyRenderer.setBaseToolTipGenerator(tooltipGen);
+				combinedPlot.add(new XYPlot(efficacyData, null, new NumberAxis("Efficacy"), xyRenderer), 4);
+			} else { // Plot each result set separately.
+				for (TestResults result : results) {
+					DefaultXYDataset efficacyData = new DefaultXYDataset();
+					String efficacyLabel = (resultsCount == 1) ? "Efficacy" : "" + result.getProperty("label");
+					efficacyData.addSeries(efficacyLabel, result.getResult("Time", "Efficacy"));
+					XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+					xyRenderer.setBaseToolTipGenerator(tooltipGen);
+					combinedPlot.add(new XYPlot(efficacyData, null, new NumberAxis("Efficacy"), xyRenderer), 4);
+				}
+			}
 
-			combinedPlot.add(new XYPlot(efficacyData, null, new NumberAxis("Efficacy"), xyRenderer), 4);
-			if (logSpikesAndStateVariables) {
+			// Don't plot trace data for multiple tests plotted together.
+			if (resultsCount == 1 && logSpikesAndStateVariables) {
+				DefaultXYDataset traceData = new DefaultXYDataset();
+				for (String label : results[0].getResultLabels()) {
+					if (!label.startsWith("Time") && !label.startsWith("Efficacy") && !label.equals("Pre-synaptic spikes") && !label.equals("Post-synaptic spikes")) {
+						traceData.addSeries(label, results[0].getResult("Time", label));
+					}
+				}
+				XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+				xyRenderer.setBaseToolTipGenerator(tooltipGen);
+				combinedPlot.add(new XYPlot(traceData, null, new NumberAxis("Traces"), xyRenderer), 3);
+
 				DefaultXYDataset spikeData = new DefaultXYDataset();
-				spikeData.addSeries("Pre-synaptic spikes", results.getResult("Time", "Pre-synaptic spikes"));
-				spikeData.addSeries("Post-synaptic spikes", results.getResult("Time", "Post-synaptic spikes"));
+				spikeData.addSeries("Pre-synaptic spikes", results[0].getResult("Time", "Pre-synaptic spikes"));
+				spikeData.addSeries("Post-synaptic spikes", results[0].getResult("Time", "Post-synaptic spikes"));
 				XYBarRenderer xybr = new XYBarRenderer();
 				xybr.setShadowVisible(false);
 				combinedPlot.add(new XYPlot(new XYBarDataset(spikeData, 1.0 / timeResolution), null, new NumberAxis("Spikes"), xybr), 1);
-
-				DefaultXYDataset traceData = new DefaultXYDataset();
-				for (String label : results.getResultLabels()) {
-					if (!label.startsWith("Time") && !label.startsWith("Efficacy") && !label.equals("Pre-synaptic spikes") && !label.equals("Post-synaptic spikes")) {
-						traceData.addSeries(label, results.getResult("Time", label));
-					}
-				}
-				combinedPlot.add(new XYPlot(traceData, null, new NumberAxis("Traces"), xyRenderer), 3);
 			}
-			resultsPlot = new JFreeChart("Synapse ojc.bain.test", null, combinedPlot, true); // ChartFactory.createXYLineChart("",
+
+			resultsPlot = new JFreeChart("", null, combinedPlot, true);
 			resultsPlot.setBackgroundPaint(Color.WHITE);
 			resultsPlot.getPlot().setBackgroundPaint(Color.WHITE);
 			((XYPlot) resultsPlot.getPlot()).setRangeGridlinePaint(Color.LIGHT_GRAY);
 			((XYPlot) resultsPlot.getPlot()).setDomainGridlinePaint(Color.LIGHT_GRAY);
-			
+
 		}
 
-		else if (results.getProperty("type") == TYPE.STDP_1D) {
-			DefaultXYDataset plotData = new DefaultXYDataset();
-			plotData.addSeries("Efficacy", results.getResult("Time delta", "Efficacy"));
-			resultsPlot = ChartFactory.createXYLineChart("", "\u0394t (ms)", "", plotData, PlotOrientation.VERTICAL, true, true, false);
-			resultsPlot.setBackgroundPaint(Color.WHITE);
-			resultsPlot.getPlot().setBackgroundPaint(Color.WHITE);
-			((XYPlot) resultsPlot.getPlot()).setRangeGridlinePaint(Color.LIGHT_GRAY);
-			((XYPlot) resultsPlot.getPlot()).setDomainGridlinePaint(Color.LIGHT_GRAY);
-			
+		else if (type == TYPE.STDP_1D) {
 			DecimalFormat timeFormatter = new DecimalFormat();
 			timeFormatter.setMultiplier(1000);
-			((NumberAxis) resultsPlot.getXYPlot().getDomainAxis()).setNumberFormatOverride(timeFormatter);
+			NumberAxis domainAxis = new NumberAxis("\u0394t (ms)");
+			domainAxis.setNumberFormatOverride(timeFormatter);
+			CombinedDomainXYPlot combinedPlot = new CombinedDomainXYPlot(domainAxis);
+
+			if (singlePlot) { // Plot all result sets together.
+				DefaultXYDataset efficacyData = new DefaultXYDataset();
+				for (TestResults result : results) {
+					String efficacyLabel = (resultsCount == 1) ? "Efficacy" : "" + result.getProperty("label");
+					efficacyData.addSeries(efficacyLabel, result.getResult("Time delta", "Efficacy"));
+				}
+				XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+				xyRenderer.setBaseToolTipGenerator(tooltipGen);
+				combinedPlot.add(new XYPlot(efficacyData, null, new NumberAxis("Efficacy"), xyRenderer), 4);
+			} else { // Plot each result set separately.
+				for (TestResults result : results) {
+					DefaultXYDataset efficacyData = new DefaultXYDataset();
+					String efficacyLabel = (resultsCount == 1) ? "Efficacy" : "" + result.getProperty("label");
+					efficacyData.addSeries(efficacyLabel, result.getResult("Time delta", "Efficacy"));
+					XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+					xyRenderer.setBaseToolTipGenerator(tooltipGen);
+					combinedPlot.add(new XYPlot(efficacyData, null, new NumberAxis("Efficacy"), xyRenderer), 4);
+				}
+			}
+
+			resultsPlot = new JFreeChart("", null, combinedPlot, true);
+			resultsPlot.setBackgroundPaint(Color.WHITE);
+			resultsPlot.getPlot().setBackgroundPaint(Color.WHITE);
+			((XYPlot) resultsPlot.getPlot()).setRangeGridlinePaint(Color.LIGHT_GRAY);
+			((XYPlot) resultsPlot.getPlot()).setDomainGridlinePaint(Color.LIGHT_GRAY);
 		}
 
-		else if (results.getProperty("type") == TYPE.STDP_2D) {
-			double[][] data = results.getResult("Time delta 1", "Time delta 2", "Efficacy");
+		else if (type == TYPE.STDP_2D) {
+			double[][] data = results[0].getResult("Time delta 1", "Time delta 2", "Efficacy");
 
 			DefaultXYZDataset plotData = new DefaultXYZDataset();
 			plotData.addSeries("Efficacy", data);
@@ -428,7 +597,7 @@ public class SynapseTest {
 			}
 			renderer.setPaintScale(scale);
 			renderer.setSeriesToolTipGenerator(0, new StandardXYZToolTipGenerator());
-			int displayResolution = (int) results.getProperty("display time resolution");
+			int displayResolution = (int) results[0].getProperty("display time resolution");
 			renderer.setBlockWidth(1000.0 / displayResolution);
 			renderer.setBlockHeight(1000.0 / displayResolution);
 

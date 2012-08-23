@@ -101,6 +101,17 @@ public abstract class ComponentConfiguration {
 
 	public abstract ComponentConfiguration getPreset(int index);
 
+	public ComponentConfiguration[] getPresets() {
+		if (getPresetNames() != null) {
+			ComponentConfiguration[] presets = new ComponentConfiguration[getPresetNames().length];
+			for (int i = 0; i < presets.length; i++) {
+				presets[i] = getPreset(i);
+			}
+			return presets;
+		}
+		return null;
+	}
+
 	@Override
 	/**
 	 * ComponentConfiguration objects are considered equal if they are of the same sub-class and 
@@ -139,4 +150,5 @@ public abstract class ComponentConfiguration {
 	 * Factory method to create a new configuration (typically invoked on a singleton retrieved from myConfigurableComponentCollection.getConfigSingleton()).
 	 */
 	public abstract ComponentConfiguration createConfiguration();
+
 }

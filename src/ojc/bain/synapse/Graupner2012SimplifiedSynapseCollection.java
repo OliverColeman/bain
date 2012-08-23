@@ -5,16 +5,16 @@ import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.SynapseCollection;
 
 /**
- * Implementation of the model described by Graupner, M., Brunel, N.: Calcium-Based Plasticity Model Explains Sensitivity of Synaptic Changes to Spike Pattern,
- * Rate, and Dendritic Location. PNAS. 109, 3991–3996 (2012). (using the simplified calcium model).
+ * A simplified implementation of the model described by Graupner, M., Brunel, N.: Calcium-Based Plasticity Model Explains Sensitivity of Synaptic Changes to
+ * Spike Pattern, Rate, and Dendritic Location. PNAS. 109, 3991–3996 (2012). (using the simplified calcium model).
  * 
- * NOTE: the noise component of this model is not implemented.
+ * This implementation removes the bistability and noise components.
  * 
  * @see Graupner2012SynapseConfiguration
  * 
  * @author Oliver J. Coleman
  */
-public class Graupner2012SynapseCollection extends SynapseCollection<Graupner2012SynapseConfiguration> {
+public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<Graupner2012SynapseConfiguration> {
 	private static final Graupner2012SynapseConfiguration configSingleton = new Graupner2012SynapseConfiguration();
 
 	// State variables.
@@ -23,10 +23,10 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 	int[] preDelayCount; // Count down until calcium spike after pre-synaptic neuronal spike.
 
 	// Model parameters, see SynapseConfigurationGraupner2012.
-	public double[] cSpikePre, cSpikePost, tCDecayMult, depThresh, potThresh, depRateMult, potRateMult, bistableBoundary, noiseMult, w0, wRange, timeScaleInv, timeScaleSqrt, stepPeriod;
+	public double[] cSpikePre, cSpikePost, tCDecayMult, depThresh, potThresh, depRateMult, potRateMult, w0, wRange, timeScaleInv, stepPeriod;
 	public int[] cSpikePreDelayStepCount;
 
-	public Graupner2012SynapseCollection(int size) {
+	public Graupner2012SimplifiedSynapseCollection(int size) {
 		this.size = size;
 		init();
 	}
@@ -49,12 +49,9 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 			potThresh = new double[configs.size()];
 			depRateMult = new double[configs.size()];
 			potRateMult = new double[configs.size()];
-			bistableBoundary = new double[configs.size()];
-			noiseMult = new double[configs.size()];
 			w0 = new double[configs.size()];
 			wRange = new double[configs.size()];
 			timeScaleInv = new double[configs.size()];
-			timeScaleSqrt = new double[configs.size()];
 			cSpikePreDelayStepCount = new int[configs.size()];
 			stepPeriod = new double[1];
 		}
@@ -69,16 +66,9 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 				potThresh[c] = config.potThresh;
 				depRateMult[c] = config.depRate / simulation.getTimeResolution();
 				potRateMult[c] = config.potRate / simulation.getTimeResolution();
-				bistableBoundary[c] = config.bistableBoundary;
-				noiseMult[c] = (config.noiseRate * timeScaleSqrt[c]) / (Math.sqrt(simulation.getTimeResolution()) * 10); // This
-																															// is
-																															// probably
-																															// not
-																															// right.
 				w0[c] = config.w0;
 				wRange[c] = config.w1 - config.w0;
 				timeScaleInv[c] = (1.0 / config.timeScale);
-				timeScaleSqrt[c] = Math.sqrt(config.timeScale);
 				cSpikePreDelayStepCount[c] = (int) Math.round(config.cSpikePreDelay * (simulation.getTimeResolution() / 1000.0));
 				stepPeriod[0] = simulation.getStepPeriod();
 			}
@@ -96,12 +86,9 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 		put(potThresh);
 		put(depRateMult);
 		put(potRateMult);
-		put(bistableBoundary);
-		put(noiseMult);
 		put(w0);
 		put(wRange);
 		put(timeScaleInv);
-		put(timeScaleSqrt);
 		put(cSpikePreDelayStepCount);
 		put(stepPeriod);
 		stateVariablesStale = false;
@@ -156,9 +143,10 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 			c[synapseID] += cSpikePost[configID];
 		}
 
-		// Update strength ( * stepPeriod[0] to multiply by inverse of time resolution).
-		double delta_s = (-p[synapseID] * (1 - p[synapseID]) * (bistableBoundary[configID] - p[synapseID])) * stepPeriod[0] * 10;
+		// Update strength if necessary.
 		if (c[synapseID] >= depThresh[configID] || c[synapseID] >= potThresh[configID]) {
+			double delta_s = 0;
+
 			// Determine what the next calcium concentration will likely be, to allow proportional potentiation or depression if it crosses one of the
 			// thresholds between this step and the next.
 			double nextC = c[synapseID] - c[synapseID] * tCDecayMult[configID];
@@ -173,15 +161,10 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 				double scaling = (nextC >= depThresh[configID]) ? 1 : ((c[synapseID] - depThresh[configID]) / (c[synapseID] - nextC));
 				delta_s -= depRateMult[configID] * p[synapseID] * scaling;
 			}
-			// TODO implement RNG (normal/Gaussian distribution).
-			// delta_s += noiseMult[configID] * config.rng.nextGaussian();
+
+			p[synapseID] += delta_s * timeScaleInv[configID];
 		}
 
-		p[synapseID] += delta_s * timeScaleInv[configID];
-		if (p[synapseID] > 1)
-			p[synapseID] = 1;
-		if (p[synapseID] < 0)
-			p[synapseID] = 0;
 		efficacy[synapseID] = w0[configID] + p[synapseID] * wRange[configID];
 
 		super.run();
@@ -215,6 +198,6 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 
 	@Override
 	public ComponentCollection createCollection(int size) {
-		return new Graupner2012SynapseCollection(size);
+		return new Graupner2012SimplifiedSynapseCollection(size);
 	}
 }

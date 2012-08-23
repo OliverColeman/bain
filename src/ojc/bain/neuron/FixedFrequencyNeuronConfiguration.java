@@ -52,4 +52,5 @@ public class FixedFrequencyNeuronConfiguration extends ComponentConfiguration {
 	public ComponentConfiguration createConfiguration() {
 		return new FixedFrequencyNeuronConfiguration();
 	}
+
 }

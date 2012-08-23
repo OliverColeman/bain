@@ -24,14 +24,17 @@ public class Pfister2006SynapseConfiguration extends ComponentConfiguration {
 		setParameterValues(params);
 	}
 
+	@Override
 	public String[] getParameterNames() {
 		return parameterLabels;
 	}
 
+	@Override
 	public String[] getPresetNames() {
 		return presetNames;
 	}
 
+	@Override
 	public ComponentConfiguration getPreset(int index) {
 		return new Pfister2006SynapseConfiguration(presetValues[index]);
 	}

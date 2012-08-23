@@ -49,15 +49,16 @@ public abstract class ConfigurableComponentCollection<C extends ComponentConfigu
 	 * Replace the specified configuration in the list of known configurations.
 	 * 
 	 * @param configurationIndex The index of the configuration to replace.
-	 * @param componentConfiguration The new configuration.
+	 * @param configurations The new configuration.
 	 */
-	public void setConfiguration(int configurationIndex, C componentConfiguration) {
+	public void setConfiguration(int configurationIndex, ComponentConfiguration configurations) {
+		C config = (C) configurations; // Make sure it's the right type.
 		if (configurationIndex < 0 || configurationIndex >= configs.size()) {
 			throw new IllegalArgumentException("No configuration exists at index " + configurationIndex);
 		}
 		configs.get(configurationIndex).removeListener(this);
-		configs.set(configurationIndex, componentConfiguration);
-		componentConfiguration.addListener(this);
+		configs.set(configurationIndex, config);
+		configurations.addListener(this);
 		init();
 	}
 

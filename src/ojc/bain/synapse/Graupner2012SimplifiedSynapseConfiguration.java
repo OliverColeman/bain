@@ -7,13 +7,13 @@ import ojc.bain.base.ComponentConfiguration;
  * 
  * @author Oliver J. Coleman
  */
-public class Graupner2012SynapseConfiguration extends ComponentConfiguration {
+public class Graupner2012SimplifiedSynapseConfiguration extends ComponentConfiguration {
 	// Calcium model parameters.
 	public double tCDecay, cSpikePre, cSpikePost, cSpikePreDelay;
 	// Plasticity model parameters
-	public double depThresh, potThresh, depRate, potRate, noiseRate, bistableBoundary, w0, w1, initialP, timeScale, wRange;
+	public double depThresh, potThresh, depRate, potRate, w0, w1, initialP, timeScale, wRange;
 
-	static String[] parameterLabels = { "tCDecay", "cSpikePre", "cSpikePost", "depThresh", "potThresh", "depRate", "potRate", "noiseRate", "timeScale", "bistableBoundary", "cSpikePreDelay", "w0", "w1", "initialP" };
+	static String[] parameterLabels = { "tCDecay", "cSpikePre", "cSpikePost", "depThresh", "potThresh", "depRate", "potRate", "timeScale", "cSpikePreDelay", "w0", "w1", "initialP" };
 	static String[] presetNames = { "DP-curve", "DPD-curve", "DPD'-curve", "P-curve", "D-curve", "D'-curve" };
 	// Values must match order in parameterLabels.
 	static double[][] presetValues = { { 20, 1, 2, 1, 1.3, 200, 321.808, 2.8284, 150, 0.5, 13.7, 0, 1, 0.5 }, // DP
@@ -24,10 +24,10 @@ public class Graupner2012SynapseConfiguration extends ComponentConfiguration {
 			{ 20, 1, 2, 1, 3.5, 60, 600, 2.8284, 150, 0.5, 0, 0, 1, 0.5 }, // D'
 	};
 
-	public Graupner2012SynapseConfiguration() {
+	public Graupner2012SimplifiedSynapseConfiguration() {
 	}
 
-	public Graupner2012SynapseConfiguration(double[] params) {
+	public Graupner2012SimplifiedSynapseConfiguration(double[] params) {
 		setParameterValues(params); // calls init()
 	}
 
@@ -40,11 +40,11 @@ public class Graupner2012SynapseConfiguration extends ComponentConfiguration {
 	}
 
 	public ComponentConfiguration getPreset(int index) {
-		return new Graupner2012SynapseConfiguration(presetValues[index]);
+		return new Graupner2012SimplifiedSynapseConfiguration(presetValues[index]);
 	}
 
 	@Override
 	public ComponentConfiguration createConfiguration() {
-		return new Graupner2012SynapseConfiguration();
+		return new Graupner2012SimplifiedSynapseConfiguration();
 	}
 }
