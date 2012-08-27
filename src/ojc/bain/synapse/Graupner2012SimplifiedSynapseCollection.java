@@ -21,9 +21,10 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 	double[] c; // Calcium concentration.
 	double[] p; // Efficacy state.
 	int[] preDelayCount; // Count down until calcium spike after pre-synaptic neuronal spike.
+	boolean[] preSpikedLastTimeStep, postSpikedLastTimeStep; // true iff the pre/post-synaptic neuron was spiking during the last time step. These are used to prevent counting a spike that lasts multiple time steps more than once.
 
 	// Model parameters, see SynapseConfigurationGraupner2012.
-	public double[] cSpikePre, cSpikePost, tCDecayMult, depThresh, potThresh, depRateMult, potRateMult, w0, wRange, timeScaleInv, stepPeriod;
+	public double[] cSpikePre, cSpikePost, tCDecayMult, depThresh, potThresh, depRateMult, potRateMult, w0, wRange, stepPeriod;
 	public int[] cSpikePreDelayStepCount;
 
 	public Graupner2012SimplifiedSynapseCollection(int size) {
@@ -39,6 +40,8 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 			c = new double[size];
 			p = new double[size];
 			preDelayCount = new int[size];
+			preSpikedLastTimeStep = new boolean[size];
+			postSpikedLastTimeStep = new boolean[size];
 		}
 		// Init parameter arrays.
 		if (cSpikePre == null || cSpikePre.length != configs.size()) {
@@ -51,7 +54,6 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 			potRateMult = new double[configs.size()];
 			w0 = new double[configs.size()];
 			wRange = new double[configs.size()];
-			timeScaleInv = new double[configs.size()];
 			cSpikePreDelayStepCount = new int[configs.size()];
 			stepPeriod = new double[1];
 		}
@@ -64,11 +66,10 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 				tCDecayMult[c] = (1.0 / config.tCDecay) / (simulation.getTimeResolution() / 1000.0);
 				depThresh[c] = config.depThresh;
 				potThresh[c] = config.potThresh;
-				depRateMult[c] = config.depRate / simulation.getTimeResolution();
-				potRateMult[c] = config.potRate / simulation.getTimeResolution();
+				depRateMult[c] = config.depRate / (simulation.getTimeResolution() * config.timeScale);
+				potRateMult[c] = config.potRate / (simulation.getTimeResolution() * config.timeScale);
 				w0[c] = config.w0;
 				wRange[c] = config.w1 - config.w0;
-				timeScaleInv[c] = (1.0 / config.timeScale);
 				cSpikePreDelayStepCount[c] = (int) Math.round(config.cSpikePreDelay * (simulation.getTimeResolution() / 1000.0));
 				stepPeriod[0] = simulation.getStepPeriod();
 			}
@@ -79,6 +80,8 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 		put(c);
 		put(p);
 		put(preDelayCount);
+		put(preSpikedLastTimeStep);
+		put(postSpikedLastTimeStep);
 		put(cSpikePre);
 		put(cSpikePost);
 		put(tCDecayMult);
@@ -88,7 +91,6 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 		put(potRateMult);
 		put(w0);
 		put(wRange);
-		put(timeScaleInv);
 		put(cSpikePreDelayStepCount);
 		put(stepPeriod);
 		stateVariablesStale = false;
@@ -101,10 +103,14 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 			efficacy[s] = config.w0 + p[s] * config.wRange;
 			c[s] = 0;
 			preDelayCount[s] = 0;
+			preSpikedLastTimeStep[s] = false;
+			postSpikedLastTimeStep[s] = false;
 		}
 		put(c);
 		put(p);
 		put(preDelayCount);
+		put(preSpikedLastTimeStep);
+		put(postSpikedLastTimeStep);
 		put(efficacy);
 		stateVariablesStale = false;
 	}
@@ -125,7 +131,7 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 
 		// If a pre spike occurred (ignore if we're still counting down from a
 		// previous spike, not ideal but more efficient).
-		if (preSpiked && preDelayCount[synapseID] == 0) {
+		if (!preSpikedLastTimeStep[synapseID] && preSpiked && preDelayCount[synapseID] == 0) {
 			preDelayCount[synapseID] = cSpikePreDelayStepCount[configID] + 1;
 		}
 
@@ -139,14 +145,12 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 		}
 
 		// If a post spike occurred.
-		if (postSpiked) {
+		if (!postSpikedLastTimeStep[synapseID] && postSpiked) {
 			c[synapseID] += cSpikePost[configID];
 		}
 
 		// Update strength if necessary.
 		if (c[synapseID] >= depThresh[configID] || c[synapseID] >= potThresh[configID]) {
-			double delta_s = 0;
-
 			// Determine what the next calcium concentration will likely be, to allow proportional potentiation or depression if it crosses one of the
 			// thresholds between this step and the next.
 			double nextC = c[synapseID] - c[synapseID] * tCDecayMult[configID];
@@ -154,17 +158,18 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 			if (c[synapseID] >= potThresh[configID]) {
 				// If the next calcium decay will drop the calcium below the potentiation threshold, then apply the potentiation proportionately.
 				double scaling = (nextC >= potThresh[configID]) ? 1 : ((c[synapseID] - potThresh[configID]) / (c[synapseID] - nextC));
-				delta_s += potRateMult[configID] * (1 - p[synapseID]) * scaling;
+				p[synapseID] += potRateMult[configID] * (1 - p[synapseID]) * scaling;
 			}
 			if (c[synapseID] >= depThresh[configID]) {
 				// If the next calcium decay will drop the calcium below the depression threshold, then apply the depression proportionately.
 				double scaling = (nextC >= depThresh[configID]) ? 1 : ((c[synapseID] - depThresh[configID]) / (c[synapseID] - nextC));
-				delta_s -= depRateMult[configID] * p[synapseID] * scaling;
+				p[synapseID] -= depRateMult[configID] * p[synapseID] * scaling;
 			}
-
-			p[synapseID] += delta_s * timeScaleInv[configID];
 			efficacy[synapseID] = w0[configID] + p[synapseID] * wRange[configID];
 		}
+		
+		preSpikedLastTimeStep[synapseID] = preSpiked;
+		postSpikedLastTimeStep[synapseID] = postSpiked;
 
 		super.run();
 	}

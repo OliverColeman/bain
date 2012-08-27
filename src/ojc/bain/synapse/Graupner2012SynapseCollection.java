@@ -21,6 +21,7 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 	double[] c; // Calcium concentration.
 	double[] p; // Efficacy state.
 	int[] preDelayCount; // Count down until calcium spike after pre-synaptic neuronal spike.
+	boolean[] preSpikedLastTimeStep, postSpikedLastTimeStep; // true iff the pre/post-synaptic neuron was spiking during the last time step. These are used to prevent counting a spike that lasts multiple time steps more than once.
 
 	// Model parameters, see SynapseConfigurationGraupner2012.
 	public double[] cSpikePre, cSpikePost, tCDecayMult, depThresh, potThresh, depRateMult, potRateMult, bistableBoundary, noiseMult, w0, wRange, timeScaleInv, timeScaleSqrt, stepPeriod;
@@ -39,6 +40,8 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 			c = new double[size];
 			p = new double[size];
 			preDelayCount = new int[size];
+			preSpikedLastTimeStep = new boolean[size];
+			postSpikedLastTimeStep = new boolean[size];
 		}
 		// Init parameter arrays.
 		if (cSpikePre == null || cSpikePre.length != configs.size()) {
@@ -89,6 +92,8 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 		put(c);
 		put(p);
 		put(preDelayCount);
+		put(preSpikedLastTimeStep);
+		put(postSpikedLastTimeStep);
 		put(cSpikePre);
 		put(cSpikePost);
 		put(tCDecayMult);
@@ -114,10 +119,14 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 			efficacy[s] = config.w0 + p[s] * config.wRange;
 			c[s] = 0;
 			preDelayCount[s] = 0;
+			preSpikedLastTimeStep[s] = false;
+			postSpikedLastTimeStep[s] = false;
 		}
 		put(c);
 		put(p);
 		put(preDelayCount);
+		put(preSpikedLastTimeStep);
+		put(postSpikedLastTimeStep);
 		put(efficacy);
 		stateVariablesStale = false;
 	}
@@ -138,7 +147,7 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 
 		// If a pre spike occurred (ignore if we're still counting down from a
 		// previous spike, not ideal but more efficient).
-		if (preSpiked && preDelayCount[synapseID] == 0) {
+		if (!preSpikedLastTimeStep[synapseID] && preSpiked && preDelayCount[synapseID] == 0) {
 			preDelayCount[synapseID] = cSpikePreDelayStepCount[configID] + 1;
 		}
 
@@ -152,7 +161,7 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 		}
 
 		// If a post spike occurred.
-		if (postSpiked) {
+		if (!postSpikedLastTimeStep[synapseID] && postSpiked) {
 			c[synapseID] += cSpikePost[configID];
 		}
 
@@ -184,6 +193,9 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 			p[synapseID] = 0;
 		efficacy[synapseID] = w0[configID] + p[synapseID] * wRange[configID];
 
+		preSpikedLastTimeStep[synapseID] = preSpiked;
+		postSpikedLastTimeStep[synapseID] = postSpiked;
+		
 		super.run();
 	}
 
