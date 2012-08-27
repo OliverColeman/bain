@@ -297,6 +297,20 @@ public class Simulation {
 	public NeuronCollection<? extends ComponentConfiguration> getNeurons() {
 		return neurons;
 	}
+	
+	/**
+	 * Sets the neurons in this simulation. This will reinitialise and reset the simulation. 
+	 */
+	public void setNeurons(NeuronCollection<? extends ComponentConfiguration> neurons) {
+		if (this.neurons != null) {
+			this.neurons.setSimulation(null);
+		}
+		this.neurons = neurons;
+		neurons.setSimulation(this);
+		selectExecutionModes();
+		init();
+		reset();
+	}
 
 	/**
 	 * Returns the synapses in this simulation.
@@ -305,6 +319,20 @@ public class Simulation {
 	 */
 	public SynapseCollection<? extends ComponentConfiguration> getSynapses() {
 		return synapses;
+	}
+	
+	/**
+	 * Sets the synapses in this simulation. This will reinitialise and reset the simulation. 
+	 */
+	public void setSynapses(SynapseCollection<? extends ComponentConfiguration> synapses) {
+		if (this.synapses != null) {
+			this.synapses.setSimulation(null);
+		}
+		this.synapses = synapses;
+		synapses.setSimulation(this);
+		selectExecutionModes();
+		init();
+		reset();
 	}
 
 	public static void setSingleton(Simulation sim) {

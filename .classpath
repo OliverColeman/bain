@@ -3,7 +3,11 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/jfreechart/lib/jcommon-1.0.17.jar"/>
-	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/jfreechart/lib/jfreechart-1.0.14.jar" sourcepath="/home/oliver/.m2/repository/org/jfree/jfreechart/1.0.14/jfreechart-1.0.14-sources.jar"/>
+	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/jfreechart/lib/jfreechart-1.0.14.jar" sourcepath="/home/oliver/.m2/repository/org/jfree/jfreechart/1.0.14/jfreechart-1.0.14-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://www.jfree.org/jfreechart/api/javadoc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/aparapi/aparapi.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/data/ai/PhD/software/lib/aparapi"/>

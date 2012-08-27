@@ -1,22 +1,28 @@
 package ojc.bain.neuron;
 
-import ojc.bain.base.ComponentConfiguration;
+import ojc.bain.base.NeuronConfiguration;
 
 /**
- * A that produces pre-determined spike patterns.
+ * A neuron model that produces pre-determined spike patterns. The spikes are modelled as instantaneous transitions between the resting potential and the spike potential.
  * 
  * @author Oliver J. Coleman
  */
-public class FixedProtocolNeuronConfiguration extends ComponentConfiguration {
+public class FixedProtocolNeuronConfiguration extends NeuronConfiguration {
 	/**
 	 * Presentation period of spike pattern, in seconds.
 	 */
 	public double spikePatternPeriod;
 
 	/**
-	 * Timings of spikes relative to start of protocol, in seconds.
+	 * Times of the start of spikes relative to the start of the protocol, in seconds. 
+	 * Spike start times should be less than ({@link #spikePatternPeriod} + {@link #spikeDuration}), otherwise they will be truncated. 
 	 */
 	public double[] spikeTimings;
+		
+	/**
+	 * The duration of a spike in seconds. Default duration is 1ms.
+	 */
+	public double spikeDuration = 0.001;
 
 	/**
 	 * Create a FixedProtocolNeuronConfiguration. This is only used for retrieving a configuration singleton.
@@ -48,13 +54,13 @@ public class FixedProtocolNeuronConfiguration extends ComponentConfiguration {
 	}
 
 	@Override
-	public ComponentConfiguration getPreset(int index) {
+	public FixedProtocolNeuronConfiguration getPreset(int index) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ComponentConfiguration createConfiguration() {
+	public FixedProtocolNeuronConfiguration createConfiguration() {
 		return new FixedProtocolNeuronConfiguration();
 	}
 }

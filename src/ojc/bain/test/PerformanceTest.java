@@ -35,8 +35,6 @@ public class PerformanceTest {
 			synapses.setPreAndPostNeurons(s, (int) (Math.random() * neuronCount), (int) (Math.random() * neuronCount));
 		}
 
-		// System.out.println("memory used: " + (Runtime.getRuntime().totalMemory() / (1024*1024)));
-
 		// Dry run.
 		sim.run(100);
 		if (neurons.getExecutionMode() != mode || synapses.getExecutionMode() != mode) {

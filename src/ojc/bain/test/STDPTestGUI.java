@@ -78,12 +78,22 @@ public class STDPTestGUI extends JPanel {
 						if (e.getSource() == testSpecifiedButton) {
 							boolean logSpikesAndStateVariables = settings.repetitions <= 25;
 							TestResults results = SynapseTest.testPattern(synapse, timeResolution, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, logSpikesAndStateVariables, progressMonitor);
-							JFreeChart resultsPlot = SynapseTest.createChart(results, timeResolution, logSpikesAndStateVariables, true);
+							
+							String title = synapse.getClass().getSimpleName() + " (" + synapse.getComponentConfiguration(0).name + ") - " + settings.name;
+							
+							JFreeChart resultsPlot = SynapseTest.createChart(results, timeResolution, logSpikesAndStateVariables, true, title);
 						} else {
 							ComponentConfiguration config = synapse.getConfigSingleton();
 							TestResults[] results = SynapseTest.testPattern(synapse, config.getPresetNames(), config.getPresets(), timeResolution, settings.period, settings.repetitions, settings.patterns, settings.refSpikeIndexes, settings.refSpikePreOrPost, false, progressMonitor);
+							
+							//for (int r = 0; r < results.length; r++) {
+							//	results[r].setProperty("Title", synapse.getClass().getSimpleName() + " (" + config.getPresetNames()[r] + ") - " + settings.name);
+							//}
+							
+							String title = synapse.getClass().getSimpleName() + " - " + settings.name;
+							
 							boolean singlePlot = e.getSource() == testPresetsSingleButton;
-							JFreeChart resultsPlot = SynapseTest.createChart(results, singlePlot, timeResolution, false, true);
+							JFreeChart resultsPlot = SynapseTest.createChart(results, singlePlot, timeResolution, false, true, title);
 						}
 						return null;
 					}
@@ -149,6 +159,7 @@ public class STDPTestGUI extends JPanel {
 		SpikeTimingSetter[][] spikeTimingSetters;
 		SpikeTimingSetterPair[] spikeTimingSetterPairs;
 		JSpinner variationDimsSpinner, preSpikeCountSpinner, postSpikeCountSpinner, patternFreqSpinner, patternRepetitionsSpinner;
+		JComboBox<String> presetSelector;
 
 		public SpikeProtocolSettingsPanel(final STDPTestGUI gui) {
 			SpikeProtocolSettings initSettings = spikeProtocolSettingsPresets[0];
@@ -272,6 +283,7 @@ public class STDPTestGUI extends JPanel {
 
 			presetSelector.setSelectedIndex(0);
 
+			this.presetSelector = presetSelector;
 			this.spikeTimingSetters = spikeTimingSetters;
 			this.spikeTimingSetterPairs = spikeTimingSetterPairs;
 			this.variationDimsSpinner = variationDimsSpinner;
@@ -283,6 +295,7 @@ public class STDPTestGUI extends JPanel {
 
 		public SpikeProtocolSettings getSpikeProtocolSettings() {
 			SpikeProtocolSettings settings = new SpikeProtocolSettings();
+			settings.name = presetSelector.getSelectedItem().toString();
 			settings.variationDimsCount = (int) variationDimsSpinner.getValue();
 			settings.period = 1.0 / (double) patternFreqSpinner.getValue();
 			settings.repetitions = (int) patternRepetitionsSpinner.getValue();
@@ -330,21 +343,26 @@ public class STDPTestGUI extends JPanel {
 						}
 					}
 
-					double baseRefSpikeTimeInitial = settings.patterns[0][settings.refSpikePreOrPost[d - 1][0]][settings.refSpikeIndexes[d - 1][0]];
-					double baseRefSpikeTimeFinal = settings.patterns[d][settings.refSpikePreOrPost[d - 1][0]][settings.refSpikeIndexes[d - 1][0]];
-					if (baseRefSpikeTimeInitial != baseRefSpikeTimeFinal) {
-						JOptionPane.showMessageDialog(null, "It is recommended that the initial and final base spike times be the same (and only the relative spike time differs).", "Warning", JOptionPane.WARNING_MESSAGE);
-					}
+					//double baseRefSpikeTimeInitial = settings.patterns[0][settings.refSpikePreOrPost[d - 1][0]][settings.refSpikeIndexes[d - 1][0]];
+					//double baseRefSpikeTimeFinal = settings.patterns[d][settings.refSpikePreOrPost[d - 1][0]][settings.refSpikeIndexes[d - 1][0]];
+					//if (baseRefSpikeTimeInitial != baseRefSpikeTimeFinal) {
+					//	JOptionPane.showMessageDialog(null, "It is recommended that the initial and final base spike times be the same (and only the relative spike time differs).", "Warning", JOptionPane.WARNING_MESSAGE);
+					//}
 				}
 			}
 			return settings;
 		}
 	}
 
-	protected static String[] spikeProtocolSettingsPresetNames = new String[] { "Double", "Triple 1" };
-	protected static SpikeProtocolSettings[] spikeProtocolSettingsPresets = new SpikeProtocolSettings[] { new SpikeProtocolSettings(1, 1, 60, new int[] { 1, 1 }, new double[][][] { { { 0.05 }, { 0.0 } }, { { 0.05 }, { 0.1 } } }, new int[][] { { 0, 0 } }, new int[][] { { 0, 1 } }), new SpikeProtocolSettings(2, 1, 60, new int[] { 1, 2 }, new double[][][] { { { 0.05 }, { 0.0, 0.1 } }, { { 0.05 }, { 0.05, 0.1 } }, { { 0.05 }, { 0.0, 0.05 } } }, new int[][] { { 0, 0 }, { 0, 1 } }, new int[][] { { 0, 1 }, { 0, 1 } }), };
+	protected static String[] spikeProtocolSettingsPresetNames = new String[] { "pre-post, 2Hz, 20 reps, 10ms", "pre-post, 1Hz, 60 reps, -50ms to 50ms", "post-pre-post, 1Hz, 60 reps, 0ms to 50ms" };
+	protected static SpikeProtocolSettings[] spikeProtocolSettingsPresets = new SpikeProtocolSettings[] {
+		new SpikeProtocolSettings(spikeProtocolSettingsPresetNames[0], 0, 0.5, 20, new int[] { 1, 1 }, new double[][][] { { { 0.0 }, { 0.01 } } }, new int[][] { { } }, new int[][] { { } }), 
+		new SpikeProtocolSettings(spikeProtocolSettingsPresetNames[1], 1, 1, 60, new int[] { 1, 1 }, new double[][][] { { { 0.05 }, { 0.0 } }, { { 0.05 }, { 0.1 } } }, new int[][] { { 0, 0 } }, new int[][] { { 0, 1 } }), 
+		new SpikeProtocolSettings(spikeProtocolSettingsPresetNames[2], 2, 1, 60, new int[] { 1, 2 }, new double[][][] { { { 0.05 }, { 0.0, 0.1 } }, { { 0.05 }, { 0.05, 0.1 } }, { { 0.05 }, { 0.0, 0.05 } } }, new int[][] { { 0, 0 }, { 0, 1 } }, new int[][] { { 1, 0 }, { 0, 1 } }), 
+	};
 
 	protected static class SpikeProtocolSettings {
+		public String name;
 		public int variationDimsCount;
 		public double period;
 		public int repetitions;
@@ -356,7 +374,8 @@ public class STDPTestGUI extends JPanel {
 		public SpikeProtocolSettings() {
 		}
 
-		public SpikeProtocolSettings(int variationDimsCount, double period, int repetitions, int[] spikeCounts, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost) {
+		public SpikeProtocolSettings(String name, int variationDimsCount, double period, int repetitions, int[] spikeCounts, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost) {
+			this.name = name;
 			this.variationDimsCount = variationDimsCount;
 			this.period = period;
 			this.repetitions = repetitions;
@@ -377,7 +396,7 @@ public class STDPTestGUI extends JPanel {
 			final JPanel panel = this;
 			panel.setLayout(new GridBagLayout());
 
-			String[] synapseTypes = { "ojc.bain.synapse.Pfister2006SynapseCollection", "ojc.bain.synapse.Graupner2012SynapseCollection" , "ojc.bain.synapse.Graupner2012SimplifiedSynapseCollection"};
+			String[] synapseTypes = { "ojc.bain.synapse.Clopath2010SynapseCollection", "ojc.bain.synapse.Pfister2006SynapseCollection", "ojc.bain.synapse.Graupner2012SynapseCollection" , "ojc.bain.synapse.Graupner2012SimplifiedSynapseCollection" };
 			for (String t : synapseTypes) {
 				try {
 					SynapseCollection.registerComponentCollectionType(t);
@@ -461,6 +480,7 @@ public class STDPTestGUI extends JPanel {
 												fields[pi].setValue(params[pi]);
 											}
 										}
+										config.name = preset.name;
 									} catch (Exception ex) {
 										ex.printStackTrace();
 									}
@@ -504,13 +524,8 @@ public class STDPTestGUI extends JPanel {
 
 								if (presetSelector != null) {
 									// Determine if the current values correspond to a preset.
-									int prsi;
-									for (prsi = 0; prsi < config.getPresetNames().length; prsi++) {
-										if (config.equals(config.getPreset(prsi))) {
-											break;
-										}
-									}
-									presetSelector.setSelectedIndex(prsi);
+									int prsi = config.getMatchingPreset();
+									presetSelector.setSelectedIndex(prsi == -1 ? config.getPresetNames().length : prsi);
 								}
 							}
 						});

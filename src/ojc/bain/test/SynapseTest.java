@@ -68,7 +68,7 @@ public class SynapseTest {
 	 */
 	public static TestResults singleTest(Simulation sim, long simSteps, boolean logSpikesAndStateVariables, long simStepsNoSpikes) {
 		if (sim.getNeurons().getSize() != 2 || sim.getSynapses().getSize() != 1) {
-			throw new IllegalArgumentException("The simulation must contain at least 2 neurons and 1 .");
+			throw new IllegalArgumentException("The simulation must contain at least 2 neurons and 1 synapse.");
 		}
 		
 		simStepsNoSpikes = Math.max(0, simStepsNoSpikes);
@@ -429,8 +429,8 @@ public class SynapseTest {
 	 * @param logSpikesAndStateVariables Whether to include pre- and post-synaptic spikes and any state variables exposed by the synapse model in the plot.
 	 * @param showInFrame Whether to display the result in a frame.
 	 */
-	public static JFreeChart createChart(TestResults results, int timeResolution, boolean logSpikesAndStateVariables, boolean showInFrame) {
-		return createChart(new TestResults[] { results }, true, timeResolution, logSpikesAndStateVariables, showInFrame);
+	public static JFreeChart createChart(TestResults results, int timeResolution, boolean logSpikesAndStateVariables, boolean showInFrame, String title) {
+		return createChart(new TestResults[] { results }, true, timeResolution, logSpikesAndStateVariables, showInFrame, title);
 	}
 
 	/**
@@ -444,10 +444,10 @@ public class SynapseTest {
 	 *            is ignored if more than one result is to be plotted.
 	 * @param showInFrame Whether to display the result in a frame.
 	 */
-	public static JFreeChart createChart(TestResults[] results, boolean singlePlot, int timeResolution, boolean logSpikesAndStateVariables, boolean showInFrame) {
+	public static JFreeChart createChart(TestResults[] results, boolean singlePlot, int timeResolution, boolean logSpikesAndStateVariables, boolean showInFrame, String title) {
 		JFreeChart resultsPlot = null;
 		int resultsCount = results.length;
-
+		
 		// Make sure they're all the same type.
 		for (int ri = 0; ri < results.length; ri++) {
 			if (ri < resultsCount - 1 && results[ri].getProperty("type") != results[ri + 1].getProperty("type")) {
@@ -460,6 +460,7 @@ public class SynapseTest {
 
 		TYPE type = (TYPE) results[0].getProperty("type");
 
+		XYLineAndShapeRenderer xyRenderer;
 		XYToolTipGenerator tooltipGen = new StandardXYToolTipGenerator();
 
 		if (type == TYPE.STDP) {
@@ -471,7 +472,7 @@ public class SynapseTest {
 					String efficacyLabel = (resultsCount == 1) ? "Efficacy" : "" + result.getProperty("label");
 					efficacyData.addSeries(efficacyLabel, result.getResult("Time", "Efficacy"));
 				}
-				XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+				xyRenderer = new XYLineAndShapeRenderer(true, false);
 				xyRenderer.setBaseToolTipGenerator(tooltipGen);
 				combinedPlot.add(new XYPlot(efficacyData, null, new NumberAxis("Efficacy"), xyRenderer), 4);
 			} else { // Plot each result set separately.
@@ -479,13 +480,13 @@ public class SynapseTest {
 					DefaultXYDataset efficacyData = new DefaultXYDataset();
 					String efficacyLabel = (resultsCount == 1) ? "Efficacy" : "" + result.getProperty("label");
 					efficacyData.addSeries(efficacyLabel, result.getResult("Time", "Efficacy"));
-					XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+					xyRenderer = new XYLineAndShapeRenderer(true, false);
 					xyRenderer.setBaseToolTipGenerator(tooltipGen);
 					combinedPlot.add(new XYPlot(efficacyData, null, new NumberAxis("Efficacy"), xyRenderer), 4);
 				}
 			}
 
-			// Don't plot trace data for multiple tests plotted together.
+			// Don't plot trace data for multiple tests.
 			if (resultsCount == 1 && logSpikesAndStateVariables) {
 				DefaultXYDataset traceData = new DefaultXYDataset();
 				for (String label : results[0].getResultLabels()) {
@@ -493,19 +494,19 @@ public class SynapseTest {
 						traceData.addSeries(label, results[0].getResult("Time", label));
 					}
 				}
-				XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+				xyRenderer = new XYLineAndShapeRenderer(true, false);
 				xyRenderer.setBaseToolTipGenerator(tooltipGen);
-				combinedPlot.add(new XYPlot(traceData, null, new NumberAxis("Traces"), xyRenderer), 3);
+				combinedPlot.add(new XYPlot(traceData, null, new NumberAxis("State"), xyRenderer), 3);
 
 				DefaultXYDataset spikeData = new DefaultXYDataset();
 				spikeData.addSeries("Pre-synaptic spikes", results[0].getResult("Time", "Pre-synaptic spikes"));
 				spikeData.addSeries("Post-synaptic spikes", results[0].getResult("Time", "Post-synaptic spikes"));
-				XYBarRenderer xybr = new XYBarRenderer();
-				xybr.setShadowVisible(false);
-				combinedPlot.add(new XYPlot(new XYBarDataset(spikeData, 1.0 / timeResolution), null, new NumberAxis("Spikes"), xybr), 1);
+				xyRenderer = new XYLineAndShapeRenderer(true, false);
+				xyRenderer.setBaseToolTipGenerator(tooltipGen);
+				combinedPlot.add(new XYPlot(spikeData, null, new NumberAxis("Pre/post potential"), xyRenderer), 3);
 			}
 
-			resultsPlot = new JFreeChart("", null, combinedPlot, true);
+			resultsPlot = new JFreeChart(title, null, combinedPlot, true);
 			resultsPlot.setBackgroundPaint(Color.WHITE);
 			resultsPlot.getPlot().setBackgroundPaint(Color.WHITE);
 			((XYPlot) resultsPlot.getPlot()).setRangeGridlinePaint(Color.LIGHT_GRAY);
@@ -526,7 +527,7 @@ public class SynapseTest {
 					String efficacyLabel = (resultsCount == 1) ? "Efficacy" : "" + result.getProperty("label");
 					efficacyData.addSeries(efficacyLabel, result.getResult("Time delta", "Efficacy"));
 				}
-				XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+				xyRenderer = new XYLineAndShapeRenderer(true, false);
 				xyRenderer.setBaseToolTipGenerator(tooltipGen);
 				combinedPlot.add(new XYPlot(efficacyData, null, new NumberAxis("Efficacy"), xyRenderer), 4);
 			} else { // Plot each result set separately.
@@ -534,13 +535,13 @@ public class SynapseTest {
 					DefaultXYDataset efficacyData = new DefaultXYDataset();
 					String efficacyLabel = (resultsCount == 1) ? "Efficacy" : "" + result.getProperty("label");
 					efficacyData.addSeries(efficacyLabel, result.getResult("Time delta", "Efficacy"));
-					XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
+					xyRenderer = new XYLineAndShapeRenderer(true, false);
 					xyRenderer.setBaseToolTipGenerator(tooltipGen);
 					combinedPlot.add(new XYPlot(efficacyData, null, new NumberAxis("Efficacy"), xyRenderer), 4);
 				}
 			}
 
-			resultsPlot = new JFreeChart("", null, combinedPlot, true);
+			resultsPlot = new JFreeChart(title, null, combinedPlot, true);
 			resultsPlot.setBackgroundPaint(Color.WHITE);
 			resultsPlot.getPlot().setBackgroundPaint(Color.WHITE);
 			((XYPlot) resultsPlot.getPlot()).setRangeGridlinePaint(Color.LIGHT_GRAY);
@@ -581,7 +582,10 @@ public class SynapseTest {
 				range = Math.abs(max - min);
 				rangeBase = Math.min(Math.abs(min), Math.abs(max));
 			}
-
+			if (min >= max) {
+				max = min + Double.MIN_VALUE*10;
+			}
+			
 			LookupPaintScale scale = new LookupPaintScale(min, max, Color.WHITE);
 			if (min < 0) {
 				for (int ci = 0; ci <= 255; ci++) {
@@ -607,7 +611,7 @@ public class SynapseTest {
 			XYPlot plot = new XYPlot(plotData, xAxis, yAxis, renderer);
 			plot.setDomainGridlinesVisible(false);
 
-			resultsPlot = new JFreeChart("", plot);
+			resultsPlot = new JFreeChart(title, plot);
 			resultsPlot.removeLegend();
 			NumberAxis valueAxis = new NumberAxis();
 			valueAxis.setLowerBound(scale.getLowerBound());
@@ -619,7 +623,7 @@ public class SynapseTest {
 		}
 
 		if (showInFrame) {
-			JFrame plotFrame = new JFrame();
+			JFrame plotFrame = new JFrame(title);
 			plotFrame.add(new ChartPanel(resultsPlot));
 			plotFrame.setExtendedState(plotFrame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 			plotFrame.pack();

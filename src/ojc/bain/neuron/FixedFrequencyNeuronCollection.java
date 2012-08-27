@@ -12,6 +12,8 @@ import com.amd.aparapi.Kernel;
  */
 public class FixedFrequencyNeuronCollection extends NeuronCollection<FixedFrequencyNeuronConfiguration> {
 	int[] configSpikingPeriod;
+	double[] configSpikePotential;
+	double[] configRestPotential;
 
 	// Used in the Aparapi kernel to pass the simulation step.
 	long[] simStep = new long[1];
@@ -29,14 +31,22 @@ public class FixedFrequencyNeuronCollection extends NeuronCollection<FixedFreque
 	public void init() {
 		super.init();
 		configSpikingPeriod = new int[configs.size()];
+		configSpikePotential = new double[configs.size()];
+		configRestPotential = new double[configs.size()];
+		
 		if (simulation != null) {
 			for (int i = 0; i < configs.size(); i++) {
-				configSpikingPeriod[i] = (int) Math.round(configs.get(i).spikingPeriod * simulation.getTimeResolution());
+				FixedFrequencyNeuronConfiguration config = configs.get(i);
+				configSpikingPeriod[i] = (int) Math.round(config.spikingPeriod * simulation.getTimeResolution());
+				configSpikePotential[i] = config.spikePotential;
+				configRestPotential[i] = config.restPotential;
 			}
 		}
 
 		// Transfer data to Aparapi kernel.
 		put(configSpikingPeriod);
+		put(configSpikePotential);
+		put(configRestPotential);
 	}
 
 	@Override
@@ -53,7 +63,7 @@ public class FixedFrequencyNeuronCollection extends NeuronCollection<FixedFreque
 			return;
 		int configID = componentConfigIndexes[neuronID];
 		int spikePeriod = configSpikingPeriod[configID];
-		neuronOutputs[neuronID] = (simStep[0] % spikePeriod == 0) ? 1 : 0;
+		neuronOutputs[neuronID] = (simStep[0] % spikePeriod == 0) ? configSpikePotential[configID] : configRestPotential[configID];
 		super.run();
 	}
 

@@ -1,7 +1,5 @@
 package ojc.bain.neuron;
 
-import ojc.bain.base.ComponentCollection;
-import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.NeuronCollection;
 
 /**
@@ -15,7 +13,9 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 	// Config parameters.
 	int[] configSpikePatternPeriod; // Duration of protocol, in number of simulation steps.
 	int[] configProtocolIndex; // Index into configSpikeProtocol for start of each protocol.
-	byte[] configSpikeProtocol; // Look-up table for protocol, one element for each simulation step (for each protocol, packed array).
+	boolean[] configSpikeProtocol; // Look-up table for protocol, one element for each simulation step (for each protocol, packed array).
+	double[] configSpikePotential;
+	double[] configRestPotential;
 
 	public FixedProtocolNeuronCollection(int size) {
 		this.size = size;
@@ -27,23 +27,28 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 		if (simulation != null) {
 			configSpikePatternPeriod = new int[configs.size()];
 			configProtocolIndex = new int[configs.size()];
+			configSpikePotential = new double[configs.size()];
+			configRestPotential = new double[configs.size()];
 
 			int totalDurations = 0;
 			for (int c = 0; c < configs.size(); c++) {
 				FixedProtocolNeuronConfiguration config = configs.get(c);
-				// Use ceiling to make sure we catch a spike right at the end.
+				// Use ceiling to avoid truncating spikes right at the end.
 				configSpikePatternPeriod[c] = (int) Math.ceil(config.spikePatternPeriod * simulation.getTimeResolution());
 				configProtocolIndex[c] = totalDurations;
 				totalDurations += configSpikePatternPeriod[c];
+				configSpikePotential[c] = config.spikePotential;
+				configRestPotential[c] = config.restPotential;
 			}
 
-			configSpikeProtocol = new byte[totalDurations];
+			configSpikeProtocol = new boolean[totalDurations];
 			for (int c = 0; c < configs.size(); c++) {
 				FixedProtocolNeuronConfiguration config = configs.get(c);
+				int spikeDuration = (int) Math.round(config.spikeDuration * simulation.getTimeResolution());
 				for (int s = 0; s < config.spikeTimings.length; s++) {
-					int spikeStep = (int) Math.round(config.spikeTimings[s] * simulation.getTimeResolution());
-					if (spikeStep < configSpikePatternPeriod[c]) {
-						configSpikeProtocol[configProtocolIndex[c] + spikeStep] = 1;
+					int spikeStart = (int) Math.round(config.spikeTimings[s] * simulation.getTimeResolution());
+					for (int d = spikeStart; d < configSpikePatternPeriod[c] && d <= spikeStart + spikeDuration; d++) {
+						configSpikeProtocol[configProtocolIndex[c] + d] = true;
 					}
 				}
 			}
@@ -53,6 +58,8 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 		put(configSpikePatternPeriod);
 		put(configProtocolIndex);
 		put(configSpikeProtocol);
+		put(configSpikePotential);
+		put(configRestPotential);
 	}
 
 	@Override
@@ -69,12 +76,12 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 			return;
 		int configID = componentConfigIndexes[neuronID];
 		int stepInProtocol = (int) (simStep[0] % configSpikePatternPeriod[configID]);
-		neuronOutputs[neuronID] = configSpikeProtocol[configProtocolIndex[configID] + stepInProtocol];
+		neuronOutputs[neuronID] = configSpikeProtocol[configProtocolIndex[configID] + stepInProtocol] ? configSpikePotential[configID] : configRestPotential[configID];
 		super.run();
 	}
 
 	@Override
-	public ComponentConfiguration getConfigSingleton() {
+	public FixedProtocolNeuronConfiguration getConfigSingleton() {
 		return new FixedProtocolNeuronConfiguration();
 	}
 
@@ -84,7 +91,7 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 	}
 
 	@Override
-	public ComponentCollection createCollection(int size) {
+	public FixedProtocolNeuronCollection createCollection(int size) {
 		return new FixedProtocolNeuronCollection(size);
 	}
 }

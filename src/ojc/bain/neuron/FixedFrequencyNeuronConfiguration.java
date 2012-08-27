@@ -1,13 +1,14 @@
 package ojc.bain.neuron;
 
 import ojc.bain.base.ComponentConfiguration;
+import ojc.bain.base.NeuronConfiguration;
 
 /**
  * Configuration for {@link FixedFrequencyNeuronCollection}.
  * 
  * @author Oliver J. Coleman
  */
-public class FixedFrequencyNeuronConfiguration extends ComponentConfiguration {
+public class FixedFrequencyNeuronConfiguration extends NeuronConfiguration {
 	public double spikingPeriod; // Period between spikes.
 
 	/**

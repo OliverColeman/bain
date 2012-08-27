@@ -3,8 +3,9 @@ package ojc.bain.base;
 import java.util.*;
 
 /**
- * A base class for all configuration objects for neural network elements (e.g. Neurons and Synapses). Provides methods to query the configuration for available
- * parameters, get and set those parameters, and work with preset configurations.
+ * A base class for configuration objects for neural network elements (e.g. Neurons and Synapses). Provides methods to query the configuration for available
+ * parameters, get and set those parameters, and work with preset configurations. Configuration classes should extend {@link NeuronConfiguration} or
+ * {@link SynapseConfiguration}.
  * 
  * Typically sub-classes will declare a set of instance variables that can be accessed directly by the corresponding components class for efficiency reasons
  * (rather than using the generic getParameterNames() and getParameterValues() methods). If parameters are set directly the fireChangeEvent() method should be
@@ -17,6 +18,11 @@ import java.util.*;
  */
 public abstract class ComponentConfiguration {
 	Vector<ComponentConfigurationListener> listeners = new Vector<ComponentConfigurationListener>();
+	
+	/**
+	 * The name of the configuration. This may be a preset name or some other name.
+	 */
+	public String name;
 
 	/**
 	 * Sub-classes should override this method to provide a list of parameter names.
@@ -110,6 +116,18 @@ public abstract class ComponentConfiguration {
 			return presets;
 		}
 		return null;
+	}
+	
+	/**
+	 * Returns the index of the preset that matches the given configuration, or -1 if there is no match.
+	 */
+	public int getMatchingPreset() {
+		for (int prsi = 0; prsi < getPresetNames().length; prsi++) {
+			if (equals(getPreset(prsi))) {
+				return prsi;
+			}
+		}
+		return -1;
 	}
 
 	@Override

@@ -2,8 +2,6 @@ package ojc.bain.base;
 
 import java.util.Arrays;
 
-import ojc.bain.base.*;
-
 /**
  * <p>
  * Base class for all collections neurons. Sub-classes should update the values of the {@link #neuronOutputs neuronOutputs} array when the {@link #step()}
@@ -17,7 +15,7 @@ import ojc.bain.base.*;
  * 
  * @author Oliver J. Coleman
  */
-public abstract class NeuronCollection<C extends ComponentConfiguration> extends ConfigurableComponentCollection<C> {
+public abstract class NeuronCollection<C extends NeuronConfiguration> extends ConfigurableComponentCollection<C> {
 	/**
 	 * Refers to a pre-synaptic Neuron or spike.
 	 */
@@ -151,7 +149,7 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	 * Implements the basic infrastructure for processing a neuron by resetting the value of {@link #neuronInputs} and setting the value for
 	 * {@link #neuronSpikings}. Sub-classes must override this method and call the super-method <strong>after</strong> they have made use of the value in
 	 * neuronInputs. Alternatively, if neuronInputs should be reset to something other than 0 or a neuron spike is represented by something other than a value
-	 * of 1 in neuronOutputs, then this super-method need not be called and the overriding method should instead reset the values for neuronInputs and set the
+	 * greater than 0 in neuronOutputs, then this super-method need not be called and the overriding method should instead reset the values for neuronInputs AND set the
 	 * value for neuronSpikings.
 	 * 
 	 */
@@ -159,7 +157,7 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 	public void run() {
 		int neuronID = this.getGlobalId();
 		neuronInputs[neuronID] = 0;
-		neuronSpikings[neuronID] = neuronOutputs[neuronID] >= 1;
+		neuronSpikings[neuronID] = neuronOutputs[neuronID] > 0;
 	}
 
 	@Override
@@ -178,5 +176,10 @@ public abstract class NeuronCollection<C extends ComponentConfiguration> extends
 			inputsStale = false;
 			inputsModified = false;
 		}
+	}
+	
+	@Override
+	public NeuronConfiguration getComponentConfiguration(int componentIndex) {
+		return configs.get(componentConfigIndexes[componentIndex]);
 	}
 }

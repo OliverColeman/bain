@@ -1,13 +1,13 @@
 package ojc.bain.synapse;
 
-import ojc.bain.base.ComponentConfiguration;
+import ojc.bain.base.SynapseConfiguration;
 
 /**
  * Configuration object for {@link Pfister2006SynapseCollection}.
  * 
  * @author Oliver J. Coleman
  */
-public class Pfister2006SynapseConfiguration extends ComponentConfiguration {
+public class Pfister2006SynapseConfiguration extends SynapseConfiguration {
 	// Plasticity model parameters.
 	public double tPDecay, tXDecay, tNDecay, tYDecay, a2N, a2P, a3N, a3P;
 
@@ -24,6 +24,11 @@ public class Pfister2006SynapseConfiguration extends ComponentConfiguration {
 		setParameterValues(params);
 	}
 
+	public Pfister2006SynapseConfiguration(String name, double[] params) {
+		this.name = name;
+		setParameterValues(params);
+	}
+
 	@Override
 	public String[] getParameterNames() {
 		return parameterLabels;
@@ -35,12 +40,12 @@ public class Pfister2006SynapseConfiguration extends ComponentConfiguration {
 	}
 
 	@Override
-	public ComponentConfiguration getPreset(int index) {
-		return new Pfister2006SynapseConfiguration(presetValues[index]);
+	public Pfister2006SynapseConfiguration getPreset(int index) {
+		return new Pfister2006SynapseConfiguration(presetNames[index], presetValues[index]);
 	}
 
 	@Override
-	public ComponentConfiguration createConfiguration() {
+	public Pfister2006SynapseConfiguration createConfiguration() {
 		return new Pfister2006SynapseConfiguration();
 	}
 }

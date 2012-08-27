@@ -15,7 +15,7 @@ import java.util.Arrays;
  * 
  * @author Oliver J. Coleman
  */
-public abstract class SynapseCollection<C extends ComponentConfiguration> extends ConfigurableComponentCollection<C> {
+public abstract class SynapseCollection<C extends SynapseConfiguration> extends ConfigurableComponentCollection<C> {
 	/**
 	 * The current efficacy of each synapse.
 	 */
@@ -255,5 +255,15 @@ public abstract class SynapseCollection<C extends ComponentConfiguration> extend
 			get(efficacy);
 		}
 		return efficacy[synapseIndex];
+	}
+	
+	@Override
+	public SynapseConfiguration getComponentConfiguration(int componentIndex) {
+		return configs.get(componentConfigIndexes[componentIndex]);
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
 	}
 }

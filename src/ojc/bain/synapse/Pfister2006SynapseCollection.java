@@ -3,10 +3,7 @@ package ojc.bain.synapse;
 import java.util.Arrays;
 
 import ojc.bain.base.ComponentCollection;
-import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.SynapseCollection;
-
-import com.amd.aparapi.Kernel;
 
 /**
  * Implementation of the model described by Pfister, J.-P., Gerstner, W.: Triplets of Spikes in a Model of Spike Timing-Dependent Plasticity. J. Neurosci. 26,
@@ -154,7 +151,7 @@ public class Pfister2006SynapseCollection extends SynapseCollection<Pfister2006S
 	}
 
 	@Override
-	public ComponentConfiguration getConfigSingleton() {
+	public Pfister2006SynapseConfiguration getConfigSingleton() {
 		return configSingleton;
 	}
 

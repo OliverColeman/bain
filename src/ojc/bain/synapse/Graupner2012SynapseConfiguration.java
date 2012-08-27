@@ -1,13 +1,13 @@
 package ojc.bain.synapse;
 
-import ojc.bain.base.ComponentConfiguration;
+import ojc.bain.base.SynapseConfiguration;
 
 /**
  * Configuration object for {@link Graupner2012SynapseCollection}.
  * 
  * @author Oliver J. Coleman
  */
-public class Graupner2012SynapseConfiguration extends ComponentConfiguration {
+public class Graupner2012SynapseConfiguration extends SynapseConfiguration {
 	// Calcium model parameters.
 	public double tCDecay, cSpikePre, cSpikePost, cSpikePreDelay;
 	// Plasticity model parameters
@@ -31,6 +31,11 @@ public class Graupner2012SynapseConfiguration extends ComponentConfiguration {
 		setParameterValues(params); // calls init()
 	}
 
+	public Graupner2012SynapseConfiguration(String name, double[] params) {
+		this.name = name;
+		setParameterValues(params); // calls init()
+	}
+
 	public String[] getParameterNames() {
 		return parameterLabels;
 	}
@@ -39,12 +44,13 @@ public class Graupner2012SynapseConfiguration extends ComponentConfiguration {
 		return presetNames;
 	}
 
-	public ComponentConfiguration getPreset(int index) {
-		return new Graupner2012SynapseConfiguration(presetValues[index]);
+	@Override
+	public Graupner2012SynapseConfiguration getPreset(int index) {
+		return new Graupner2012SynapseConfiguration(presetNames[index], presetValues[index]);
 	}
 
 	@Override
-	public ComponentConfiguration createConfiguration() {
+	public Graupner2012SynapseConfiguration createConfiguration() {
 		return new Graupner2012SynapseConfiguration();
 	}
 }

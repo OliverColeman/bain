@@ -14,8 +14,8 @@ import ojc.bain.base.SynapseCollection;
  * 
  * @author Oliver J. Coleman
  */
-public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<Graupner2012SynapseConfiguration> {
-	private static final Graupner2012SynapseConfiguration configSingleton = new Graupner2012SynapseConfiguration();
+public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<Graupner2012SimplifiedSynapseConfiguration> {
+	private static final Graupner2012SimplifiedSynapseConfiguration configSingleton = new Graupner2012SimplifiedSynapseConfiguration();
 
 	// State variables.
 	double[] c; // Calcium concentration.
@@ -58,7 +58,7 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 
 		if (simulation != null) {
 			for (int c = 0; c < configs.size(); c++) {
-				Graupner2012SynapseConfiguration config = configs.get(c);
+				Graupner2012SimplifiedSynapseConfiguration config = configs.get(c);
 				cSpikePre[c] = config.cSpikePre;
 				cSpikePost[c] = config.cSpikePost;
 				tCDecayMult[c] = (1.0 / config.tCDecay) / (simulation.getTimeResolution() / 1000.0);
@@ -96,7 +96,7 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 
 	public void reset() {
 		for (int s = 0; s < size; s++) {
-			Graupner2012SynapseConfiguration config = configs.get(componentConfigIndexes[s]);
+			Graupner2012SimplifiedSynapseConfiguration config = configs.get(componentConfigIndexes[s]);
 			p[s] = config.initialP;
 			efficacy[s] = config.w0 + p[s] * config.wRange;
 			c[s] = 0;
@@ -163,9 +163,8 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 			}
 
 			p[synapseID] += delta_s * timeScaleInv[configID];
+			efficacy[synapseID] = w0[configID] + p[synapseID] * wRange[configID];
 		}
-
-		efficacy[synapseID] = w0[configID] + p[synapseID] * wRange[configID];
 
 		super.run();
 	}
@@ -179,7 +178,7 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 	@Override
 	public double[] getStateVariableValues(int synapseIndex) {
 		ensureStateVariablesAreFresh();
-		Graupner2012SynapseConfiguration config = configs.get(componentConfigIndexes[synapseIndex]);
+		Graupner2012SimplifiedSynapseConfiguration config = configs.get(componentConfigIndexes[synapseIndex]);
 		double[] values = { c[synapseIndex], p[synapseIndex], config.potThresh, config.depThresh };
 		return values;
 	}
