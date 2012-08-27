@@ -20,7 +20,7 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 	double[] x; // Pre-synaptic trace.
 	
 	// Model parameters, see Clopath2010SynapseConfiguration.
-	public double[] thetaNeg, thetaPos, aLTD, aLTPMult, tauXMult, tauNegMult, tauPosMult, stepPeriod;
+	public double[] thetaNeg, thetaPos, aLTD, aLTPMult, tauXMult, tauNegMult, tauPosMult, stepPeriod, efficacyMin, efficacyMax;
 	
 	public Clopath2010SynapseCollection(int size) {
 		this.size = size;
@@ -45,6 +45,8 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 			tauXMult = new double[configs.size()];
 			tauNegMult = new double[configs.size()];
 			tauPosMult = new double[configs.size()];
+			efficacyMin = new double[configs.size()];
+			efficacyMax = new double[configs.size()];
 			stepPeriod = new double[1];
 		}
 
@@ -58,6 +60,8 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 				thetaPos[c] = config.thetaPos;
 				aLTD[c] = config.aLTD;
 				aLTPMult[c] = config.aLTP / (simulation.getTimeResolution() / 1000.0);
+				efficacyMin[c] = config.minimumEfficacy;
+				efficacyMax[c] = config.maximumEfficacy;
 			}
 			stepPeriod[0] = simulation.getStepPeriod();
 		}
@@ -74,6 +78,8 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 		put(tauXMult);
 		put(tauNegMult);
 		put(tauPosMult);
+		put(efficacyMin);
+		put(efficacyMax);
 		put(stepPeriod);
 		stateVariablesStale = false;
 	}
@@ -113,12 +119,14 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 		double uSigmaNeg = uNeg[synapseID] - thetaNeg[configID];
 		if (preSpiked && uSigmaNeg > 0) {
 			efficacy[synapseID] -= aLTD[configID] * uSigmaNeg;
+			if (efficacy[synapseID] < efficacyMin[configID]) efficacy[synapseID] = efficacyMin[configID];
 		}
 		// If LTP occurs.
 		double uSigma = neuronOutputs[postID] - thetaPos[configID];
 		double uSigmaPos = uPos[synapseID] - thetaNeg[configID];
 		if (uSigma > 0 && uSigmaPos > 0) {
 			efficacy[synapseID] += aLTPMult[configID] * x[synapseID] * uSigma * uSigmaPos;
+			if (efficacy[synapseID] > efficacyMax[configID]) efficacy[synapseID] = efficacyMax[configID];
 		}
 		
 		super.run();
