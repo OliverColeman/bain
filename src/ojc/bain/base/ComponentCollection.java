@@ -3,7 +3,7 @@ package ojc.bain.base;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import ojc.bain.Simulation;
+import ojc.bain.NeuralNetwork;
 import ojc.bain.misc.*;
 
 import com.amd.aparapi.Kernel;
@@ -11,7 +11,7 @@ import com.amd.aparapi.Range;
 
 /**
  * <p>
- * Base class for all collections of specific types of neural network components to be used in a {@link Simulation}. A type of component (e.g. a ) is contained
+ * Base class for all collections of specific types of neural network components to be used in a {@link NeuralNetwork}. A type of component (e.g. a ) is contained
  * in a collection so as to allow off-loading parallel computations to a vector processor (eg GPU) using Aparapi: simulation calculations should be performed on
  * arrays of primitives containing the state variables, inputs and outputs for the components in the collection.
  * </p>
@@ -19,7 +19,7 @@ import com.amd.aparapi.Range;
  * <p>
  * Rather than extending from this class directly, generally implementations should extend a more specific collection sub-class, such as
  * {@link ojc.bain.base.NeuronCollection} or {@link ojc.bain.base.SynapseCollection}, which provide some useful functionality and an API for working with that
- * type of component. This allows it to be used alongside other standard collection types and within classes like {@link ojc.bain.Simulation}.
+ * type of component. This allows it to be used alongside other standard collection types and within classes like {@link ojc.bain.NeuralNetwork}.
  * </p>
  * 
  * <p>
@@ -67,7 +67,7 @@ public abstract class ComponentCollection extends Kernel {
 	/**
 	 * The containing simulation.
 	 */
-	protected Simulation simulation;
+	protected NeuralNetwork simulation;
 
 	/**
 	 * Flag to indicate if the state variables used in an Aparapi kernel have been modified on the GPU (and so would need to be transferred back if we're
@@ -100,14 +100,14 @@ public abstract class ComponentCollection extends Kernel {
 	/**
 	 * Get the containing Simulation.
 	 */
-	public Simulation getSimulation() {
+	public NeuralNetwork getSimulation() {
 		return simulation;
 	}
 
 	/**
 	 * Set the containing Simulation. Causes this collection to be reinitialised (via init()), and reset (via reset()).
 	 */
-	public void setSimulation(Simulation simulation) {
+	public void setSimulation(NeuralNetwork simulation) {
 		this.simulation = simulation;
 		init();
 		reset();
@@ -226,6 +226,22 @@ public abstract class ComponentCollection extends Kernel {
 	 */
 	public double[] getStateVariableValues(int componentIndex) {
 		return null;
+	}
+	
+	/**
+	 * Returns the lowest possible output value for components in this collection.
+	 * The default implementation returns 0, sub-classes should override this if necessary.
+	 */
+	public double getMinimumPossibleOutputValue() {
+		return 0;
+	}
+
+	/**
+	 * Returns the largest possible output value for components in this collection.
+	 * The default implementation returns 1, sub-classes should override this if necessary.
+	 */
+	public double getMaximumPossibleOutputValue() {
+		return 1;
 	}
 
 	/**

@@ -12,12 +12,12 @@ import com.amd.aparapi.Kernel;
 
 /**
  * <p>
- * The main class for running a neural network simulation. A Simulation is run at a specified time resolution, which is the number of discrete simulation steps
+ * The main class for running a neural network simulation. A NeuralNetwork is run at a specified time resolution, which is the number of discrete simulation steps
  * performed for each second of simulation time. A typical resolution is 1000, or 1ms duration for each step.
  * </p>
  * 
  * <p>
- * A Simulation consists of a {@link ojc.bain.base.NeuronCollection} and a {@link ojc.bain.base.SynapseCollection}. These collections of neural network
+ * A NeuralNetwork consists of a {@link ojc.bain.base.NeuronCollection} and a {@link ojc.bain.base.SynapseCollection}. These collections of neural network
  * components are designed to be executable on SIMD hardware (eg a GPU) via OpenCL via Aparapi (See {@link ojc.bain.base.ComponentCollection} for more details).
  * </p>
  * 
@@ -36,8 +36,8 @@ import com.amd.aparapi.Kernel;
  * 
  * @author Oliver J. Coleman
  */
-public class Simulation {
-	static Simulation singleton = new Simulation(1000);
+public class NeuralNetwork {
+	static NeuralNetwork singleton = new NeuralNetwork(1000);
 	/**
 	 * When automatically selecting an execution mode, this is the minimum number of components in a collection before the GPU execution mode is attempted.
 	 * Default is 8192.
@@ -116,7 +116,7 @@ public class Simulation {
 	/**
 	 * Create a new simulation.
 	 */
-	public Simulation(int timeResolution) {
+	public NeuralNetwork(int timeResolution) {
 		step = 0;
 		this.timeResolution = timeResolution;
 		stepPeriod = 1.0 / timeResolution;
@@ -130,7 +130,7 @@ public class Simulation {
 	 * @param neurons The NeuronCollection to use in the simulation.
 	 * @param synapses TheSynapseCollection to use in the simulation.
 	 */
-	public Simulation(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses) {
+	public NeuralNetwork(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses) {
 		this.timeResolution = timeResolution;
 		stepPeriod = 1.0 / timeResolution;
 		this.neurons = neurons;
@@ -151,7 +151,7 @@ public class Simulation {
 	 * @param synapses TheSynapseCollection to use in the simulation.
 	 * @param preferredExecutionMode The preferred execution mode, which will override the automatic selection of a mode based on network size.
 	 */
-	public Simulation(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses, Kernel.EXECUTION_MODE preferredExecutionMode) {
+	public NeuralNetwork(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses, Kernel.EXECUTION_MODE preferredExecutionMode) {
 		this.timeResolution = timeResolution;
 		stepPeriod = 1.0 / timeResolution;
 		this.neurons = neurons;
@@ -335,11 +335,11 @@ public class Simulation {
 		reset();
 	}
 
-	public static void setSingleton(Simulation sim) {
+	public static void setSingleton(NeuralNetwork sim) {
 		singleton = sim;
 	}
 
-	public static Simulation getSingleton() {
+	public static NeuralNetwork getSingleton() {
 		return singleton;
 	}
 
@@ -382,7 +382,7 @@ public class Simulation {
 
 			Pfister2006SynapseCollection synapses = new Pfister2006SynapseCollection(0);
 
-			Simulation sim = new Simulation(timeResolution, neurons, synapses);
+			NeuralNetwork sim = new NeuralNetwork(timeResolution, neurons, synapses);
 
 			double[] dummy = new double[2];
 

@@ -8,7 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.ProgressMonitor;
 
-import ojc.bain.Simulation;
+import ojc.bain.NeuralNetwork;
 import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.SynapseCollection;
 import ojc.bain.misc.*;
@@ -66,7 +66,7 @@ public class SynapseTest {
 	 * @return For a single spike protocol, a TestResults object with type {@link TYPE#STDP} consisting of series labelled "Time" and "Efficacy" and if
 	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
 	 */
-	public static TestResults singleTest(Simulation sim, long simSteps, boolean logSpikesAndStateVariables, long simStepsNoSpikes) {
+	public static TestResults singleTest(NeuralNetwork sim, long simSteps, boolean logSpikesAndStateVariables, long simStepsNoSpikes) {
 		if (sim.getNeurons().getSize() != 2 || sim.getSynapses().getSize() != 1) {
 			throw new IllegalArgumentException("The simulation must contain at least 2 neurons and 1 synapse.");
 		}
@@ -158,7 +158,7 @@ public class SynapseTest {
 	 * two dimensions.
 	 * 
 	 * @param synapse The SynapseCollection containing the synapse to test (the first synapse is used).
-	 * @param timeResolution The time resolution to use in the simulation, see {@link ojc.bain.Simulation}
+	 * @param timeResolution The time resolution to use in the simulation, see {@link ojc.bain.NeuralNetwork}
 	 * @param period The period of the spike pattern in seconds.
 	 * @param repetitions The number of times to apply the spike pattern.
 	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array
@@ -199,8 +199,8 @@ public class SynapseTest {
 		synapse.setPreNeuron(0, 0);
 		synapse.setPostNeuron(0, 1);
 
-		Simulation sim = new Simulation(timeResolution, neurons, synapse);
-		Simulation.setSingleton(sim);
+		NeuralNetwork sim = new NeuralNetwork(timeResolution, neurons, synapse);
+		NeuralNetwork.setSingleton(sim);
 
 		int simSteps = (int) Math.round(period * repetitions * timeResolution);
 
@@ -370,7 +370,7 @@ public class SynapseTest {
 	 * @param configurationLabels An array containing the labels for each parameter configuration to test on. These are used to label the data sets in the
 	 *            returned TestResults.
 	 * @param configurations An array containing the parameter configurations to test on.
-	 * @param timeResolution The time resolution to use in the simulation, see {@link ojc.bain.Simulation}
+	 * @param timeResolution The time resolution to use in the simulation, see {@link ojc.bain.NeuralNetwork}
 	 * @param period The period of the spike pattern in seconds.
 	 * @param repetitions The number of times to apply the spike pattern.
 	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array

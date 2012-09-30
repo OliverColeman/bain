@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import com.amd.aparapi.Kernel;
 
-import ojc.bain.Simulation;
+import ojc.bain.NeuralNetwork;
 import ojc.bain.neuron.LinearNeuronCollection;
 import ojc.bain.synapse.FixedSynapseCollection;
 
@@ -19,7 +19,7 @@ public class SimulationTest {
 	public static double[] testCoreFramework(Kernel.EXECUTION_MODE mode) {
 		LinearNeuronCollection neurons = new LinearNeuronCollection(9);
 		FixedSynapseCollection synapses = new FixedSynapseCollection(10);
-		Simulation sim = new Simulation(1000, neurons, synapses, mode);
+		NeuralNetwork sim = new NeuralNetwork(1000, neurons, synapses, mode);
 
 		int[][] connections = new int[][] { { 0, 2 }, { 1, 2 }, { 1, 3 }, { 1, 4 }, { 3, 3 }, { 4, 5 }, { 5, 4 }, { 2, 6 }, { 3, 7 }, { 4, 8 } };
 		double[] weights = new double[] { 1.0, 0.9, 1.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0 };

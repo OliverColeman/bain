@@ -5,7 +5,7 @@ import java.text.Format;
 
 import com.amd.aparapi.Kernel;
 
-import ojc.bain.Simulation;
+import ojc.bain.NeuralNetwork;
 import ojc.bain.neuron.FixedFrequencyNeuronCollection;
 import ojc.bain.neuron.FixedFrequencyNeuronConfiguration;
 import ojc.bain.synapse.FixedSynapseCollection;
@@ -29,7 +29,7 @@ public class PerformanceTest {
 		Pfister2006SynapseCollection synapses = new Pfister2006SynapseCollection(synapseCount);
 		synapses.addConfiguration(synapses.getConfigSingleton().getPreset(0));
 
-		Simulation sim = new Simulation(1000, neurons, synapses, mode);
+		NeuralNetwork sim = new NeuralNetwork(1000, neurons, synapses, mode);
 
 		for (int s = 0; s < synapseCount; s++) {
 			synapses.setPreAndPostNeurons(s, (int) (Math.random() * neuronCount), (int) (Math.random() * neuronCount));

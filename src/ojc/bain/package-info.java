@@ -33,7 +33,7 @@ class and implement a few methods, without thinking (very much) about OpenCL,
 thread pools, etcetera.</p>
 
 <p>To get started, read the API documentation starting with 
-{@link ojc.bain.Simulation}, and the references within.</p>
+{@link ojc.bain.NeuralNetwork}, and the references within.</p>
 
 <p>The latest version is available at, and issues should be posted at,
 https://github.com/OliverColeman/bain</p>
