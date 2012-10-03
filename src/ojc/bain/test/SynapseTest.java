@@ -58,26 +58,26 @@ public class SynapseTest {
 	/**
 	 * Test the behaviour of a synapse model.
 	 * 
-	 * @param sim A Simulation containing two neurons and a single synapse to be tested. The neurons at index 0 and 1 should be the pre- and post-synaptic
+	 * @param network A neural network containing two neurons and a single synapse to be tested. The neurons at index 0 and 1 should be the pre- and post-synaptic
 	 *            neurons respectively, and are typically configured to produce a fixed firing pattern (though any neuron type and firing pattern are
 	 *            permitted).
-	 * @param simSteps The number of simulation steps to run the simulation for.
+	 * @param simSteps The number of steps to run the simulation for.
 	 * @param logSpikesAndStateVariables Whether to record pre- and post-synaptic spikes and any state variables exposed by the synapse model in the test
 	 *            results.
-	 * @param simStepsNoSpikes The number of simulation steps to run the simulation for with no spiking after the normal spike test. This is useful for testing models which change the efficacy in the absence of spikes.
+	 * @param simStepsNoSpikes The number of steps to run the simulation for with no spiking after the normal spike test. This is useful for testing models which change the efficacy in the absence of spikes.
 	 * @return For a single spike protocol, a TestResults object with type {@link TYPE#STDP} consisting of series labelled "Time" and "Efficacy" and if
 	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
 	 */
-	public static TestResults singleTest(NeuralNetwork sim, long simSteps, boolean logSpikesAndStateVariables, long simStepsNoSpikes) {
-		if (sim.getNeurons().getSize() != 2 || sim.getSynapses().getSize() != 1) {
-			throw new IllegalArgumentException("The simulation must contain at least 2 neurons and 1 synapse.");
+	public static TestResults singleTest(NeuralNetwork network, long simSteps, boolean logSpikesAndStateVariables, long simStepsNoSpikes) {
+		if (network.getNeurons().getSize() != 2 || network.getSynapses().getSize() != 1) {
+			throw new IllegalArgumentException("The neural network must contain at least 2 neurons and 1 synapse.");
 		}
 		
 		simStepsNoSpikes = Math.max(0, simStepsNoSpikes);
 
-		int displayTimeResolution = Math.min(1000, sim.getTimeResolution());
+		int displayTimeResolution = Math.min(1000, network.getTimeResolution());
 
-		int logStepCount = sim.getTimeResolution() / displayTimeResolution;
+		int logStepCount = network.getTimeResolution() / displayTimeResolution;
 		int logSize = (int) ((simSteps + simStepsNoSpikes) / logStepCount);
 
 		double[] timeLog = new double[logSize];
@@ -86,24 +86,24 @@ public class SynapseTest {
 		double[] stateVars;
 		if (logSpikesAndStateVariables) {
 			prePostLogs = new double[2][logSize];
-			traceLogs = new double[sim.getSynapses().getStateVariableNames().length][logSize];
+			traceLogs = new double[network.getSynapses().getStateVariableNames().length][logSize];
 		}
 
 		int logIndex = 0;
 		long step = 0;
 		for (; step < simSteps; step++) {
-			double time = sim.getTime();
-			sim.step();
+			double time = network.getTime();
+			network.step();
 
 			if (step % logStepCount == 0) {
 				timeLog[logIndex] = time;
-				efficacyLog[logIndex] = sim.getSynapses().getEfficacy(0);
+				efficacyLog[logIndex] = network.getSynapses().getEfficacy(0);
 				// If we're only testing a few repetitions, include some extra
 				// data.
 				if (logSpikesAndStateVariables) {
-					prePostLogs[0][logIndex] = sim.getNeurons().getOutput(0);
-					prePostLogs[1][logIndex] = sim.getNeurons().getOutput(1);
-					stateVars = sim.getSynapses().getStateVariableValues(0);
+					prePostLogs[0][logIndex] = network.getNeurons().getOutput(0);
+					prePostLogs[1][logIndex] = network.getNeurons().getOutput(1);
+					stateVars = network.getSynapses().getStateVariableValues(0);
 					for (int v = 0; v < stateVars.length; v++) {
 						traceLogs[v][logIndex] = stateVars[v];
 					}
@@ -114,22 +114,22 @@ public class SynapseTest {
 
 		if (simStepsNoSpikes > 0) {
 			FixedProtocolNeuronConfiguration config = new FixedProtocolNeuronConfiguration(100, new double[] {});
-			sim.getNeurons().setConfiguration(0, config);
-			sim.getNeurons().setComponentConfiguration(0, 0);
-			sim.getNeurons().setComponentConfiguration(1, 0);
+			network.getNeurons().setConfiguration(0, config);
+			network.getNeurons().setComponentConfiguration(0, 0);
+			network.getNeurons().setComponentConfiguration(1, 0);
 	
 			for (; step < simSteps + simStepsNoSpikes; step++) {
-				double time = sim.getTime();
-				sim.step();
+				double time = network.getTime();
+				network.step();
 	
 				if (step % logStepCount == 0) {
 					timeLog[logIndex] = time;
-					efficacyLog[logIndex] = sim.getSynapses().getEfficacy(0);
+					efficacyLog[logIndex] = network.getSynapses().getEfficacy(0);
 					// If we're only testing a few repetitions, include some extra data.
 					if (logSpikesAndStateVariables) {
-						prePostLogs[0][logIndex] = sim.getNeurons().getOutput(0);
-						prePostLogs[1][logIndex] = sim.getNeurons().getOutput(1);
-						stateVars = sim.getSynapses().getStateVariableValues(0);
+						prePostLogs[0][logIndex] = network.getNeurons().getOutput(0);
+						prePostLogs[1][logIndex] = network.getNeurons().getOutput(1);
+						stateVars = network.getSynapses().getStateVariableValues(0);
 						for (int v = 0; v < stateVars.length; v++) {
 							traceLogs[v][logIndex] = stateVars[v];
 						}
@@ -146,7 +146,7 @@ public class SynapseTest {
 		if (logSpikesAndStateVariables) {
 			results.addResult("Pre-synaptic spikes", prePostLogs[0]);
 			results.addResult("Post-synaptic spikes", prePostLogs[1]);
-			String[] stateVariableNames = sim.getSynapses().getStateVariableNames();
+			String[] stateVariableNames = network.getSynapses().getStateVariableNames();
 			for (int v = 0; v < stateVariableNames.length; v++) {
 				results.addResult(stateVariableNames[v], traceLogs[v]);
 			}

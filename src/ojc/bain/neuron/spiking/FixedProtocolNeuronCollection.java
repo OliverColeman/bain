@@ -24,7 +24,7 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 
 	public void init() {
 		super.init();
-		if (simulation != null) {
+		if (network != null) {
 			configSpikePatternPeriod = new int[configs.size()];
 			configProtocolIndex = new int[configs.size()];
 			configSpikePotential = new double[configs.size()];
@@ -34,7 +34,7 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 			for (int c = 0; c < configs.size(); c++) {
 				FixedProtocolNeuronConfiguration config = configs.get(c);
 				// Use ceiling to avoid truncating spikes right at the end.
-				configSpikePatternPeriod[c] = (int) Math.ceil(config.spikePatternPeriod * simulation.getTimeResolution());
+				configSpikePatternPeriod[c] = (int) Math.ceil(config.spikePatternPeriod * network.getTimeResolution());
 				configProtocolIndex[c] = totalDurations;
 				totalDurations += configSpikePatternPeriod[c];
 				configSpikePotential[c] = config.spikePotential;
@@ -44,9 +44,9 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 			configSpikeProtocol = new boolean[totalDurations];
 			for (int c = 0; c < configs.size(); c++) {
 				FixedProtocolNeuronConfiguration config = configs.get(c);
-				int spikeDuration = (int) Math.round(config.spikeDuration * simulation.getTimeResolution());
+				int spikeDuration = (int) Math.round(config.spikeDuration * network.getTimeResolution());
 				for (int s = 0; s < config.spikeTimings.length; s++) {
-					int spikeStart = (int) Math.round(config.spikeTimings[s] * simulation.getTimeResolution());
+					int spikeStart = (int) Math.round(config.spikeTimings[s] * network.getTimeResolution());
 					for (int d = spikeStart; d < configSpikePatternPeriod[c] && d <= spikeStart + spikeDuration; d++) {
 						configSpikeProtocol[configProtocolIndex[c] + d] = true;
 					}
@@ -64,7 +64,7 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 
 	@Override
 	public void step() {
-		simStep[0] = simulation.getStep();
+		simStep[0] = network.getStep();
 		put(simStep);
 		super.step();
 	}

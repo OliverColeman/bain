@@ -32,7 +32,7 @@ public class SigmoidNeuronCollection extends NeuronCollection<SigmoidNeuronConfi
 	public void init() {
 		super.init();
 		configSlope = new double[configs.size()];
-		if (simulation != null) {
+		if (network != null) {
 			for (int i = 0; i < configs.size(); i++) {
 				SigmoidNeuronConfiguration config = configs.get(i);
 				configSlope[i] = config.slope;

@@ -80,10 +80,10 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 			preOrPostIndexesModified = false;
 			efficaciesModified = false;
 		}
-		if (simulation != null) {
-			neuronOutputs = simulation.getNeurons().getOutputs();
-			neuronInputs = simulation.getNeurons().getInputs();
-			neuronSpikings = simulation.getNeurons().getSpikings();
+		if (network != null) {
+			neuronOutputs = network.getNeurons().getOutputs();
+			neuronInputs = network.getNeurons().getInputs();
+			neuronSpikings = network.getNeurons().getSpikings();
 
 			put(neuronOutputs);
 			put(neuronInputs);

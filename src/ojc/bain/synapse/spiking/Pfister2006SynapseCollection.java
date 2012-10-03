@@ -47,13 +47,13 @@ public class Pfister2006SynapseCollection extends SynapseCollection<Pfister2006S
 			a3P = new double[configs.size()];
 		}
 
-		if (simulation != null) {
+		if (network != null) {
 			for (int c = 0; c < configs.size(); c++) {
 				Pfister2006SynapseConfiguration config = configs.get(c);
-				tPDecayMult[c] = (1000 / config.tPDecay) / simulation.getTimeResolution();
-				tXDecayMult[c] = (1000 / config.tXDecay) / simulation.getTimeResolution();
-				tNDecayMult[c] = (1000 / config.tNDecay) / simulation.getTimeResolution();
-				tYDecayMult[c] = (1000 / config.tYDecay) / simulation.getTimeResolution();
+				tPDecayMult[c] = (1000 / config.tPDecay) / network.getTimeResolution();
+				tXDecayMult[c] = (1000 / config.tXDecay) / network.getTimeResolution();
+				tNDecayMult[c] = (1000 / config.tNDecay) / network.getTimeResolution();
+				tYDecayMult[c] = (1000 / config.tYDecay) / network.getTimeResolution();
 				a2N[c] = config.a2N;
 				a2P[c] = config.a2P;
 				a3N[c] = config.a3N;

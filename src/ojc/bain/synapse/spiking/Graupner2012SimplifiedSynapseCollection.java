@@ -58,20 +58,20 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 			stepPeriod = new double[1];
 		}
 
-		if (simulation != null) {
+		if (network != null) {
 			for (int c = 0; c < configs.size(); c++) {
 				Graupner2012SimplifiedSynapseConfiguration config = configs.get(c);
 				cSpikePre[c] = config.cSpikePre;
 				cSpikePost[c] = config.cSpikePost;
-				tCDecayMult[c] = (1.0 / config.tCDecay) / (simulation.getTimeResolution() / 1000.0);
+				tCDecayMult[c] = (1.0 / config.tCDecay) / (network.getTimeResolution() / 1000.0);
 				depThresh[c] = config.depThresh;
 				potThresh[c] = config.potThresh;
-				depRateMult[c] = config.depRate / (simulation.getTimeResolution() * config.timeScale);
-				potRateMult[c] = config.potRate / (simulation.getTimeResolution() * config.timeScale);
+				depRateMult[c] = config.depRate / (network.getTimeResolution() * config.timeScale);
+				potRateMult[c] = config.potRate / (network.getTimeResolution() * config.timeScale);
 				w0[c] = config.w0;
 				wRange[c] = config.w1 - config.w0;
-				cSpikePreDelayStepCount[c] = (int) Math.round(config.cSpikePreDelay * (simulation.getTimeResolution() / 1000.0));
-				stepPeriod[0] = simulation.getStepPeriod();
+				cSpikePreDelayStepCount[c] = (int) Math.round(config.cSpikePreDelay * (network.getTimeResolution() / 1000.0));
+				stepPeriod[0] = network.getStepPeriod();
 			}
 		}
 

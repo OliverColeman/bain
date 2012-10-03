@@ -32,7 +32,7 @@ import com.amd.aparapi.Kernel;
  * </p>
  * <p>
  * If a preferred execution mode is not set (see {@link #setPreferredExecutionMode(Kernel.EXECUTION_MODE preferredExecutionMode)} ), then for neuron or synapse
- * collections consisting of fewer than {@link #minimumSizeForGPU} neurons or synapses, the Simulation forces the use of a CPU-based execution mode as this is
+ * collections consisting of fewer than {@link #minimumSizeForGPU} neurons or synapses, use of a CPU-based execution mode is forced as this is
  * typically more performant than use of SIMD hardware; if using a CPU-based execution mode then if the size is greater than or equal to
  * {@link #minimumSizeForJTP} the JTP execution mode is used, otherwise the SEQ execution mode is used.
  * </p>
@@ -126,32 +126,32 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Create a new simulation. Sets the time resolution of all given Neurons and Synapses to match that of this Simulation and resets them.
+	 * Create a new neural network. Sets the time resolution of the given neuron and synapse collections to match that of this neural network and resets them.
 	 * 
 	 * @param timeResolution The number of discrete simulation steps performed for each second of simulation time. A typical resolution is 1000, or 1ms duration
 	 *            for each step.
-	 * @param neurons The NeuronCollection to use in the simulation.
-	 * @param synapses TheSynapseCollection to use in the simulation.
+	 * @param neurons The NeuronCollection to use in the network.
+	 * @param synapses TheSynapseCollection to use in the network.
 	 */
 	public NeuralNetwork(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses) {
 		this.timeResolution = timeResolution;
 		stepPeriod = 1.0 / timeResolution;
 		this.neurons = neurons;
 		this.synapses = synapses;
-		neurons.setSimulation(this);
-		synapses.setSimulation(this);
+		neurons.setNetwork(this);
+		synapses.setNetwork(this);
 		selectExecutionModes();
 		init();
 	}
 
 	/**
-	 * Create a new simulation. Sets the time resolution of all given Neurons and Synapses to match that of this Simulation and resets them. Allows specifying
+	 * Create a new neural network. Sets the time resolution of the given neuron and synapse collections to match that of this network and resets them. Allows specifying
 	 * the preferred execution mode, which will override the automatic selection of a mode based on network size.
 	 * 
 	 * @param timeResolution The number of discrete simulation steps performed for each second of simulation time. A typical resolution is 1000, or 1ms duration
 	 *            for each step.
-	 * @param neurons The NeuronCollection to use in the simulation.
-	 * @param synapses TheSynapseCollection to use in the simulation.
+	 * @param neurons The NeuronCollection to use in the network.
+	 * @param synapses TheSynapseCollection to use in the network.
 	 * @param preferredExecutionMode The preferred execution mode, which will override the automatic selection of a mode based on network size.
 	 */
 	public NeuralNetwork(int timeResolution, NeuronCollection<? extends ComponentConfiguration> neurons, SynapseCollection<? extends ComponentConfiguration> synapses, Kernel.EXECUTION_MODE preferredExecutionMode) {
@@ -160,8 +160,8 @@ public class NeuralNetwork {
 		this.neurons = neurons;
 		this.synapses = synapses;
 		this.preferredExecutionMode = preferredExecutionMode;
-		neurons.setSimulation(this);
-		synapses.setSimulation(this);
+		neurons.setNetwork(this);
+		synapses.setNetwork(this);
 		selectExecutionModes();
 		init();
 	}
@@ -293,46 +293,46 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Returns the neurons in this simulation.
+	 * Returns the neurons in this network.
 	 * 
-	 * @return The NeuronCollection belonging to this simulation.
+	 * @return The NeuronCollection belonging to this network.
 	 */
 	public NeuronCollection<? extends ComponentConfiguration> getNeurons() {
 		return neurons;
 	}
 	
 	/**
-	 * Sets the neurons in this simulation. This will reinitialise and reset the simulation. 
+	 * Sets the neurons in this network. This will reinitialise and reset the simulation. 
 	 */
 	public void setNeurons(NeuronCollection<? extends ComponentConfiguration> neurons) {
 		if (this.neurons != null) {
-			this.neurons.setSimulation(null);
+			this.neurons.setNetwork(null);
 		}
 		this.neurons = neurons;
-		neurons.setSimulation(this);
+		neurons.setNetwork(this);
 		selectExecutionModes();
 		init();
 		reset();
 	}
 
 	/**
-	 * Returns the synapses in this simulation.
+	 * Returns the synapses in this network.
 	 * 
-	 * @return The SynapseCollection belonging to this simulation.
+	 * @return The SynapseCollection belonging to this network.
 	 */
 	public SynapseCollection<? extends ComponentConfiguration> getSynapses() {
 		return synapses;
 	}
 	
 	/**
-	 * Sets the synapses in this simulation. This will reinitialise and reset the simulation. 
+	 * Sets the synapses in this network. This will reinitialise and reset the simulation. 
 	 */
 	public void setSynapses(SynapseCollection<? extends ComponentConfiguration> synapses) {
 		if (this.synapses != null) {
-			this.synapses.setSimulation(null);
+			this.synapses.setNetwork(null);
 		}
 		this.synapses = synapses;
-		synapses.setSimulation(this);
+		synapses.setNetwork(this);
 		selectExecutionModes();
 		init();
 		reset();
@@ -357,7 +357,7 @@ public class NeuralNetwork {
 		 * SynapseCollectionPfister2006 synapses = new SynapseCollectionPfister2006(1); synapses.addConfiguration((SynapseConfigurationPfister2006)
 		 * synapses.getConfigSingleton().getPreset(0)); synapses.setComponentConfiguration(0, 0); synapses.setPreNeuron(0, 0); synapses.setPostNeuron(0, 1);
 		 * 
-		 * Simulation sim = new Simulation(1000, neurons, synapses);
+		 * NeuralNetwork sim = new NeuralNetwork(1000, neurons, synapses);
 		 * 
 		 * long start = System.currentTimeMillis();
 		 * 

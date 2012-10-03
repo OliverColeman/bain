@@ -62,18 +62,18 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 			stepPeriod = new double[1];
 		}
 
-		if (simulation != null) {
+		if (network != null) {
 			for (int c = 0; c < configs.size(); c++) {
 				Graupner2012SynapseConfiguration config = configs.get(c);
 				cSpikePre[c] = config.cSpikePre;
 				cSpikePost[c] = config.cSpikePost;
-				tCDecayMult[c] = (1.0 / config.tCDecay) / (simulation.getTimeResolution() / 1000.0);
+				tCDecayMult[c] = (1.0 / config.tCDecay) / (network.getTimeResolution() / 1000.0);
 				depThresh[c] = config.depThresh;
 				potThresh[c] = config.potThresh;
-				depRateMult[c] = config.depRate / simulation.getTimeResolution();
-				potRateMult[c] = config.potRate / simulation.getTimeResolution();
+				depRateMult[c] = config.depRate / network.getTimeResolution();
+				potRateMult[c] = config.potRate / network.getTimeResolution();
 				bistableBoundary[c] = config.bistableBoundary;
-				noiseMult[c] = (config.noiseRate * timeScaleSqrt[c]) / (Math.sqrt(simulation.getTimeResolution()) * 10); // This
+				noiseMult[c] = (config.noiseRate * timeScaleSqrt[c]) / (Math.sqrt(network.getTimeResolution()) * 10); // This
 																															// is
 																															// probably
 																															// not
@@ -82,8 +82,8 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 				wRange[c] = config.w1 - config.w0;
 				timeScaleInv[c] = (1.0 / config.timeScale);
 				timeScaleSqrt[c] = Math.sqrt(config.timeScale);
-				cSpikePreDelayStepCount[c] = (int) Math.round(config.cSpikePreDelay * (simulation.getTimeResolution() / 1000.0));
-				stepPeriod[0] = simulation.getStepPeriod();
+				cSpikePreDelayStepCount[c] = (int) Math.round(config.cSpikePreDelay * (network.getTimeResolution() / 1000.0));
+				stepPeriod[0] = network.getStepPeriod();
 			}
 		}
 

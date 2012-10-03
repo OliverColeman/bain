@@ -34,10 +34,10 @@ public class FixedFrequencyNeuronCollection extends NeuronCollection<FixedFreque
 		configSpikePotential = new double[configs.size()];
 		configRestPotential = new double[configs.size()];
 		
-		if (simulation != null) {
+		if (network != null) {
 			for (int i = 0; i < configs.size(); i++) {
 				FixedFrequencyNeuronConfiguration config = configs.get(i);
-				configSpikingPeriod[i] = (int) Math.round(config.spikingPeriod * simulation.getTimeResolution());
+				configSpikingPeriod[i] = (int) Math.round(config.spikingPeriod * network.getTimeResolution());
 				configSpikePotential[i] = config.spikePotential;
 				configRestPotential[i] = config.restPotential;
 			}
@@ -51,7 +51,7 @@ public class FixedFrequencyNeuronCollection extends NeuronCollection<FixedFreque
 
 	@Override
 	public void step() {
-		simStep[0] = simulation.getStep();
+		simStep[0] = network.getStep();
 		put(simStep);
 		super.step();
 	}

@@ -50,20 +50,20 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 			stepPeriod = new double[1];
 		}
 
-		if (simulation != null) {
+		if (network != null) {
 			for (int c = 0; c < configs.size(); c++) {
 				Clopath2010SynapseConfiguration config = configs.get(c);
-				tauXMult[c] = (1.0 / config.tauX) / (simulation.getTimeResolution() / 1000.0);
-				tauNegMult[c] = (1.0 / config.tauNeg) / (simulation.getTimeResolution() / 1000.0);
-				tauPosMult[c] = (1.0 / config.tauPos) / (simulation.getTimeResolution() / 1000.0);
+				tauXMult[c] = (1.0 / config.tauX) / (network.getTimeResolution() / 1000.0);
+				tauNegMult[c] = (1.0 / config.tauNeg) / (network.getTimeResolution() / 1000.0);
+				tauPosMult[c] = (1.0 / config.tauPos) / (network.getTimeResolution() / 1000.0);
 				thetaNeg[c] = config.thetaNeg;
 				thetaPos[c] = config.thetaPos;
 				aLTD[c] = config.aLTD;
-				aLTPMult[c] = config.aLTP / (simulation.getTimeResolution() / 1000.0);
+				aLTPMult[c] = config.aLTP / (network.getTimeResolution() / 1000.0);
 				efficacyMin[c] = config.minimumEfficacy;
 				efficacyMax[c] = config.maximumEfficacy;
 			}
-			stepPeriod[0] = simulation.getStepPeriod();
+			stepPeriod[0] = network.getStepPeriod();
 		}
 
 		// Transfer data to Aparapi kernel.
@@ -86,7 +86,7 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 
 	public void reset() {
 		for (int s = 0; s < size; s++) {
-			NeuronConfiguration neuronConfig = simulation.getNeurons().getComponentConfiguration(postIndexes[s]); 
+			NeuronConfiguration neuronConfig = network.getNeurons().getComponentConfiguration(postIndexes[s]); 
 			uNeg[s] = neuronConfig.restPotential;
 			uPos[s] = neuronConfig.restPotential;
 			x[s] = 0;

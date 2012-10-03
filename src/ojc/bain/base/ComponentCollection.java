@@ -65,9 +65,9 @@ public abstract class ComponentCollection extends Kernel {
 	protected Range executeRange;
 
 	/**
-	 * The containing simulation.
+	 * The containing network.
 	 */
-	protected NeuralNetwork simulation;
+	protected NeuralNetwork network;
 
 	/**
 	 * Flag to indicate if the state variables used in an Aparapi kernel have been modified on the GPU (and so would need to be transferred back if we're
@@ -98,17 +98,17 @@ public abstract class ComponentCollection extends Kernel {
 	}
 
 	/**
-	 * Get the containing Simulation.
+	 * Get the containing network.
 	 */
-	public NeuralNetwork getSimulation() {
-		return simulation;
+	public NeuralNetwork getNetwork() {
+		return network;
 	}
 
 	/**
-	 * Set the containing Simulation. Causes this collection to be reinitialised (via init()), and reset (via reset()).
+	 * Set the containing network. Causes this collection to be reinitialised (via init()), and reset (via reset()).
 	 */
-	public void setSimulation(NeuralNetwork simulation) {
-		this.simulation = simulation;
+	public void setNetwork(NeuralNetwork network) {
+		this.network = network;
 		init();
 		reset();
 	}
@@ -291,7 +291,7 @@ public abstract class ComponentCollection extends Kernel {
 	public abstract ComponentCollection createCollection(int size);
 	
 	/**
-	 * Create a new collection of this type of the given size.
+	 * Create a new collection of the given type and size.
 	 * @param className The class name of the collection to create.
 	 * @param size The size of the new collection.
 	 * @throws SecurityException 
