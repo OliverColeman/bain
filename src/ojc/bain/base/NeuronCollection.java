@@ -151,7 +151,6 @@ public abstract class NeuronCollection<C extends NeuronConfiguration> extends Co
 	 * neuronInputs. Alternatively, if neuronInputs should be reset to something other than 0 or a neuron spike is represented by something other than a value
 	 * greater than 0 in neuronOutputs, then this super-method need not be called and the overriding method should instead reset the values for neuronInputs AND set the
 	 * value for neuronSpikings.
-	 * 
 	 */
 	@Override
 	public void run() {

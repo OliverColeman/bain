@@ -3,17 +3,17 @@ package ojc.bain.neuron.rate;
 import ojc.bain.base.*;
 
 /**
- * Implements neurons that simply pass through received input.
+ * Implements neurons that pass through received input, but chop-off values below 0 or above 1.
  * 
  * @author Oliver J. Coleman
  */
-public class LinearNeuronCollection extends NeuronCollectionWithBias {
+public class ClampedLinearNeuronCollection extends NeuronCollectionWithBias {
 	/**
-	 * Create a LinearNeuronCollection.java.
+	 * Create a ClampedLinearNeuronCollection.java.
 	 * 
 	 * @param size The size of this collection.
 	 */
-	public LinearNeuronCollection(int size) {
+	public ClampedLinearNeuronCollection(int size) {
 		this.size = size;
 		init();
 	}
@@ -23,7 +23,7 @@ public class LinearNeuronCollection extends NeuronCollectionWithBias {
 		int neuronID = getGlobalId();
 		if (neuronID >= size)
 			return;
-		neuronOutputs[neuronID] = neuronInputs[neuronID] + bias[neuronID];
+		neuronOutputs[neuronID] = Math.max(Math.min(neuronInputs[neuronID] + bias[neuronID], 1), 0);
 		super.run();
 	}
 
@@ -38,6 +38,6 @@ public class LinearNeuronCollection extends NeuronCollectionWithBias {
 
 	@Override
 	public ComponentCollection createCollection(int size) {
-		return new LinearNeuronCollection(size);
+		return new ClampedLinearNeuronCollection(size);
 	}
 }

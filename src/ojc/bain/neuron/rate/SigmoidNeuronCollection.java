@@ -9,7 +9,7 @@ import ojc.bain.neuron.spiking.FixedFrequencyNeuronConfiguration;
  * 
  * @author Oliver J. Coleman
  */
-public class SigmoidNeuronCollection extends NeuronCollection<SigmoidNeuronConfiguration> {
+public class SigmoidNeuronCollection extends NeuronCollectionWithBias<SigmoidNeuronConfiguration> {
 	double[] configSlope;
 	
 	/**
@@ -50,6 +50,7 @@ public class SigmoidNeuronCollection extends NeuronCollection<SigmoidNeuronConfi
 		if (neuronID >= size)
 			return;
 		int configID = componentConfigIndexes[neuronID];
+		neuronInputs[neuronID] += bias[neuronID];
 		neuronOutputs[neuronID] = (1.0 / (1.0 + Math.exp(-(neuronInputs[neuronID] * configSlope[configID]))));
 		super.run();
 	}
