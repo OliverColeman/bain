@@ -6,10 +6,10 @@ import java.text.Format;
 import com.amd.aparapi.Kernel;
 
 import ojc.bain.NeuralNetwork;
-import ojc.bain.neuron.FixedFrequencyNeuronCollection;
-import ojc.bain.neuron.FixedFrequencyNeuronConfiguration;
-import ojc.bain.synapse.FixedSynapseCollection;
-import ojc.bain.synapse.Pfister2006SynapseCollection;
+import ojc.bain.neuron.spiking.FixedFrequencyNeuronCollection;
+import ojc.bain.neuron.spiking.FixedFrequencyNeuronConfiguration;
+import ojc.bain.synapse.rate.FixedSynapseCollection;
+import ojc.bain.synapse.spiking.Pfister2006SynapseCollection;
 
 public class PerformanceTest {
 	/**

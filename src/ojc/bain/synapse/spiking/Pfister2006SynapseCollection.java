@@ -1,4 +1,4 @@
-package ojc.bain.synapse;
+package ojc.bain.synapse.spiking;
 
 import java.util.Arrays;
 

@@ -1,4 +1,4 @@
-package ojc.bain.neuron;
+package ojc.bain.neuron.rate;
 
 import ojc.bain.base.*;
 

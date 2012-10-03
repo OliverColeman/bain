@@ -57,6 +57,11 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	 */
 	protected boolean preOrPostIndexesModified;
 
+	/**
+	 * Flag to indicate if the efficacy values have been manually modified since the last simulation step.
+	 */
+	protected boolean efficaciesModified;
+
 	@Override
 	public void init() {
 		super.init();
@@ -73,6 +78,7 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 			put(preIndexes);
 			put(postIndexes);
 			preOrPostIndexesModified = false;
+			efficaciesModified = false;
 		}
 		if (simulation != null) {
 			neuronOutputs = simulation.getNeurons().getOutputs();
@@ -97,6 +103,7 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 		Arrays.fill(synapseOutputs, 0);
 		put(efficacy); // In case explicit mode is being used for the Aparapi kernel.
 		put(synapseOutputs);
+		efficaciesModified = false;
 	}
 
 	@Override
@@ -107,6 +114,9 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 		if (preOrPostIndexesModified) {
 			put(preIndexes);
 			put(postIndexes);
+		}
+		if (efficaciesModified) {
+			put(efficacy);
 		}
 		super.step();
 		get(neuronInputs);
@@ -248,20 +258,64 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	/**
 	 * Get current strength (weight) value.
 	 * 
+	 * @param synapseIndex The index of the synapse to get the efficacy of.
 	 * @return the current strength (weight) value.
 	 */
 	public double getEfficacy(int synapseIndex) {
-		if (stateVariablesStale) {
+		// If efficacies have been modified then we've already pulled the latest values from the SIMD hardware.
+		if (!efficaciesModified && stateVariablesStale) {
 			get(efficacy);
 		}
 		return efficacy[synapseIndex];
 	}
+
+	/**
+	 * Set current strength (weight) value.
+	 * 
+	 * @param synapseIndex The index of the synapse to set the efficacy of.
+	 * @param newEfficacy The new efficacy value.
+	 */
+	public void setEfficacy(int synapseIndex, double newEfficacy) {
+		// If efficacies have been modified then we've already pulled the latest values from the SIMD hardware
+		// (and we don't want to overwrite values that have already been modified by previous calls to this method),
+		// otherwise we need pull the latest values before we start setting individual ones as we're going to
+		// be pushing back all the values during the next simulation step.
+		if (!efficaciesModified && stateVariablesStale) {
+			get(efficacy);
+		}
+		efficacy[synapseIndex] = newEfficacy;
+		stateVariablesStale = true;
+	}
+
+	/**
+	 * Returns a reference to the internal efficacy array, to allow efficient getting and setting of efficacy values. <strong>If reading values from the
+	 * returned array, this method must be called after every call to {@link ojc.bain.NeuralNetwork#step()} or {@link ojc.bain.NeuralNetwork#run(int)}.</strong>
+	 * This will ensure that the current values are retrieved from the SIMD hardware (eg GPU) if necessary. <strong>If setting values in the returned array the
+	 * method {@link #setEfficaciesModified()} must be called.</strong>. This will ensure that the modified values are pushed to the SIMD hardware if necessary
+	 * during the next simulation step.
+	 */
+	public double[] getEfficacies() {
+		// If efficacies have been modified then we've already pulled the latest values from the SIMD hardware
+		// (and we don't want to overwrite values that have already been set), otherwise we need pull the latest values.
+		if (!efficaciesModified && stateVariablesStale) {
+			get(efficacy);
+		}
+		return efficacy;
+	}
 	
+	/**
+	 * If setting values in the array returned by {@link #getEfficacies()} this method must be called. This will ensure that the modified values are pushed to the SIMD hardware if necessary
+	 * during the next simulation step.
+	 */
+	public void setEfficaciesModified() {
+		efficaciesModified = true;
+	}
+
 	@Override
 	public SynapseConfiguration getComponentConfiguration(int componentIndex) {
 		return configs.get(componentConfigIndexes[componentIndex]);
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName();

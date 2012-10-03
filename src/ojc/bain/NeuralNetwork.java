@@ -5,7 +5,10 @@ import java.util.Arrays;
 import ojc.bain.base.*;
 import ojc.bain.misc.*;
 import ojc.bain.neuron.*;
+import ojc.bain.neuron.spiking.FixedFrequencyNeuronCollection;
+import ojc.bain.neuron.spiking.FixedFrequencyNeuronConfiguration;
 import ojc.bain.synapse.*;
+import ojc.bain.synapse.spiking.Pfister2006SynapseCollection;
 import ojc.bain.test.*;
 
 import com.amd.aparapi.Kernel;

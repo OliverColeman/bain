@@ -5,13 +5,13 @@ import java.util.Arrays;
 import com.amd.aparapi.Kernel;
 
 import ojc.bain.NeuralNetwork;
-import ojc.bain.neuron.LinearNeuronCollection;
-import ojc.bain.synapse.FixedSynapseCollection;
+import ojc.bain.neuron.rate.LinearNeuronCollection;
+import ojc.bain.synapse.rate.FixedSynapseCollection;
 
 public class SimulationTest {
 	/**
-	 * Tests the core framework by creating a simple neural network from a {@link ojc.bain.neuron.LinearNeuronCollection} and
-	 * {@link ojc.bain.synapse.FixedSynapseCollection} that tests communication between neurons and synapses over several simulation steps, using standard and
+	 * Tests the core framework by creating a simple neural network from a {@link ojc.bain.neuron.rate.LinearNeuronCollection} and
+	 * {@link ojc.bain.synapse.rate.FixedSynapseCollection} that tests communication between neurons and synapses over several simulation steps, using standard and
 	 * OpenCL execution platforms if available.
 	 * 
 	 * @param mode The Aprarapi execution mode to use.

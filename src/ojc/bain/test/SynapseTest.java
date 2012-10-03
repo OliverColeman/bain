@@ -13,6 +13,8 @@ import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.SynapseCollection;
 import ojc.bain.misc.*;
 import ojc.bain.neuron.*;
+import ojc.bain.neuron.spiking.FixedProtocolNeuronCollection;
+import ojc.bain.neuron.spiking.FixedProtocolNeuronConfiguration;
 import ojc.bain.synapse.*;
 
 import org.jfree.chart.ChartFactory;
@@ -162,7 +164,7 @@ public class SynapseTest {
 	 * @param period The period of the spike pattern in seconds.
 	 * @param repetitions The number of times to apply the spike pattern.
 	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array
-	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.FixedProtocolNeuronCollection}.
+	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.spiking.FixedProtocolNeuronCollection}.
 	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each variation dimension, in the form [dim 1,
 	 *            dim 2][reference spike, relative spike] = spike index.
 	 * @param refSpikePreOrPost Array specifying whether the timing variation reference spikes specified by refSpikeIndexes belong to the pre- or post-synaptic
@@ -374,7 +376,7 @@ public class SynapseTest {
 	 * @param period The period of the spike pattern in seconds.
 	 * @param repetitions The number of times to apply the spike pattern.
 	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array
-	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.FixedProtocolNeuronCollection}.
+	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.spiking.FixedProtocolNeuronCollection}.
 	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each variation dimension, in the form [dim 1,
 	 *            dim 2][reference spike, relative spike] = spike index.
 	 * @param refSpikePreOrPost Array specifying whether the timing variation reference spikes specified by refSpikeIndexes belong to the pre- or post-synaptic

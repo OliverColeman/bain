@@ -1,4 +1,4 @@
-package ojc.bain.synapse;
+package ojc.bain.synapse.spiking;
 
 import ojc.bain.base.ComponentCollection;
 import ojc.bain.base.ComponentConfiguration;

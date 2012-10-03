@@ -1,10 +1,11 @@
-package ojc.bain.synapse;
+package ojc.bain.synapse.rate;
 
 import java.util.Arrays;
 
 import ojc.bain.base.ComponentCollection;
 import ojc.bain.base.ComponentConfiguration;
 import ojc.bain.base.SynapseCollection;
+import ojc.bain.synapse.spiking.Pfister2006SynapseConfiguration;
 
 /**
  * Implements synapses with a fixed efficacy (weight).
@@ -16,13 +17,6 @@ import ojc.bain.base.SynapseCollection;
 public class FixedSynapseCollection extends SynapseCollection {
 	public FixedSynapseCollection(int size) {
 		this.size = size;
-	}
-
-	/**
-	 * Returns a reference to the internal efficacy array, to facilitate setting the fixed efficacy values.
-	 */
-	public double[] getEfficacies() {
-		return efficacy;
 	}
 
 	@Override
