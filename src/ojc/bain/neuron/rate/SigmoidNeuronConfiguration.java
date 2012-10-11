@@ -37,11 +37,14 @@ public class SigmoidNeuronConfiguration extends NeuronConfiguration {
 
 	@Override
 	public String[] getPresetNames() {
-		return new String[] {};
+		return new String[] {"default"};
 	}
 
 	@Override
 	public ComponentConfiguration getPreset(int index) {
+		if (index == 0) {
+			return new SigmoidNeuronConfiguration();
+		}
 		return null;
 	}
 

@@ -285,7 +285,7 @@ public abstract class ComponentCollection extends Kernel {
 	}
 
 	/**
-	 * Create a new collection of this type of the given size.
+	 * Create a new collection of this type of the given size. Implementations of this method should call {@link #init()}.
 	 * @param size The size of the new collection.
 	 */
 	public abstract ComponentCollection createCollection(int size);

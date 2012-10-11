@@ -10,13 +10,12 @@ import ojc.bain.synapse.spiking.Pfister2006SynapseConfiguration;
 /**
  * Implements synapses with a fixed efficacy (weight).
  * 
- * @see Pfister2006SynapseConfiguration
- * 
  * @author Oliver J. Coleman
  */
 public class FixedSynapseCollection extends SynapseCollection {
 	public FixedSynapseCollection(int size) {
 		this.size = size;
+		init();
 	}
 
 	@Override

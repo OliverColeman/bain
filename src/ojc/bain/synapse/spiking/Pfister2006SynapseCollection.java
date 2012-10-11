@@ -24,6 +24,7 @@ public class Pfister2006SynapseCollection extends SynapseCollection<Pfister2006S
 
 	public Pfister2006SynapseCollection(int size) {
 		this.size = size;
+		init();
 	}
 
 	@Override

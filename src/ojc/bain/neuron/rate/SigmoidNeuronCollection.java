@@ -17,6 +17,7 @@ public class SigmoidNeuronCollection extends NeuronCollectionWithBias<SigmoidNeu
 	 * singleton to create a non-empty collection with.
 	 */
 	public SigmoidNeuronCollection() {
+		init();
 	}
 	
 	/**
@@ -57,7 +58,7 @@ public class SigmoidNeuronCollection extends NeuronCollectionWithBias<SigmoidNeu
 
 	@Override
 	public ComponentConfiguration getConfigSingleton() {
-		return null;
+		return new SigmoidNeuronConfiguration();
 	}
 
 	@Override
