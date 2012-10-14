@@ -181,10 +181,10 @@ public abstract class ComponentCollection extends Kernel {
 	}
 
 	/**
-	 * Set current strength (weight) value.
+	 * Set current output value for a component. This will be used in the next step of the simulation.
 	 * 
-	 * @param index The index of the synapse to set the efficacy of.
-	 * @param newOutput The new efficacy value.
+	 * @param index The index of the component to set the output value for.
+	 * @param newOutput The new output value.
 	 */
 	public void setOutput(int index, double newOutput) {
 		ensureOutputsAreFresh();
