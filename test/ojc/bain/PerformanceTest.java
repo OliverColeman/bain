@@ -1,4 +1,4 @@
-package ojc.bain.test;
+package ojc.bain;
 
 import java.text.DecimalFormat;
 import java.text.Format;

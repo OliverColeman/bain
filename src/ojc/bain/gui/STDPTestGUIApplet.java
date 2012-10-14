@@ -1,4 +1,4 @@
-package ojc.bain.test;
+package ojc.bain.gui;
 
 import javax.swing.JApplet;
 import javax.swing.SwingUtilities;

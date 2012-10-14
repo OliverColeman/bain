@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/jfreechart/lib/jcommon-1.0.17.jar"/>
 	<classpathentry kind="lib" path="/home/data/Dropbox/ai/PhD/software/lib/jfreechart/lib/jfreechart-1.0.14.jar" sourcepath="/home/oliver/.m2/repository/org/jfree/jfreechart/1.0.14/jfreechart-1.0.14-sources.jar">

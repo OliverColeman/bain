@@ -1,4 +1,4 @@
-package ojc.bain.test;
+package ojc.bain.misc;
 
 import java.util.*;
 

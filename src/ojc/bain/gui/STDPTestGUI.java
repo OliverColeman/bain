@@ -1,4 +1,4 @@
-package ojc.bain.test;
+package ojc.bain.gui;
 
 import java.awt.*;
 import java.awt.event.*;

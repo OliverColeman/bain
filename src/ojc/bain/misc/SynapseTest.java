@@ -1,4 +1,4 @@
-package ojc.bain.test;
+package ojc.bain.misc;
 
 import java.awt.Color;
 import java.text.DecimalFormat;
@@ -47,7 +47,7 @@ public class SynapseTest {
 	 * The type of test results.
 	 * 
 	 * <ul>
-	 * <li>STDP denotes a Spike-Timing-Depedent Plasticity test.</li>
+	 * <li>STDP denotes a Spike-Timing-Dependent Plasticity test.</li>
 	 * <li>1D and 2D denote a test for which variables are varied over 1 or 2 dimensions respectively.</li>
 	 * </ul>
 	 */

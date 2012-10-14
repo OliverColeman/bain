@@ -1,4 +1,4 @@
-package ojc.bain.test;
+package ojc.bain;
 
 import java.util.Arrays;
 
@@ -8,7 +8,7 @@ import ojc.bain.NeuralNetwork;
 import ojc.bain.neuron.rate.LinearNeuronCollection;
 import ojc.bain.synapse.rate.FixedSynapseCollection;
 
-public class SimulationTest {
+public class NeuralNetworkTest {
 	/**
 	 * Tests the core framework by creating a simple neural network from a {@link ojc.bain.neuron.rate.LinearNeuronCollection} and
 	 * {@link ojc.bain.synapse.rate.FixedSynapseCollection} that tests communication between neurons and synapses over several simulation steps, using standard
