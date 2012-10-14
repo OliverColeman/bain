@@ -3,7 +3,9 @@ package ojc.bain.base;
 import ojc.bain.base.ComponentConfiguration;
 
 /**
- * <p>A base class for configuration objects for neurons.</p> 
+ * <p>
+ * A base class for configuration objects for neurons.
+ * </p>
  * 
  * @see ComponentConfiguration
  * 
@@ -14,7 +16,7 @@ public abstract class SynapseConfiguration extends ComponentConfiguration {
 	 * A synapses minimum efficacy. Default is 0;
 	 */
 	public double minimumEfficacy = 0;
-	
+
 	/**
 	 * A synapses maximum efficacy. Default is 1;
 	 */

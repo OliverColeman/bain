@@ -23,7 +23,7 @@ public class ClampedLinearNeuronCollection extends NeuronCollectionWithBias {
 		int neuronID = getGlobalId();
 		if (neuronID >= size)
 			return;
-		neuronOutputs[neuronID] = Math.max(Math.min(neuronInputs[neuronID] + bias[neuronID], 1), 0);
+		outputs[neuronID] = Math.max(Math.min(inputs[neuronID] + bias[neuronID], 1), 0);
 		super.run();
 	}
 

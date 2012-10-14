@@ -22,22 +22,17 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	protected double[] efficacy;
 
 	/**
-	 * The current output of each synapse.
-	 */
-	protected double[] synapseOutputs;
-
-	/**
-	 * The {@link ojc.bain.base.NeuronCollection#neuronOutputs} from the associated NeuronCollection.
+	 * The {@link ojc.bain.base.NeuronCollection#outputs} from the associated NeuronCollection.
 	 */
 	protected double[] neuronOutputs;
 
 	/**
-	 * The {@link ojc.bain.base.NeuronCollection#neuronSpikings} from the associated NeuronCollection.
+	 * The {@link ojc.bain.base.NeuronCollection#spikings} from the associated NeuronCollection.
 	 */
 	protected boolean[] neuronSpikings;
 
 	/**
-	 * The {@link ojc.bain.base.NeuronCollection#neuronInputs} from the associated NeuronCollection.
+	 * The {@link ojc.bain.base.NeuronCollection#inputs} from the associated NeuronCollection.
 	 */
 	protected double[] neuronInputs;
 
@@ -66,13 +61,13 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	public void init() {
 		super.init();
 		if (efficacy == null || efficacy.length != size) {
-			synapseOutputs = new double[size];
+			outputs = new double[size];
 			efficacy = new double[size];
 			preIndexes = new int[size];
 			postIndexes = new int[size];
 
 			// In case explicit mode is being used for the Aparapi kernel.
-			put(synapseOutputs);
+			put(outputs);
 			outputsStale = false;
 			put(efficacy);
 			put(preIndexes);
@@ -84,10 +79,6 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 			neuronOutputs = network.getNeurons().getOutputs();
 			neuronInputs = network.getNeurons().getInputs();
 			neuronSpikings = network.getNeurons().getSpikings();
-
-			put(neuronOutputs);
-			put(neuronInputs);
-			put(neuronSpikings);
 		}
 	}
 
@@ -100,17 +91,22 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	public void reset() {
 		super.reset();
 		Arrays.fill(efficacy, 0);
-		Arrays.fill(synapseOutputs, 0);
-		put(efficacy); // In case explicit mode is being used for the Aparapi kernel.
-		put(synapseOutputs);
-		efficaciesModified = false;
+		efficaciesModified = true;
+		
 	}
 
 	@Override
 	public void step() {
-		// put(neuronOutputs);
-		put(neuronSpikings);
-		put(neuronInputs);
+		// At the moment Aparapi doesn't allow sharing buffers between kernels
+		// or allow kernels with multiple entry points in a way that is
+		// compatible with a framework such as this. Thus we must ensure that
+		// fresh versions of the following buffers are available to this kernel
+		// by "putting" them there.
+		network.getNeurons().ensureInputsAreFresh();
+		network.getNeurons().ensureOutputsAreFresh();
+		put(neuronOutputs); // neuron outputs are used by many synapse models.
+		put(neuronSpikings); // neuron spikings are used by many synapse models.
+		put(neuronInputs); // neuron inputs are calculated in run(), and are typically reset to 0 by the neuron model in the previous simulation step.
 		if (preOrPostIndexesModified) {
 			put(preIndexes);
 			put(postIndexes);
@@ -119,30 +115,19 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 			put(efficacy);
 		}
 		super.step();
-		get(neuronInputs);
+		outputsStale = true;
+		get(neuronInputs); // See note above.
 	}
 
 	/**
-	 * Implements the basic infrastructure for processing a synapse by updating the values of {@link #synapseOutputs} and {@link #neuronInputs}. Sub-classes
-	 * must override this method and call the super-method <strong>after</strong> they have updated {@link #efficacy}.
+	 * Implements the basic infrastructure for processing a synapse by updating the values of {@link #outputs} and {@link #neuronInputs}. Sub-classes may
+	 * override this method and if they modify the {@link #efficacy} must call the super-method <strong>after</strong> modifying it.
 	 */
 	@Override
 	public void run() {
 		int synapseID = this.getGlobalId();
-		synapseOutputs[synapseID] = neuronOutputs[preIndexes[synapseID]] * efficacy[synapseID];
-		neuronInputs[postIndexes[synapseID]] += synapseOutputs[synapseID];
-	}
-
-	@Override
-	public double getOutput(int index) {
-		ensureOutputsAreFresh();
-		return synapseOutputs[index];
-	}
-
-	@Override
-	public double[] getOutputs() {
-		ensureOutputsAreFresh();
-		return synapseOutputs;
+		outputs[synapseID] = neuronOutputs[preIndexes[synapseID]] * efficacy[synapseID];
+		neuronInputs[postIndexes[synapseID]] += outputs[synapseID];
 	}
 
 	@Override
@@ -153,7 +138,7 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 
 	/**
 	 * {@inheritDoc} A SynapseCollection uses the outputs of pre-synaptic neurons as inputs, thus it does not provide a reference to an internal array. Instead
-	 * an array is generated with an element for each neuron, and the output values for each pre-synaptic neuron copied into it. Consider using
+	 * an array is generated with an element for each synapse, and the relevant output values for each pre-synaptic neuron copied into it. Consider using
 	 * {@link #getInputs(double[])}.
 	 */
 	@Override
@@ -177,27 +162,17 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	}
 
 	/**
-	 * SynapseCollection implements this as an empty method as it generally does not make sense to add external input to a synapse. Sub-classes may override
-	 * this method if it is necessary for them to supply input other than from a pre-synaptic neuron.
+	 * SynapseCollection implements this as an empty method as it generally does not make sense to add external input to a synapse. The same effect can be
+	 * achieved by adding to the output value of the pre-synaptic neuron.
 	 */
 	@Override
 	public void addInput(int index, double input) {
 	}
 
 	@Override
-	public void ensureOutputsAreFresh() {
-		if (outputsStale) {
-			get(synapseOutputs);
-			outputsStale = false;
-		}
-	}
-
-	@Override
 	public void ensureInputsAreFresh() {
-		if (inputsStale) {
-			get(neuronOutputs);
-			inputsStale = false;
-		}
+		network.getNeurons().ensureOutputsAreFresh();
+		inputsStale = false;
 	}
 
 	/**
@@ -302,10 +277,10 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 		}
 		return efficacy;
 	}
-	
+
 	/**
-	 * If setting values in the array returned by {@link #getEfficacies()} this method must be called. This will ensure that the modified values are pushed to the SIMD hardware if necessary
-	 * during the next simulation step.
+	 * If setting values in the array returned by {@link #getEfficacies()} this method must be called. This will ensure that the modified values are pushed to
+	 * the SIMD hardware if necessary during the next simulation step.
 	 */
 	public void setEfficaciesModified() {
 		efficaciesModified = true;

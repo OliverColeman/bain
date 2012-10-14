@@ -18,10 +18,10 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 	// State variables.
 	double[] uNeg, uPos; // Low-pass-filtered versions of the post-synaptic membrane potential (neuron output).
 	double[] x; // Pre-synaptic trace.
-	
+
 	// Model parameters, see Clopath2010SynapseConfiguration.
 	public double[] thetaNeg, thetaPos, aLTD, aLTPMult, tauXMult, tauNegMult, tauPosMult, stepPeriod, efficacyMin, efficacyMax;
-	
+
 	public Clopath2010SynapseCollection(int size) {
 		this.size = size;
 		init();
@@ -86,7 +86,7 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 
 	public void reset() {
 		for (int s = 0; s < size; s++) {
-			NeuronConfiguration neuronConfig = network.getNeurons().getComponentConfiguration(postIndexes[s]); 
+			NeuronConfiguration neuronConfig = network.getNeurons().getComponentConfiguration(postIndexes[s]);
 			uNeg[s] = neuronConfig.restPotential;
 			uPos[s] = neuronConfig.restPotential;
 			x[s] = 0;
@@ -114,21 +114,23 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 		x[synapseID] += ((preSpiked ? 1 : 0) - x[synapseID]) * tauXMult[configID];
 		uNeg[synapseID] += (neuronOutputs[postID] - uNeg[synapseID]) * tauNegMult[configID];
 		uPos[synapseID] += (neuronOutputs[postID] - uPos[synapseID]) * tauPosMult[configID];
-		
+
 		// If LTD occurs.
 		double uSigmaNeg = uNeg[synapseID] - thetaNeg[configID];
 		if (preSpiked && uSigmaNeg > 0) {
 			efficacy[synapseID] -= aLTD[configID] * uSigmaNeg;
-			if (efficacy[synapseID] < efficacyMin[configID]) efficacy[synapseID] = efficacyMin[configID];
+			if (efficacy[synapseID] < efficacyMin[configID])
+				efficacy[synapseID] = efficacyMin[configID];
 		}
 		// If LTP occurs.
 		double uSigma = neuronOutputs[postID] - thetaPos[configID];
 		double uSigmaPos = uPos[synapseID] - thetaNeg[configID];
 		if (uSigma > 0 && uSigmaPos > 0) {
 			efficacy[synapseID] += aLTPMult[configID] * x[synapseID] * uSigma * uSigmaPos;
-			if (efficacy[synapseID] > efficacyMax[configID]) efficacy[synapseID] = efficacyMax[configID];
+			if (efficacy[synapseID] > efficacyMax[configID])
+				efficacy[synapseID] = efficacyMax[configID];
 		}
-		
+
 		super.run();
 	}
 

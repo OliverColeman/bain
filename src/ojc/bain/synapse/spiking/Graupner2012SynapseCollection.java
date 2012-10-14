@@ -21,7 +21,8 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 	double[] c; // Calcium concentration.
 	double[] p; // Efficacy state.
 	int[] preDelayCount; // Count down until calcium spike after pre-synaptic neuronal spike.
-	boolean[] preSpikedLastTimeStep, postSpikedLastTimeStep; // true iff the pre/post-synaptic neuron was spiking during the last time step. These are used to prevent counting a spike that lasts multiple time steps more than once.
+	boolean[] preSpikedLastTimeStep, postSpikedLastTimeStep; // true iff the pre/post-synaptic neuron was spiking during the last time step. These are used to
+																// prevent counting a spike that lasts multiple time steps more than once.
 
 	// Model parameters, see SynapseConfigurationGraupner2012.
 	public double[] cSpikePre, cSpikePost, tCDecayMult, depThresh, potThresh, depRateMult, potRateMult, bistableBoundary, noiseMult, w0, wRange, timeScaleInv, timeScaleSqrt, stepPeriod;
@@ -74,10 +75,10 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 				potRateMult[c] = config.potRate / network.getTimeResolution();
 				bistableBoundary[c] = config.bistableBoundary;
 				noiseMult[c] = (config.noiseRate * timeScaleSqrt[c]) / (Math.sqrt(network.getTimeResolution()) * 10); // This
-																															// is
-																															// probably
-																															// not
-																															// right.
+																														// is
+																														// probably
+																														// not
+																														// right.
 				w0[c] = config.w0;
 				wRange[c] = config.w1 - config.w0;
 				timeScaleInv[c] = (1.0 / config.timeScale);
@@ -195,7 +196,7 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 
 		preSpikedLastTimeStep[synapseID] = preSpiked;
 		postSpikedLastTimeStep[synapseID] = postSpiked;
-		
+
 		super.run();
 	}
 

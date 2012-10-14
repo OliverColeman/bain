@@ -58,13 +58,14 @@ public class SynapseTest {
 	/**
 	 * Test the behaviour of a synapse model.
 	 * 
-	 * @param network A neural network containing two neurons and a single synapse to be tested. The neurons at index 0 and 1 should be the pre- and post-synaptic
-	 *            neurons respectively, and are typically configured to produce a fixed firing pattern (though any neuron type and firing pattern are
-	 *            permitted).
+	 * @param network A neural network containing two neurons and a single synapse to be tested. The neurons at index 0 and 1 should be the pre- and
+	 *            post-synaptic neurons respectively, and are typically configured to produce a fixed firing pattern (though any neuron type and firing pattern
+	 *            are permitted).
 	 * @param simSteps The number of steps to run the simulation for.
 	 * @param logSpikesAndStateVariables Whether to record pre- and post-synaptic spikes and any state variables exposed by the synapse model in the test
 	 *            results.
-	 * @param simStepsNoSpikes The number of steps to run the simulation for with no spiking after the normal spike test. This is useful for testing models which change the efficacy in the absence of spikes.
+	 * @param simStepsNoSpikes The number of steps to run the simulation for with no spiking after the normal spike test. This is useful for testing models
+	 *            which change the efficacy in the absence of spikes.
 	 * @return For a single spike protocol, a TestResults object with type {@link TYPE#STDP} consisting of series labelled "Time" and "Efficacy" and if
 	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
 	 */
@@ -72,7 +73,7 @@ public class SynapseTest {
 		if (network.getNeurons().getSize() != 2 || network.getSynapses().getSize() != 1) {
 			throw new IllegalArgumentException("The neural network must contain at least 2 neurons and 1 synapse.");
 		}
-		
+
 		simStepsNoSpikes = Math.max(0, simStepsNoSpikes);
 
 		int displayTimeResolution = Math.min(1000, network.getTimeResolution());
@@ -117,11 +118,11 @@ public class SynapseTest {
 			network.getNeurons().setConfiguration(0, config);
 			network.getNeurons().setComponentConfiguration(0, 0);
 			network.getNeurons().setComponentConfiguration(1, 0);
-	
+
 			for (; step < simSteps + simStepsNoSpikes; step++) {
 				double time = network.getTime();
 				network.step();
-	
+
 				if (step % logStepCount == 0) {
 					timeLog[logIndex] = time;
 					efficacyLog[logIndex] = network.getSynapses().getEfficacy(0);
@@ -164,7 +165,8 @@ public class SynapseTest {
 	 * @param period The period of the spike pattern in seconds.
 	 * @param repetitions The number of times to apply the spike pattern.
 	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array
-	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.spiking.FixedProtocolNeuronCollection}.
+	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See
+	 *            {@link ojc.bain.neuron.spiking.FixedProtocolNeuronCollection}.
 	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each variation dimension, in the form [dim 1,
 	 *            dim 2][reference spike, relative spike] = spike index.
 	 * @param refSpikePreOrPost Array specifying whether the timing variation reference spikes specified by refSpikeIndexes belong to the pre- or post-synaptic
@@ -174,9 +176,9 @@ public class SynapseTest {
 	 * @param progressMonitor If not null, this will be updated with the current progress.
 	 * @return For a single spike protocol, a TestResults object with type {@link TYPE#STDP} consisting of series labelled "Time" and "Efficacy" and if
 	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
-	 *         For a protocol varied over one dimension, a TestResults object with type {@link TYPE#STDP_1D} consisting of series labelled "Time delta" and "Efficacy".
-	 *         For a protocol varied over two dimensions, a TestResults object with type {@link TYPE#STDP_2D} consisting of series labelled "Time delta 1",
-	 *         "Time delta 2" and "Efficacy".
+	 *         For a protocol varied over one dimension, a TestResults object with type {@link TYPE#STDP_1D} consisting of series labelled "Time delta" and
+	 *         "Efficacy". For a protocol varied over two dimensions, a TestResults object with type {@link TYPE#STDP_2D} consisting of series labelled
+	 *         "Time delta 1", "Time delta 2" and "Efficacy".
 	 */
 	public static TestResults testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost, boolean logSpikesAndStateVariables, ProgressMonitor progressMonitor) throws IllegalArgumentException {
 		int variationDimsCount = patterns.length - 1; // Number of dimensions over which spike timing patterns vary.
@@ -376,7 +378,8 @@ public class SynapseTest {
 	 * @param period The period of the spike pattern in seconds.
 	 * @param repetitions The number of times to apply the spike pattern.
 	 * @param patterns Array containing spike patterns, in the form [initial, dim 1, dim 2][pre, post][spike number] = spike time. The [spike number] array
-	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See {@link ojc.bain.neuron.spiking.FixedProtocolNeuronCollection}.
+	 *            contains the times (s) of each spike, relative to the beginning of the pattern. See
+	 *            {@link ojc.bain.neuron.spiking.FixedProtocolNeuronCollection}.
 	 * @param refSpikeIndexes Array specifying indexes of the two spikes to use as timing variation references for each variation dimension, in the form [dim 1,
 	 *            dim 2][reference spike, relative spike] = spike index.
 	 * @param refSpikePreOrPost Array specifying whether the timing variation reference spikes specified by refSpikeIndexes belong to the pre- or post-synaptic
@@ -386,9 +389,9 @@ public class SynapseTest {
 	 * @param progressMonitor If not null, this will be updated to display the progress of the test.
 	 * @return For a single spike protocol, a TestResults object with type {@link TYPE#STDP} consisting of series labelled "Time" and "Efficacy" and if
 	 *         logSpikesAndStateVariables == true then also "Pre-synaptic spikes", "Post-synaptic spikes" and any state variables exposed by the synapse model.
-	 *         For a protocol varied over one dimension, a TestResults object with type {@link TYPE#STDP_1D} consisting of series labelled "Time delta" and "Efficacy".
-	 *         For a protocol varied over two dimensions, a TestResults object with type {@link TYPE#STDP_2D} consisting of series labelled "Time delta 1",
-	 *         "Time delta 2" and "Efficacy".
+	 *         For a protocol varied over one dimension, a TestResults object with type {@link TYPE#STDP_1D} consisting of series labelled "Time delta" and
+	 *         "Efficacy". For a protocol varied over two dimensions, a TestResults object with type {@link TYPE#STDP_2D} consisting of series labelled
+	 *         "Time delta 1", "Time delta 2" and "Efficacy".
 	 */
 	public static TestResults[] testPattern(SynapseCollection<? extends ComponentConfiguration> synapse, String[] configurationLabels, ComponentConfiguration[] configurations, int timeResolution, double period, int repetitions, double[][][] patterns, int[][] refSpikeIndexes, int[][] refSpikePreOrPost, boolean logSpikesAndStateVariables, ProgressMonitor progressMonitor) throws IllegalArgumentException {
 		int configCount = configurationLabels.length;
@@ -449,7 +452,7 @@ public class SynapseTest {
 	public static JFreeChart createChart(TestResults[] results, boolean singlePlot, int timeResolution, boolean logSpikesAndStateVariables, boolean showInFrame, String title) {
 		JFreeChart resultsPlot = null;
 		int resultsCount = results.length;
-		
+
 		// Make sure they're all the same type.
 		for (int ri = 0; ri < results.length; ri++) {
 			if (ri < resultsCount - 1 && results[ri].getProperty("type") != results[ri + 1].getProperty("type")) {
@@ -585,9 +588,9 @@ public class SynapseTest {
 				rangeBase = Math.min(Math.abs(min), Math.abs(max));
 			}
 			if (min >= max) {
-				max = min + Double.MIN_VALUE*10;
+				max = min + Double.MIN_VALUE * 10;
 			}
-			
+
 			LookupPaintScale scale = new LookupPaintScale(min, max, Color.WHITE);
 			if (min < 0) {
 				for (int ci = 0; ci <= 255; ci++) {

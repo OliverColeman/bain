@@ -5,21 +5,21 @@ import ojc.bain.neuron.spiking.FixedFrequencyNeuronConfiguration;
 
 /**
  * Implements rate-based neurons that use a Sigmoidal activation function.
+ * 
  * @see SigmoidNeuronConfiguration
  * 
  * @author Oliver J. Coleman
  */
 public class SigmoidNeuronCollection extends NeuronCollectionWithBias<SigmoidNeuronConfiguration> {
 	double[] configSlope;
-	
+
 	/**
-	 * Create an empty SigmoidNeuronCollection. This is used for retrieving a 
-	 * singleton to create a non-empty collection with.
+	 * Create an empty SigmoidNeuronCollection. This is used for retrieving a singleton to create a non-empty collection with.
 	 */
 	public SigmoidNeuronCollection() {
 		init();
 	}
-	
+
 	/**
 	 * Create a SigmoidNeuronCollection.
 	 * 
@@ -29,7 +29,7 @@ public class SigmoidNeuronCollection extends NeuronCollectionWithBias<SigmoidNeu
 		this.size = size;
 		init();
 	}
-	
+
 	public void init() {
 		super.init();
 		configSlope = new double[configs.size()];
@@ -44,15 +44,14 @@ public class SigmoidNeuronCollection extends NeuronCollectionWithBias<SigmoidNeu
 		put(configSlope);
 	}
 
-
 	@Override
 	public void run() {
 		int neuronID = getGlobalId();
 		if (neuronID >= size)
 			return;
 		int configID = componentConfigIndexes[neuronID];
-		neuronInputs[neuronID] += bias[neuronID];
-		neuronOutputs[neuronID] = (1.0 / (1.0 + Math.exp(-(neuronInputs[neuronID] * configSlope[configID]))));
+		inputs[neuronID] += bias[neuronID];
+		outputs[neuronID] = (1.0 / (1.0 + Math.exp(-(inputs[neuronID] * configSlope[configID]))));
 		super.run();
 	}
 

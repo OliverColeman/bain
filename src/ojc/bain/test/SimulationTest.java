@@ -11,12 +11,12 @@ import ojc.bain.synapse.rate.FixedSynapseCollection;
 public class SimulationTest {
 	/**
 	 * Tests the core framework by creating a simple neural network from a {@link ojc.bain.neuron.rate.LinearNeuronCollection} and
-	 * {@link ojc.bain.synapse.rate.FixedSynapseCollection} that tests communication between neurons and synapses over several simulation steps, using standard and
-	 * OpenCL execution platforms if available.
+	 * {@link ojc.bain.synapse.rate.FixedSynapseCollection} that tests communication between neurons and synapses over several simulation steps, using standard
+	 * and OpenCL execution platforms if available.
 	 * 
 	 * @param mode The Aprarapi execution mode to use.
 	 */
-	public static double[] testCoreFramework(Kernel.EXECUTION_MODE mode) {
+	public static double[] testCoreFramework(Kernel.EXECUTION_MODE mode, boolean printOutput) {
 		LinearNeuronCollection neurons = new LinearNeuronCollection(9);
 		FixedSynapseCollection synapses = new FixedSynapseCollection(10);
 		NeuralNetwork sim = new NeuralNetwork(1000, neurons, synapses, mode);
@@ -28,7 +28,7 @@ public class SimulationTest {
 			synapses.setPreAndPostNeurons(s, connections[s][0], connections[s][1]);
 			efficacy[s] = weights[s];
 		}
-		synapses.reset(); // put()s the efficacy array to the GPU if being used.
+		synapses.setEfficaciesModified();
 
 		// Initial spikes to two input neurons.
 		neurons.addInput(0, 1);
@@ -39,16 +39,25 @@ public class SimulationTest {
 				neurons.addInput(0, 1);
 			}
 			sim.step();
-			System.out.println(Arrays.toString(neurons.getOutputs()));
+			if (printOutput) {
+				System.out.println(Arrays.toString(neurons.getOutputs()));
+			}
 		}
-		System.out.println("Execution mode: " + neurons.getExecutionMode());
-		System.out.println((neurons.isExplicit() ? "Explicit" : "Auto") + " memory management");
-		System.out.println();
-
+		
+		if (printOutput) {
+			System.out.println("Execution mode: " + neurons.getExecutionMode());
+			System.out.println((neurons.isExplicit() ? "Explicit" : "Auto") + " memory management");
+			System.out.println();
+		}
+		
+		double[] correctOutput = new double[]{0.0, 0.0, 0.0, 0.00390625, 1.0, 0.0, 0.0, 0.0078125, 0.0};
+		assert Arrays.equals(neurons.getOutputs(), correctOutput);
+		
 		return neurons.getOutputs();
 	}
 
 	public static void main(String[] args) {
-		testCoreFramework(Kernel.EXECUTION_MODE.GPU);
+		testCoreFramework(Kernel.EXECUTION_MODE.CPU, false);
+		testCoreFramework(Kernel.EXECUTION_MODE.GPU, false);
 	}
 }

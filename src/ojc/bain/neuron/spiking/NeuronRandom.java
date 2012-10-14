@@ -24,8 +24,8 @@ public class NeuronRandom extends NeuronCollection {
 	 * @see ojc.bain.base.NeuronCollection#step()
 	 */
 	public double step() {
-		neuronOutputs = (Math.random() > config.threshold) ? 1 : 0;
-		return neuronOutputs;
+		outputs = (Math.random() > config.threshold) ? 1 : 0;
+		return outputs;
 	}
 
 	@Override

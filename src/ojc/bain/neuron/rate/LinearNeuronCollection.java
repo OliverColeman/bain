@@ -23,7 +23,7 @@ public class LinearNeuronCollection extends NeuronCollectionWithBias {
 		int neuronID = getGlobalId();
 		if (neuronID >= size)
 			return;
-		neuronOutputs[neuronID] = neuronInputs[neuronID] + bias[neuronID];
+		outputs[neuronID] = inputs[neuronID] + bias[neuronID];
 		super.run();
 	}
 

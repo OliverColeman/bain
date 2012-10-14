@@ -15,8 +15,7 @@ public class SigmoidNeuronConfiguration extends NeuronConfiguration {
 	public double slope = 4.924273;
 
 	/**
-	 * Create a SigmoidNeuronConfiguration. This is used for retrieving a 
-	 * configuration singleton or a default configuration.
+	 * Create a SigmoidNeuronConfiguration. This is used for retrieving a configuration singleton or a default configuration.
 	 */
 	public SigmoidNeuronConfiguration() {
 	}
@@ -37,7 +36,7 @@ public class SigmoidNeuronConfiguration extends NeuronConfiguration {
 
 	@Override
 	public String[] getPresetNames() {
-		return new String[] {"default"};
+		return new String[] { "default" };
 	}
 
 	@Override

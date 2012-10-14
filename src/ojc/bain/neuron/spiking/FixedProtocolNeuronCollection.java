@@ -76,7 +76,7 @@ public class FixedProtocolNeuronCollection extends NeuronCollection<FixedProtoco
 			return;
 		int configID = componentConfigIndexes[neuronID];
 		int stepInProtocol = (int) (simStep[0] % configSpikePatternPeriod[configID]);
-		neuronOutputs[neuronID] = configSpikeProtocol[configProtocolIndex[configID] + stepInProtocol] ? configSpikePotential[configID] : configRestPotential[configID];
+		outputs[neuronID] = configSpikeProtocol[configProtocolIndex[configID] + stepInProtocol] ? configSpikePotential[configID] : configRestPotential[configID];
 		super.run();
 	}
 

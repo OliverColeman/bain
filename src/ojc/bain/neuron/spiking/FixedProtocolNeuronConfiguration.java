@@ -3,7 +3,8 @@ package ojc.bain.neuron.spiking;
 import ojc.bain.base.NeuronConfiguration;
 
 /**
- * A neuron model that produces pre-determined spike patterns. The spikes are modelled as instantaneous transitions between the resting potential and the spike potential.
+ * A neuron model that produces pre-determined spike patterns. The spikes are modelled as instantaneous transitions between the resting potential and the spike
+ * potential.
  * 
  * @author Oliver J. Coleman
  */
@@ -14,11 +15,11 @@ public class FixedProtocolNeuronConfiguration extends NeuronConfiguration {
 	public double spikePatternPeriod;
 
 	/**
-	 * Times of the start of spikes relative to the start of the protocol, in seconds. 
-	 * Spike start times should be less than ({@link #spikePatternPeriod} + {@link #spikeDuration}), otherwise they will be truncated. 
+	 * Times of the start of spikes relative to the start of the protocol, in seconds. Spike start times should be less than ({@link #spikePatternPeriod} +
+	 * {@link #spikeDuration}), otherwise they will be truncated.
 	 */
 	public double[] spikeTimings;
-		
+
 	/**
 	 * The duration of a spike in seconds. Default duration is 1ms.
 	 */

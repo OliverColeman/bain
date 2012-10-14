@@ -3,7 +3,9 @@ package ojc.bain.base;
 import ojc.bain.base.ComponentConfiguration;
 
 /**
- * <p>A base class for configuration objects for neurons.</p> 
+ * <p>
+ * A base class for configuration objects for neurons.
+ * </p>
  * 
  * @see ComponentConfiguration
  * 
@@ -14,7 +16,7 @@ public abstract class NeuronConfiguration extends ComponentConfiguration {
 	 * A neurons potential (output voltage) during a spike. Default value is 30.4mv.
 	 */
 	public double spikePotential = 0.0304;
-	
+
 	/**
 	 * A neurons potential between spikes. Default value is -70.6mv.
 	 */

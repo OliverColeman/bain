@@ -18,7 +18,7 @@ import java.util.*;
  */
 public abstract class ComponentConfiguration {
 	Vector<ComponentConfigurationListener> listeners = new Vector<ComponentConfigurationListener>();
-	
+
 	/**
 	 * The name of the configuration. This may be a preset name or some other name.
 	 */
@@ -117,7 +117,7 @@ public abstract class ComponentConfiguration {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Returns the index of the preset that matches the given configuration, or -1 if there is no match.
 	 */

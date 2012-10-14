@@ -33,7 +33,7 @@ public class FixedFrequencyNeuronCollection extends NeuronCollection<FixedFreque
 		configSpikingPeriod = new int[configs.size()];
 		configSpikePotential = new double[configs.size()];
 		configRestPotential = new double[configs.size()];
-		
+
 		if (network != null) {
 			for (int i = 0; i < configs.size(); i++) {
 				FixedFrequencyNeuronConfiguration config = configs.get(i);
@@ -63,7 +63,7 @@ public class FixedFrequencyNeuronCollection extends NeuronCollection<FixedFreque
 			return;
 		int configID = componentConfigIndexes[neuronID];
 		int spikePeriod = configSpikingPeriod[configID];
-		neuronOutputs[neuronID] = (simStep[0] % spikePeriod == 0) ? configSpikePotential[configID] : configRestPotential[configID];
+		outputs[neuronID] = (simStep[0] % spikePeriod == 0) ? configSpikePotential[configID] : configRestPotential[configID];
 		super.run();
 	}
 

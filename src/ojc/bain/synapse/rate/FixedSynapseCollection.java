@@ -26,9 +26,9 @@ public class FixedSynapseCollection extends SynapseCollection {
 
 	public void reset() {
 		// Don't call super.reset() as it will reset all values in efficacy.
-		Arrays.fill(synapseOutputs, 0);
+		Arrays.fill(outputs, 0);
 		put(efficacy);
-		put(synapseOutputs);
+		put(outputs);
 	}
 
 	@Override

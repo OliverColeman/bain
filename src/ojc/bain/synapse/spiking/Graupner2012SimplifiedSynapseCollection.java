@@ -21,7 +21,8 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 	double[] c; // Calcium concentration.
 	double[] p; // Efficacy state.
 	int[] preDelayCount; // Count down until calcium spike after pre-synaptic neuronal spike.
-	boolean[] preSpikedLastTimeStep, postSpikedLastTimeStep; // true iff the pre/post-synaptic neuron was spiking during the last time step. These are used to prevent counting a spike that lasts multiple time steps more than once.
+	boolean[] preSpikedLastTimeStep, postSpikedLastTimeStep; // true iff the pre/post-synaptic neuron was spiking during the last time step. These are used to
+																// prevent counting a spike that lasts multiple time steps more than once.
 
 	// Model parameters, see SynapseConfigurationGraupner2012.
 	public double[] cSpikePre, cSpikePost, tCDecayMult, depThresh, potThresh, depRateMult, potRateMult, w0, wRange, stepPeriod;
@@ -167,7 +168,7 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 			}
 			efficacy[synapseID] = w0[configID] + p[synapseID] * wRange[configID];
 		}
-		
+
 		preSpikedLastTimeStep[synapseID] = preSpiked;
 		postSpikedLastTimeStep[synapseID] = postSpiked;
 
