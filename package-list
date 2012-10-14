@@ -1,10 +1,1 @@
-ojc.bain
 ojc.bain.base
-ojc.bain.misc
-ojc.bain.neuron
-ojc.bain.neuron.rate
-ojc.bain.neuron.spiking
-ojc.bain.synapse
-ojc.bain.synapse.rate
-ojc.bain.synapse.spiking
-ojc.bain.test
