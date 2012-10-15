@@ -5,21 +5,27 @@ import java.util.Arrays;
 import com.amd.aparapi.Kernel;
 
 import ojc.bain.NeuralNetwork;
+import ojc.bain.base.NeuronCollection;
 import ojc.bain.neuron.rate.LinearNeuronCollection;
 import ojc.bain.synapse.rate.FixedSynapseCollection;
 
+import org.junit.*;
+import static org.junit.Assert.*;
+
+
+/**
+ * JUnit tests  to test the core framework by creating a simple neural network from a {@link ojc.bain.neuron.rate.LinearNeuronCollection} and
+ * {@link ojc.bain.synapse.rate.FixedSynapseCollection} that tests communication between neuron and synapse collections over several simulation steps, using all
+ * Aparapi execution modes.
+ */
 public class NeuralNetworkTest {
-	/**
-	 * Tests the core framework by creating a simple neural network from a {@link ojc.bain.neuron.rate.LinearNeuronCollection} and
-	 * {@link ojc.bain.synapse.rate.FixedSynapseCollection} that tests communication between neurons and synapses over several simulation steps, using standard
-	 * and OpenCL execution platforms if available.
-	 * 
-	 * @param mode The Aprarapi execution mode to use.
-	 */
-	public static double[] testCoreFramework(Kernel.EXECUTION_MODE mode, boolean printOutput) {
+	NeuralNetwork sim;
+	double[] correctOutput;
+	
+	@Before
+	public void setUp() {
 		LinearNeuronCollection neurons = new LinearNeuronCollection(9);
 		FixedSynapseCollection synapses = new FixedSynapseCollection(10);
-		NeuralNetwork sim = new NeuralNetwork(1000, neurons, synapses, mode);
 
 		int[][] connections = new int[][] { { 0, 2 }, { 1, 2 }, { 1, 3 }, { 1, 4 }, { 3, 3 }, { 4, 5 }, { 5, 4 }, { 2, 6 }, { 3, 7 }, { 4, 8 } };
 		double[] weights = new double[] { 1.0, 0.9, 1.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0 };
@@ -29,14 +35,56 @@ public class NeuralNetworkTest {
 			efficacy[s] = weights[s];
 		}
 		synapses.setEfficaciesModified();
+		
+		sim = new NeuralNetwork(1000, neurons, synapses);
+		
+		correctOutput = new double[]{0.0, 0.0, 0.0, 0.03125, 0.0, 1.0, 0.0, 0.0625, 1.0};
+	}
+	
+	@Test
+	public void testSEQ() {
+		sim.setPreferredExecutionMode(Kernel.EXECUTION_MODE.SEQ);
+		runSim(sim, false);
+		assertTrue(Arrays.equals(sim.getNeurons().getOutputs(), correctOutput));
+	}
 
+	@Test
+	public void testCPU() {
+		sim.setPreferredExecutionMode(Kernel.EXECUTION_MODE.CPU);
+		runSim(sim, false);
+		assertTrue(Arrays.equals(sim.getNeurons().getOutputs(), correctOutput));
+	}
+	
+	@Test
+	public void testJTP() {
+		sim.setPreferredExecutionMode(Kernel.EXECUTION_MODE.JTP);
+		runSim(sim, false);
+		assertTrue(Arrays.equals(sim.getNeurons().getOutputs(), correctOutput));
+	}
+	
+	@Test
+	public void testGPU() {
+		sim.setPreferredExecutionMode(Kernel.EXECUTION_MODE.GPU);
+		runSim(sim, false);
+		assertTrue(Arrays.equals(sim.getNeurons().getOutputs(), correctOutput));
+	}
+	
+	@After
+	public void tearDown() {
+		sim = null;
+		correctOutput = null;
+	}
+	
+	public static void runSim(NeuralNetwork sim, boolean printOutput) {
+		NeuronCollection neurons = sim.getNeurons();
+		
 		// Initial spikes to two input neurons.
-		neurons.addInput(0, 1);
-		neurons.addInput(1, 1);
+		neurons.setOutput(0, 1);
+		neurons.setOutput(1, 1);
 
-		for (int step = 0; step < 10; step++) {
-			if (step == 4) {
-				neurons.addInput(0, 1);
+		for (int step = 0; step < 6; step++) {
+			if (step == 3) {
+				neurons.setOutput(0, 1);
 			}
 			sim.step();
 			if (printOutput) {
@@ -49,15 +97,14 @@ public class NeuralNetworkTest {
 			System.out.println((neurons.isExplicit() ? "Explicit" : "Auto") + " memory management");
 			System.out.println();
 		}
-		
-		double[] correctOutput = new double[]{0.0, 0.0, 0.0, 0.00390625, 1.0, 0.0, 0.0, 0.0078125, 0.0};
-		assert Arrays.equals(neurons.getOutputs(), correctOutput);
-		
-		return neurons.getOutputs();
 	}
 
+	
 	public static void main(String[] args) {
-		testCoreFramework(Kernel.EXECUTION_MODE.CPU, false);
-		testCoreFramework(Kernel.EXECUTION_MODE.GPU, false);
+		NeuralNetworkTest test = new NeuralNetworkTest();
+		test.setUp();
+		test.sim.setPreferredExecutionMode(Kernel.EXECUTION_MODE.CPU);
+		runSim(test.sim, true);
+		System.out.println(Arrays.equals(test.sim.getNeurons().getOutputs(), test.correctOutput) ? "Pass" : "Fail");
 	}
 }
