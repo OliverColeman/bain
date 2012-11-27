@@ -27,9 +27,9 @@ public class PerformanceTest {
 		FixedFrequencyNeuronCollection neurons = new FixedFrequencyNeuronCollection(neuronCount);
 		neurons.addConfiguration(new FixedFrequencyNeuronConfiguration(Math.random() * 0.98 + 0.02)); // Spiking period between 0.02 and 1s (1 to 50Hz).
 
-		//Pfister2006SynapseCollection synapses = new Pfister2006SynapseCollection(synapseCount);
-		//synapses.addConfiguration(synapses.getConfigSingleton().getPreset(0));
-		FixedSynapseCollection synapses = new FixedSynapseCollection(synapseCount);
+		Pfister2006SynapseCollection synapses = new Pfister2006SynapseCollection(synapseCount);
+		synapses.addConfiguration(synapses.getConfigSingleton().getPreset(0));
+		///FixedSynapseCollection synapses = new FixedSynapseCollection(synapseCount);
 		
 		NeuralNetwork sim = new NeuralNetwork(timeResolution, neurons, synapses, mode);
 
@@ -48,7 +48,6 @@ public class PerformanceTest {
 		}
 
 		// For real.
-		sim.reset();
 		long start = System.currentTimeMillis();
 		sim.run(steps);
 		long finish = System.currentTimeMillis();
@@ -63,9 +62,9 @@ public class PerformanceTest {
 		Format format = new DecimalFormat("###############0.#");
 
 		System.out.println("size    \tSEQ\tJTP\tGPU\tSEQ/JTP\tSEQ/GPU\tJTP/GPU");
-		for (int size = 64; size <= 1048576 * 2; size *= 2) {
+		for (int size = 8; size <= 1048576 * 2; size *= 2) {
 			int synapseCount = size * synapsesToNeuronsRatio;
-			System.out.print(size + "/" + synapseCount + "  \t");
+			System.out.print(size + "/" + synapseCount + "   \t");
 			try {
 				long s = testFrameworkPerformance(size, synapseCount, timeResolution, steps, Kernel.EXECUTION_MODE.SEQ);
 				System.out.print(format.format(s / 1000.0) + "\t");
@@ -75,7 +74,7 @@ public class PerformanceTest {
 				long g = testFrameworkPerformance(size, synapseCount, timeResolution, steps, Kernel.EXECUTION_MODE.GPU);
 				System.out.print(format.format(g / 1000.0) + "\t");
 				System.out.print(format.format((double) s / j) + "\t");
-				System.out.print(" \t");
+				//System.out.print(" \t");
 				System.out.print(format.format((double) s / g) + "\t");
 				System.out.print(format.format((double) j / g) + "\t");
 			} catch (Exception e) {
