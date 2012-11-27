@@ -394,7 +394,7 @@ public class STDPTestGUI extends JPanel {
 			final JPanel panel = this;
 			panel.setLayout(new GridBagLayout());
 
-			String[] synapseTypes = { "ojc.bain.synapse.Clopath2010SynapseCollection", "ojc.bain.synapse.Pfister2006SynapseCollection", "ojc.bain.synapse.Graupner2012SynapseCollection", "ojc.bain.synapse.Graupner2012SimplifiedSynapseCollection" };
+			String[] synapseTypes = { "ojc.bain.synapse.spiking.Clopath2010SynapseCollection", "ojc.bain.synapse.spiking.Pfister2006SynapseCollection", "ojc.bain.synapse.spiking.Graupner2012SynapseCollection", "ojc.bain.synapse.spiking.Graupner2012SimplifiedSynapseCollection" };
 			for (String t : synapseTypes) {
 				try {
 					SynapseCollection.registerComponentCollectionType(t);

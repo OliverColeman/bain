@@ -204,7 +204,6 @@ public class SynapseTest {
 		synapse.setPostNeuron(0, 1);
 
 		NeuralNetwork sim = new NeuralNetwork(timeResolution, neurons, synapse);
-		NeuralNetwork.setSingleton(sim);
 
 		int simSteps = (int) Math.round(period * repetitions * timeResolution);
 

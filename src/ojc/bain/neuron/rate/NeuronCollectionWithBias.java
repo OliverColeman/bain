@@ -23,7 +23,9 @@ public abstract class NeuronCollectionWithBias<C extends NeuronConfiguration> ex
 
 	public void init() {
 		super.init();
-		bias = new double[size];
+		if (bias == null || bias.length != size) {
+			bias = new double[size];
+		}
 		put(bias);
 	}
 

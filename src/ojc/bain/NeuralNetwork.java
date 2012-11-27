@@ -36,7 +36,6 @@ import com.amd.aparapi.Kernel;
  * @author Oliver J. Coleman
  */
 public class NeuralNetwork {
-	static NeuralNetwork singleton = new NeuralNetwork(1000);
 	/**
 	 * When automatically selecting an execution mode, this is the minimum number of components in a collection before the GPU execution mode is attempted.
 	 * Default is 8192.
@@ -334,80 +333,5 @@ public class NeuralNetwork {
 		selectExecutionModes();
 		init();
 		reset();
-	}
-
-	public static void setSingleton(NeuralNetwork sim) {
-		singleton = sim;
-	}
-
-	public static NeuralNetwork getSingleton() {
-		return singleton;
-	}
-
-	public static void main(String[] args) {
-		/*
-		 * int timeResolution = 1000; //1 simulation step every 1ms. int simDuration = 1; //1 second int simSteps = simDuration * timeResolution;
-		 * 
-		 * NeuronCollectionFixedFrequency neurons = new NeuronCollectionFixedFrequency(2); neurons.addConfiguration(new
-		 * NeuronConfigurationFixedFrequency(0.09)); neurons.addConfiguration(new NeuronConfigurationFixedFrequency(0.1)); neurons.setComponentConfiguration(0,
-		 * 0); neurons.setComponentConfiguration(0, 1);
-		 * 
-		 * SynapseCollectionPfister2006 synapses = new SynapseCollectionPfister2006(1); synapses.addConfiguration((SynapseConfigurationPfister2006)
-		 * synapses.getConfigSingleton().getPreset(0)); synapses.setComponentConfiguration(0, 0); synapses.setPreNeuron(0, 0); synapses.setPostNeuron(0, 1);
-		 * 
-		 * NeuralNetwork sim = new NeuralNetwork(1000, neurons, synapses);
-		 * 
-		 * long start = System.currentTimeMillis();
-		 * 
-		 * TestResults results = SynapseTest.singleTest(sim, simSteps, true);
-		 * 
-		 * long finish = System.currentTimeMillis(); System.out.println("Took " + ((finish - start) / 1000f) + " seconds.");
-		 * 
-		 * //SynapseTest.createChart(results, timeResolution, true, true);
-		 */
-		// setExecutionMode(Kernel.EXECUTION_MODE.JTP);
-		for (int networkSize = 2; networkSize <= (2 << 20); networkSize *= 2) {
-			double simDuration = 10;
-			int timeResolution = 1000; // 1 simulation step every 1ms.
-			int neuronConfigurationCount = 10;
-			int simSteps = (int) Math.round(simDuration * timeResolution);
-
-			FixedFrequencyNeuronCollection neurons = new FixedFrequencyNeuronCollection(networkSize);
-			for (int i = 0; i < neuronConfigurationCount; i++) {
-				neurons.addConfiguration(new FixedFrequencyNeuronConfiguration(i * 0.01 + 0.01));
-			}
-
-			for (int i = 0; i < networkSize; i++) {
-				neurons.setComponentConfiguration(i, i % neuronConfigurationCount);
-			}
-
-			Pfister2006SynapseCollection synapses = new Pfister2006SynapseCollection(0);
-
-			NeuralNetwork sim = new NeuralNetwork(timeResolution, neurons, synapses);
-
-			double[] dummy = new double[2];
-
-			float[] times = new float[2];
-
-			for (int i = 0; i < 2; i++) {
-
-				if (i == 1) {
-					neurons.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
-				}
-				// Run for 1 second.
-				long start = System.currentTimeMillis();
-
-				sim.run(simSteps);
-
-				long finish = System.currentTimeMillis();
-
-				// Read values to make sure the optimiser doesn't optimise out the simulation code.
-				for (int o = 0; o < neurons.getSize(); o++) {
-					dummy[i] += 1.0 / (neurons.getOutput(o) + 1);
-				}
-				times[i] = (finish - start) / 1000f;
-			}
-			System.out.println(networkSize + ": GPU: " + times[0] + ", CPU: " + times[1] + "  " + Arrays.toString(dummy));
-		}
 	}
 }

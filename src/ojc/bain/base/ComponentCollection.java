@@ -25,11 +25,11 @@ import com.amd.aparapi.Range;
  * 
  * <p>
  * The computations for a collection should be performed in the run() method, which overrides the com.amd.aparapi.Kernel run() method. The {@link #step()}
- * method invokes com.amd.aparapi.Kernel.execute(size*), which invokes the run() method. See the Aparapi documentation for more details, and sub-classes of
+ * method invokes com.amd.aparapi.Kernel.execute(size), which invokes the run() method. See the Aparapi documentation for more details and sub-classes of
  * NeuronCollection and SynapseCollection for examples. For performance reasons, the step() method invokes execute() with {@link #sizePower2} rather than the
  * actual {@link #size}. This means that a sub-class must either:
  * <ol>
- * <li>force the size to be a power of 2; or</li>
+ * <li>force the actual size to be a power of 2; or</li>
  * <li>add logic to the run() method such that it skips components whose index is &gt;= size; or</li>
  * <li>Add dummy elements to all component state variable, input and output arrays such that they have length sizePower2.</li>
  * </ol>
