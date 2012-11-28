@@ -334,4 +334,14 @@ public class NeuralNetwork {
 		init();
 		reset();
 	}
+	
+	/**
+	 * Release any resources associated with this NeuralNetwork. It's important to call this.
+	 */
+	public void dispose() {
+		if (neurons != null)
+			neurons.dispose();
+		if (synapses != null)
+			synapses.dispose();
+	}
 }
