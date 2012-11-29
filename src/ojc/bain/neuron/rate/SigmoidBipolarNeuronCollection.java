@@ -54,6 +54,16 @@ public class SigmoidBipolarNeuronCollection extends NeuronCollectionWithBias<Sig
 		outputs[neuronID] = 2.0 / (1.0 + Math.exp(-(inputs[neuronID] * configSlope[configID]))) - 1.0;
 		super.run();
 	}
+	
+	@Override
+	public double getMinimumPossibleOutputValue() {
+		return -1;
+	}
+
+	@Override
+	public double getMaximumPossibleOutputValue() {
+		return 1;
+	}
 
 	@Override
 	public ComponentConfiguration getConfigSingleton() {
