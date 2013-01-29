@@ -42,7 +42,7 @@
         <ant antfile="build.xml" dir="${ahni.location}" inheritAll="false" target="build"/>
     </target>
     <target name="STDPTestGUIApp">
-        <java classname="ojc.bain.test.STDPTestGUIApp" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.test.STDPTestGUIApp" failonerror="true" fork="yes">
             <classpath refid="bain.classpath"/>
         </java>
     </target>
@@ -53,57 +53,57 @@
         </java>
     </target>
     <target name="Test1">
-        <java classname="ojc.bain.test.Test1" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.test.Test1" failonerror="true" fork="yes">
             <classpath refid="bain.classpath"/>
         </java>
     </target>
     <target name="SimulationTest">
-        <java classname="ojc.bain.test.SimulationTest" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.test.SimulationTest" failonerror="true" fork="yes">
             <jvmarg line="-Dcom.amd.aparapi.logLevel=FINE"/>
             <classpath refid="bain.classpath"/>
         </java>
     </target>
     <target name="Test3">
-        <java classname="ojc.bain.test.Test3" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.test.Test3" failonerror="true" fork="yes">
             <classpath refid="bain.classpath"/>
         </java>
     </target>
     <target name="Utility">
-        <java classname="ojc.bain.misc.Utility" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.misc.Utility" failonerror="true" fork="yes">
             <classpath refid="bain.classpath"/>
         </java>
     </target>
     <target name="NeuralNetwork">
-        <java classname="ojc.bain.NeuralNetwork" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.NeuralNetwork" failonerror="true" fork="yes">
             <env key="LD_LIBRARY_PATH" value="&quot;$LD_LIBRARY_PATH:/home/data/ai/PhD/software/lib/aparapi:&quot;"/>
             <classpath refid="bain.classpath"/>
         </java>
     </target>
     <target name="TestResults">
-        <java classname="ojc.bain.test.TestResults" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.test.TestResults" failonerror="true" fork="yes">
             <classpath refid="bain.classpath"/>
         </java>
     </target>
     <target name="Test2">
-        <java classname="ojc.bain.test.Test2" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.test.Test2" failonerror="true" fork="yes">
             <classpath refid="bain.classpath"/>
         </java>
     </target>
     <target name="PerformanceTest">
-        <java classname="ojc.bain.test.PerformanceTest" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.test.PerformanceTest" failonerror="true" fork="yes">
             <jvmarg line="-Xmx3000M"/>
             <classpath refid="bain.classpath"/>
         </java>
     </target>
     <target name="STDPTestGui">
-        <java classname="ojc.bain.test.STDPTestGUI" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.test.STDPTestGUI" failonerror="true" fork="yes">
             <env key="LD_LIBRARY_PATH" value="&quot;$LD_LIBRARY_PATH:/home/data/ai/PhD/software/lib/aparapi:&quot;"/>
             <jvmarg line="-Xmx2048M"/>
             <classpath refid="bain.classpath"/>
         </java>
     </target>
     <target name="FixedProtocolNeuronCollection">
-        <java classname="ojc.bain.neuron.FixedProtocolNeuronCollection" failonerror="true" fork="yes">
+        <java classname="com.ojcoleman.bain.neuron.FixedProtocolNeuronCollection" failonerror="true" fork="yes">
             <classpath refid="bain.classpath"/>
         </java>
     </target>

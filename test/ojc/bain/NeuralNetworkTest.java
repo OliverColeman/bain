@@ -3,19 +3,19 @@ package ojc.bain;
 import java.util.Arrays;
 
 import com.amd.aparapi.Kernel;
+import com.ojcoleman.bain.NeuralNetwork;
+import com.ojcoleman.bain.base.NeuronCollection;
+import com.ojcoleman.bain.neuron.rate.LinearNeuronCollection;
+import com.ojcoleman.bain.synapse.rate.FixedSynapseCollection;
 
-import ojc.bain.NeuralNetwork;
-import ojc.bain.base.NeuronCollection;
-import ojc.bain.neuron.rate.LinearNeuronCollection;
-import ojc.bain.synapse.rate.FixedSynapseCollection;
 
 import org.junit.*;
 import static org.junit.Assert.*;
 
 
 /**
- * JUnit tests  to test the core framework by creating a simple neural network from a {@link ojc.bain.neuron.rate.LinearNeuronCollection} and
- * {@link ojc.bain.synapse.rate.FixedSynapseCollection} that tests communication between neuron and synapse collections over several simulation steps, using all
+ * JUnit tests  to test the core framework by creating a simple neural network from a {@link com.ojcoleman.bain.neuron.rate.LinearNeuronCollection} and
+ * {@link com.ojcoleman.bain.synapse.rate.FixedSynapseCollection} that tests communication between neuron and synapse collections over several simulation steps, using all
  * Aparapi execution modes.
  */
 public class NeuralNetworkTest {
