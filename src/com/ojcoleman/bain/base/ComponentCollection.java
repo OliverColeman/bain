@@ -144,7 +144,7 @@ public abstract class ComponentCollection extends Kernel {
 	 * that only a subset of the components are executed. This is useful when the same collection object is being
 	 * recycled to simulate different networks, some of which may be smaller than the maximum size.
 	 * 
-	 * @see com.ojcoleman.bain.NeuralNetwork#compress()
+	 * @see com.ojcoleman.bain.base.SynapseCollection#compress()
 	 */
 	public void setSizePopulated(int sizePopulated) {
 		if (sizePopulated > size || sizePopulated < 0) {

@@ -22,16 +22,7 @@ public class SoltoggioModulatoryNeuronConfiguration extends NeuronConfiguration 
 	public SoltoggioModulatoryNeuronConfiguration() {
 		modulatory = false;
 	}
-
-	/**
-	 * Create a SoltoggioModulatoryNeuronConfiguration.
-	 * 
-	 * @param slope The slope of the Sigmoid function.
-	 */
-	//public SoltoggioModulatoryNeuronConfiguration(double modulatory, double modBias) {
-	//	this.slope = slope;
-	//}
-
+    
 	@Override
 	public String[] getParameterNames() {
 		return parameterLabels;
