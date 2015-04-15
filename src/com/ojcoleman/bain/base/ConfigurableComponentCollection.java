@@ -94,7 +94,14 @@ public abstract class ConfigurableComponentCollection<C extends ComponentConfigu
 	public ComponentConfiguration getComponentConfiguration(int componentIndex) {
 		return configs.get(componentConfigIndexes[componentIndex]);
 	}
-
+	
+	/**
+	 * Get the index of the configuration for the specified component.
+	 */
+	public int getComponentConfigurationIndex(int componentIndex) {
+		return componentConfigIndexes[componentIndex];
+	}
+	
 	/**
 	 * Get a reference to the sub-class specific ComponentConfiguration object for this ConfigurableComponentCollection.
 	 */

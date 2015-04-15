@@ -7,20 +7,19 @@ import java.util.Arrays;
 import com.ojcoleman.bain.base.*;
 
 /**
- * Implements the neuron model described by S. Risi, K.O. Stanley (2012) A Uniﬁed Approach to Evolving Plasticity and
- * Neural Geometry.
+ * Implements the neuron model described by A. Soltoggio, J. Bullinaria, C. Mattiussi, P. Durr, D. Floreano (2008) Evolutionary Advantages of Neuromodulated Plasticity in Dynamic, Reward-based Scenarios
  * 
- * This model must be used in combination with {@link com.ojcoleman.bain.synapse.rate.RisiModulatorySynapseCollection}
+ * This model must be used in combination with {@link com.ojcoleman.bain.synapse.rate.SoltoggioModulatorySynapseCollection}
  * 
  * @author Oliver J. Coleman
  */
-public class RisiModulatoryNeuronCollection<C extends RisiModulatoryNeuronConfiguration> extends SigmoidBipolarNeuronCollection<C> {
+public class SoltoggioModulatoryNeuronCollection<C extends SoltoggioModulatoryNeuronConfiguration> extends NeuronCollectionWithBias<C> {
 	private static final NumberFormat nf = new DecimalFormat("0.00");
 
 	/**
-	 * The bias value for synaptic plasticity modulation for each neuron configuration.
+	 * Indicates that the neuron is a modulatory neuron instead of a regular neuron for each neuron.
 	 */
-	protected double[] modBias;
+	protected boolean[] modulatory;
 
 	/**
 	 * The current synaptic plasticity modulation inputs for the neurons.
@@ -34,19 +33,19 @@ public class RisiModulatoryNeuronCollection<C extends RisiModulatoryNeuronConfig
 	protected double[] modActivations;
 
 	/**
-	 * Create an empty RisiModulatorySigmoidNeuronCollection. This is used for retrieving a singleton to create a
+	 * Create an empty SoltoggioModulatorySigmoidNeuronCollection. This is used for retrieving a singleton to create a
 	 * non-empty collection with.
 	 */
-	public RisiModulatoryNeuronCollection() {
+	public SoltoggioModulatoryNeuronCollection() {
 		init();
 	}
 
 	/**
-	 * Create a RisiModulatorySigmoidNeuronCollection.
+	 * Create a SoltoggioModulatorySigmoidNeuronCollection.
 	 * 
 	 * @param size The size of this collection.
 	 */
-	public RisiModulatoryNeuronCollection(int size) {
+	public SoltoggioModulatoryNeuronCollection(int size) {
 		this.size = size;
 		init();
 	}
@@ -58,17 +57,16 @@ public class RisiModulatoryNeuronCollection<C extends RisiModulatoryNeuronConfig
 		if (modInputs == null || modInputs.length != size) {
 			modInputs = new double[size];
 			modActivations = new double[size];
+			modulatory = new boolean[size];
 		}
-		if (modBias == null || modBias.length != configs.size()) {
-			modBias = new double[configs.size()];
+		if (modulatory != null && configs != null && !configs.isEmpty()){ 
+			for (int neuronID = 0; neuronID < size; neuronID++) {
+				modulatory[neuronID] = configs.get(componentConfigIndexes[neuronID]).modulatory;
+			}
 		}
-		for (int ci = 0; ci < configs.size(); ci++) {
-			modBias[ci] = configs.get(ci).modBias;
-		}
-
 		put(modInputs);
 		put(modActivations);
-		put(modBias);
+		put(modulatory);
 	}
 
 	@Override
@@ -82,11 +80,6 @@ public class RisiModulatoryNeuronCollection<C extends RisiModulatoryNeuronConfig
 	public void step() {
 		put(modInputs); // neuron modulatory inputs are calculated by synapse model in previous simulation step.
 		if (outputsModified) put(modActivations);
-		/*
-		 * if (network.debug()) { System.out.println("\n\n" + Arrays.toString(configs.get(0).getParameterNames())); for
-		 * (ComponentConfiguration c : configs) { System.out.println(Arrays.toString(c.getParameterValues())); }
-		 * System.out.println("n\tc\tmi\tma\ti\to"); }
-		 */
 		super.step();
 	}
 
@@ -95,23 +88,18 @@ public class RisiModulatoryNeuronCollection<C extends RisiModulatoryNeuronConfig
 		int neuronID = getGlobalId();
 		if (neuronID >= size)
 			return;
-		int configID = componentConfigIndexes[neuronID];
-		//String out = neuronID + "\t" + configID + "\t";
-		modInputs[neuronID] += modBias[configID];
-		//out += nf.format(modInputs[neuronID]) + "\t";
-		modActivations[neuronID] = (Math.tanh(modInputs[neuronID] * 0.5) + 1) * 0.5;
-		//out += nf.format(modActivations[neuronID]) + "\t";
-		modInputs[neuronID] = 0;
+
+		inputs[neuronID] += bias[neuronID];
+		outputs[neuronID] = Math.tanh(inputs[neuronID] * 0.5);
+		
+		modActivations[neuronID] = Math.tanh(modInputs[neuronID] * 0.5);
+		
 		super.run();
-		//out += nf.format(inputs[neuronID]) + "\t" + nf.format(outputs[neuronID]);
-		//if (network.debug()) {
-		//	System.out.println(out);
-		//}
 	}
 
 	@Override
 	public ComponentCollection createCollection(int size) {
-		return new RisiModulatoryNeuronCollection<RisiModulatoryNeuronConfiguration>(size);
+		return new SoltoggioModulatoryNeuronCollection<SoltoggioModulatoryNeuronConfiguration>(size);
 	}
 
 	@Override
@@ -132,7 +120,6 @@ public class RisiModulatoryNeuronCollection<C extends RisiModulatoryNeuronConfig
 	
 	@Override
 	public void ensureStateVariablesAreFresh() {
-		super.ensureStateVariablesAreFresh();
 		get(modInputs);
 		get(modActivations);
 	}
@@ -140,13 +127,15 @@ public class RisiModulatoryNeuronCollection<C extends RisiModulatoryNeuronConfig
 	public double[] getModInputs() {
 		return modInputs;
 	}
-
 	public double[] getModActivations() {
 		return modActivations;
+	}
+	public boolean[] getModulatory() {
+		return modulatory;
 	}
 
 	@Override
 	public ComponentConfiguration getConfigSingleton() {
-		return new RisiModulatoryNeuronConfiguration();
+		return new SoltoggioModulatoryNeuronConfiguration();
 	}
 }

@@ -132,6 +132,11 @@ public class Clopath2010SynapseCollection extends SynapseCollection<Clopath2010S
 
 		super.run();
 	}
+	
+	@Override
+	public boolean isNotUsed(int synapseIndex) {
+		return initialEfficacy[synapseIndex] == 0 && aLTD[componentConfigIndexes[synapseIndex]] == 0 && aLTPMult[componentConfigIndexes[synapseIndex]] == 0;
+	}
 
 	@Override
 	public String[] getStateVariableNames() {

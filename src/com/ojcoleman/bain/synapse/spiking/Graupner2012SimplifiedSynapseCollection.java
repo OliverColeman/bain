@@ -174,6 +174,11 @@ public class Graupner2012SimplifiedSynapseCollection extends SynapseCollection<G
 
 		super.run();
 	}
+	
+	@Override
+	public boolean isNotUsed(int synapseIndex) {
+		return initialEfficacy[synapseIndex] == 0 && potRateMult[componentConfigIndexes[synapseIndex]] == 0 && depRateMult[componentConfigIndexes[synapseIndex]] == 0;
+	}
 
 	@Override
 	public String[] getStateVariableNames() {

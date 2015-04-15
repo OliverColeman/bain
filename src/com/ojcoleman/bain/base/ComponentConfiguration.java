@@ -243,5 +243,13 @@ public abstract class ComponentConfiguration {
 	 * myConfigurableComponentCollection.getConfigSingleton()).
 	 */
 	public abstract ComponentConfiguration createConfiguration();
-
+	
+	public String toString() {
+		String[] parameterLabels = getParameterNames();
+		String out = "Configuration for " + this.getClass().getName() + ":";
+		for (int pi = 0; pi < parameterLabels.length; pi++) {
+			out += "\n\t" + parameterLabels[pi] + ": " + getParameterValue(parameterLabels[pi]);
+		}
+		return out;
+	}
 }

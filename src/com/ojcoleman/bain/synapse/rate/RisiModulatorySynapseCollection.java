@@ -1,12 +1,13 @@
 package com.ojcoleman.bain.synapse.rate;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Arrays;
 
 import com.ojcoleman.bain.base.ComponentCollection;
 import com.ojcoleman.bain.base.ComponentConfiguration;
-import com.ojcoleman.bain.base.SynapseCollection;
 import com.ojcoleman.bain.neuron.rate.RisiModulatoryNeuronCollection;
-import com.ojcoleman.bain.synapse.spiking.Clopath2010SynapseConfiguration;
+import com.ojcoleman.bain.neuron.rate.RisiModulatoryNeuronConfiguration;
 
 
 /**
@@ -18,6 +19,7 @@ import com.ojcoleman.bain.synapse.spiking.Clopath2010SynapseConfiguration;
  */
 public class RisiModulatorySynapseCollection extends Niv2002SynapseCollection<RisiModulatorySynapseConfiguration> {
 	private static final RisiModulatorySynapseConfiguration configSingleton = new RisiModulatorySynapseConfiguration();
+	private static final NumberFormat nf = new DecimalFormat("0.00");
 
 	// Parameters from configs.
 	protected boolean[] modulatory;
@@ -49,8 +51,8 @@ public class RisiModulatorySynapseCollection extends Niv2002SynapseCollection<Ri
 		}
 	
 		if (network != null) {
-			neuronModInputs = ((RisiModulatoryNeuronCollection) network.getNeurons()).getModInputs();
-			neuronModActivations = ((RisiModulatoryNeuronCollection) network.getNeurons()).getModActivations();
+			neuronModInputs = ((RisiModulatoryNeuronCollection<RisiModulatoryNeuronConfiguration>) network.getNeurons()).getModInputs();
+			neuronModActivations = ((RisiModulatoryNeuronCollection<RisiModulatoryNeuronConfiguration>) network.getNeurons()).getModActivations();
 		}
 
 		// In case explicit mode is being used for the Aparapi kernel.
@@ -70,6 +72,13 @@ public class RisiModulatorySynapseCollection extends Niv2002SynapseCollection<Ri
 								// neuron model once it's made use of them.
 		put(neuronModActivations); // neuron modulatory activation levels are used in run() to update synapse weights
 									// via the plasticity rule.
+		/*if (network.debug()) {
+			System.out.println("\n\n" + Arrays.toString(configs.get(0).getParameterNames()));
+			for (ComponentConfiguration c : configs) {
+				System.out.println(Arrays.toString(c.getParameterValues()));
+			}
+			System.out.println("s\tc\to\tmi/ni\td\te");
+		}*/
 		super.step();
 		get(neuronModInputs); // See note above.
 	}
@@ -77,33 +86,53 @@ public class RisiModulatorySynapseCollection extends Niv2002SynapseCollection<Ri
 	@Override
 	public void run() {
 		int synapseID = this.getGlobalId();
-		if (synapseID >= size)
+		if (synapseID >= size) {
 			return;
+		}
 
 		int configID = componentConfigIndexes[synapseID];
+		
+		//String out = synapseID + "\tc" + configID + "\t";
+		
 		outputs[synapseID] = neuronOutputs[preIndexes[synapseID]] * efficacy[synapseID];
-		if (modulatory[synapseID]) {
+		
+		//out += "o" + nf.format(outputs[synapseID]) + "\t";
+		
+		if (modulatory[configID]) {
 			neuronModInputs[postIndexes[synapseID]] += outputs[synapseID];
+			//out += "m" + nf.format(neuronModInputs[postIndexes[synapseID]]) + "\t";
 			// Modulatory synapses are not plastic.
 		} else {
 			neuronInputs[postIndexes[synapseID]] += outputs[synapseID];
-
-			// Update synapse weight via plasticity rule.
-			double delta = neuronModActivations[postIndexes[synapseID]] * n[configID] * (
-					a[configID] * neuronOutputs[preIndexes[synapseID]] * neuronOutputs[postIndexes[synapseID]] + 
-					b[configID] * neuronOutputs[preIndexes[synapseID]] + 
-					c[configID] * neuronOutputs[postIndexes[synapseID]] + 
-					d[configID]);
-			efficacy[synapseID] += delta;
-			if (efficacy[synapseID] < minEfficacy[configID]) efficacy[synapseID] = minEfficacy[configID];
-			else if (efficacy[synapseID] > maxEfficacy[configID]) efficacy[synapseID] = maxEfficacy[configID];
+			
+			//out += "i" + nf.format(neuronInputs[postIndexes[synapseID]]) + "\t";
+			
+			if (n[configID] != 0) {
+				// Update synapse weight via plasticity rule.
+				double delta = neuronModActivations[postIndexes[synapseID]] * n[configID] * (
+						a[configID] * neuronOutputs[preIndexes[synapseID]] * neuronOutputs[postIndexes[synapseID]] + 
+						b[configID] * neuronOutputs[preIndexes[synapseID]] + 
+						c[configID] * neuronOutputs[postIndexes[synapseID]] + 
+						d[configID]);
+				efficacy[synapseID] += delta;
+				if (efficacy[synapseID] < minEfficacy[configID]) efficacy[synapseID] = minEfficacy[configID];
+				else if (efficacy[synapseID] > maxEfficacy[configID]) efficacy[synapseID] = maxEfficacy[configID];
+				
+				//out += "e" + nf.format(delta) + "\t" + nf.format(efficacy[synapseID]);
+			}
 		}
+		//if (network.debug()) {
+		//	System.out.println(out);
+		//}
 		// We don't call super.run() as we've performed everything it does and don't want it to change what we've
 		// done.
-		
+	}
+	
+	@Override
+	public boolean isNotUsed(int synapseIndex) {
+		return initialEfficacy[synapseIndex] == 0 && n[componentConfigIndexes[synapseIndex]] == 0;
 	}
 
-	@Override
 	public ComponentConfiguration getConfigSingleton() {
 		return configSingleton;
 	}

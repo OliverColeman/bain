@@ -39,11 +39,11 @@ public class RisiModulatorySynapseConfiguration extends Niv2002SynapseConfigurat
 
 	@Override
 	public String[] getPresetNames() {
-		return null;
+		return new String[] {"Fixed"};
 	}
 
 	@Override
 	public ComponentConfiguration getPreset(int index) {
-		return null;
+		return new RisiModulatorySynapseConfiguration("Fixed", new double[] {0, 0, 0, 0, 0, 0});
 	}
 }

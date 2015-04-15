@@ -10,7 +10,7 @@ import com.ojcoleman.bain.neuron.spiking.FixedFrequencyNeuronConfiguration;
  * 
  * @author Oliver J. Coleman
  */
-public class SigmoidBipolarNeuronCollection extends NeuronCollectionWithBias<SigmoidNeuronConfiguration> {
+public class SigmoidBipolarNeuronCollection<C extends SigmoidNeuronConfiguration> extends NeuronCollectionWithBias<C> {
 	double[] configSlope;
 
 	/**

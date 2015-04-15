@@ -118,9 +118,9 @@ public abstract class NeuronCollection<C extends NeuronConfiguration> extends Co
 		// fresh versions of the following buffers are available to this kernel
 		// by "putting" them there.
 		put(inputs); // neuron inputs are calculated by synapse model in previous simulation step.
-		// if (inputsModified) {
-		// put(neuronInputs);
-		// }
+		//if (inputsModified) {
+		//  put(neuronInputs);
+		//}
 
 		super.step();
 

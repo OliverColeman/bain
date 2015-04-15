@@ -12,7 +12,7 @@ import java.util.Arrays;
  * Sub-classes must override the methods {@link #run()}, {@link #createCollection(int size)}
  * {@link #getConfigSingleton()}. Sub-classes will need to override the methods {@link #init()},{@link #reset()} and
  * {@link #ensureStateVariablesAreFresh()} if they use custom state variables. Sub-classes may wish/need to override the
- * methods: {@link #step()}, {@link #getStateVariableNames()} and {@link #getStateVariableValues(int)}.
+ * methods: {@link #step()}, {@link #getStateVariableNames()}, {@link #getStateVariableValues(int)} and {@link #isNotUsed(int)}.
  * </p>
  * 
  * @author Oliver J. Coleman
@@ -31,17 +31,17 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	public double[] initialEfficacy;
 
 	/**
-	 * The {@link com.ojcoleman.bain.base.NeuronCollection#outputs} from the associated NeuronCollection.
+	 * A reference to the {@link com.ojcoleman.bain.base.NeuronCollection#outputs} from the associated NeuronCollection.
 	 */
 	protected double[] neuronOutputs;
 
 	/**
-	 * The {@link com.ojcoleman.bain.base.NeuronCollection#spikings} from the associated NeuronCollection.
+	 * A reference to the {@link com.ojcoleman.bain.base.NeuronCollection#spikings} from the associated NeuronCollection.
 	 */
 	protected boolean[] neuronSpikings;
 
 	/**
-	 * The {@link com.ojcoleman.bain.base.NeuronCollection#inputs} from the associated NeuronCollection.
+	 * A reference to the {@link com.ojcoleman.bain.base.NeuronCollection#inputs} from the associated NeuronCollection.
 	 */
 	protected double[] neuronInputs;
 
@@ -212,7 +212,7 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	}
 
 	/**
-	 * Set the post-synaptic for a .
+	 * Set the post-synaptic Neuron for a synapse.
 	 * 
 	 * @param synapseIndex The index of the to set the post-synaptic for.
 	 * @param neuronIndex The index of the post-synaptic in the NeuronCollection associated with this SynapseCollection.
@@ -223,7 +223,7 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	}
 
 	/**
-	 * Get the post-synaptic Neuron for a .
+	 * Get the post-synaptic Neuron for a synapse.
 	 * 
 	 * @param synapseIndex The index of the to get the post-synaptic for.
 	 * @return The index of the post-synaptic in the NeuronCollection associated with this SynapseCollection.
@@ -260,6 +260,16 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 		}
 		return efficacy[synapseIndex];
 	}
+	
+	/**
+	 * Get initial strength (weight) value.
+	 * 
+	 * @param synapseIndex The index of the synapse to get the initial efficacy of.
+	 * @return the initial strength (weight) value.
+	 */
+	public double getInitialEfficacy(int synapseIndex) {
+		return initialEfficacy[synapseIndex];
+	}
 
 	/**
 	 * Set current strength (weight) value. This will also set the corresponding value in {@link #initialEfficacy}.
@@ -284,10 +294,11 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	/**
 	 * Returns a reference to the internal efficacy array, to allow efficient getting and setting of efficacy values.
 	 * <strong>If reading values from the returned array, this method must be called after every call to
-	 * {@link com.ojcoleman.bain.NeuralNetwork#step()} or {@link com.ojcoleman.bain.NeuralNetwork#run(int)}.</strong> This will ensure that
-	 * the current values are retrieved from the SIMD hardware (eg GPU) if necessary. <strong>If setting values in the
-	 * returned array the method {@link #setEfficaciesModified()} must be called.</strong>. This will ensure that the
-	 * modified values are pushed to the SIMD hardware if necessary during the next simulation step.
+	 * {@link com.ojcoleman.bain.NeuralNetwork#step()} or {@link com.ojcoleman.bain.NeuralNetwork#run(int)}.</strong>
+	 * This will ensure that the current values are retrieved from the SIMD hardware (eg GPU) if necessary. <strong>If
+	 * setting values in the returned array the method {@link #setEfficaciesModified()} must be called.</strong>. This
+	 * will ensure that the modified values are pushed to the SIMD hardware if necessary during the next simulation
+	 * step.
 	 */
 	public double[] getEfficacies() {
 		// If efficacies have been modified then we've already pulled the latest values from the SIMD hardware
@@ -311,6 +322,16 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 	@Override
 	public SynapseConfiguration getComponentConfiguration(int componentIndex) {
 		return configs.get(componentConfigIndexes[componentIndex]);
+	}
+
+	/**
+	 * Return true iff this synapse has no effect on the network. This default implementation returns true iff the
+	 * initial efficacy of the synapse is 0. Subclasses should override this method if some additional criteria should
+	 * be used to determine this (for example a learning rate parameter for a synaptic plasticity function).
+	 * @see #compress()
+	 */
+	public boolean isNotUsed(int synapseIndex) {
+		return initialEfficacy[synapseIndex] == 0;
 	}
 
 	@Override
@@ -343,5 +364,52 @@ public abstract class SynapseCollection<C extends SynapseConfiguration> extends 
 		ensureStateVariablesAreFresh();
 		double[] values = { efficacy[synapseIndex] };
 		return values;
+	}
+
+	/**
+	 * Remove synapses that are not in use (see {@link #isNotUsed(int)}) and reconfigure the
+	 * SynapseCollection to move these towards the end of the collection, then sets the "populated" size 
+	 * (see {@link ComponentCollection#setSizePopulated(int)}) of the collection accordingly so that
+	 * calculations for the unused synapses are not performed. {@link #init()} is called at the end to
+	 * ensure that configuration data is updated in sub-classes.
+	 */
+	public void compress() {
+		init(); // Make sure config arrays are up to date with config objects so that isNotUsed() returns correct result.
+		int current = 0;
+		int end = efficacy.length - 1;
+		
+		// Swap unused synapses to the end of the collection.
+		while (current != end) {
+			if (isNotUsed(current)) {
+				swap(outputs, current, end);
+				swap(componentConfigIndexes, current, end);
+				swap(efficacy, current, end);
+				swap(initialEfficacy, current, end);
+				swap(preIndexes, current, end);
+				swap(postIndexes, current, end);
+				// Don't increment current as we haven't checked the one for end that we've swapped current for.
+				// This way we check the one we swapped current for in the next iteration.
+				end--;
+			}
+			else {
+				current++;
+			}
+		}
+		// If we finished with a swap, then we haven't checked the synapse that end points to.
+		if (isNotUsed(end)) end--;
+		
+		// Populated size is index of last useful synapse plus one.
+		setSizePopulated(end+1);
+		init(); // Make sure changes are pushed to GPU if necessary.
+	}
+	private void swap(double[] a, int x, int y) {
+		double t = a[x];
+		a[x] = a[y];
+		a[y] = t;
+	}
+	private void swap(int[] a, int x, int y) {
+		int t = a[x];
+		a[x] = a[y];
+		a[y] = t;
 	}
 }

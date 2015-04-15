@@ -1,7 +1,7 @@
 package com.ojcoleman.bain;
 
 import java.util.Arrays;
-
+import java.util.Iterator;
 
 import com.amd.aparapi.Kernel;
 import com.ojcoleman.bain.base.*;
@@ -17,9 +17,10 @@ import com.ojcoleman.bain.synapse.spiking.Pfister2006SynapseCollection;
  * </p>
  * 
  * <p>
- * A NeuralNetwork consists of a {@link com.ojcoleman.bain.base.NeuronCollection} and a {@link com.ojcoleman.bain.base.SynapseCollection}.
- * These collections of neural network components are designed to be executable on SIMD hardware (eg a GPU) via OpenCL
- * via Aparapi (See {@link com.ojcoleman.bain.base.ComponentCollection} for more details).
+ * A NeuralNetwork consists of a {@link com.ojcoleman.bain.base.NeuronCollection} and a
+ * {@link com.ojcoleman.bain.base.SynapseCollection}. These collections of neural network components are designed to be
+ * executable on SIMD hardware (eg a GPU) via OpenCL via Aparapi (See
+ * {@link com.ojcoleman.bain.base.ComponentCollection} for more details).
  * </p>
  * 
  * <p>
@@ -287,7 +288,9 @@ public class NeuralNetwork {
 		for (int s = 0; s < steps; s++) {
 			// We step synapses first in case the neuron outputs have been modified, for example to provide external
 			// input to the network.
+			if (debug) System.out.println("Synapses:");
 			synapses.step();
+			if (debug) System.out.println("Neurons:");
 			neurons.step();
 			step++;
 		}
@@ -361,5 +364,13 @@ public class NeuralNetwork {
 			neurons.dispose();
 		if (synapses != null)
 			synapses.dispose();
+	}
+
+	private boolean debug;
+	public boolean debug() {
+		return debug;
+	}
+	public void setDebug(boolean d) {
+		debug = d;
 	}
 }

@@ -8,30 +8,31 @@ import com.ojcoleman.bain.base.NeuronConfiguration;
  * 
  * @author Oliver J. Coleman
  */
-public class SigmoidNeuronConfiguration extends NeuronConfiguration {
+public class RisiModulatoryNeuronConfiguration extends SigmoidNeuronConfiguration {
 	/**
-	 * Slope of Sigmoid function. Default is 1.
+	 * The bias value for synaptic plasticity modulation. Default is 0.
 	 */
-	public double slope = 1;
+	public double modBias;
 
 	/**
-	 * Create a SigmoidNeuronConfiguration. This is used for retrieving a configuration singleton or a default configuration.
+	 * Create a RisiModulatoryNeuronConfiguration. This is used for retrieving a configuration singleton or a default configuration.
 	 */
-	public SigmoidNeuronConfiguration() {
+	public RisiModulatoryNeuronConfiguration() {
 	}
 
 	/**
-	 * Create a SigmoidNeuronConfiguration.
+	 * Create a RisiModulatoryNeuronConfiguration.
 	 * 
 	 * @param slope The slope of the Sigmoid function.
 	 */
-	public SigmoidNeuronConfiguration(double slope) {
+	public RisiModulatoryNeuronConfiguration(double slope, double modBias) {
 		this.slope = slope;
+		this.modBias = modBias;
 	}
 
 	@Override
 	public String[] getParameterNames() {
-		return new String[] { "slope" };
+		return new String[] { "slope", "modBias" };
 	}
 
 	@Override
@@ -42,14 +43,14 @@ public class SigmoidNeuronConfiguration extends NeuronConfiguration {
 	@Override
 	public ComponentConfiguration getPreset(int index) {
 		if (index == 0) {
-			return new SigmoidNeuronConfiguration();
+			return new RisiModulatoryNeuronConfiguration();
 		}
 		return null;
 	}
 
 	@Override
 	public ComponentConfiguration createConfiguration() {
-		return new SigmoidNeuronConfiguration();
+		return new RisiModulatoryNeuronConfiguration();
 	}
 
 }

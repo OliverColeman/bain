@@ -133,6 +133,12 @@ public class Pfister2006SynapseCollection extends SynapseCollection<Pfister2006S
 	}
 
 	@Override
+	public boolean isNotUsed(int synapseIndex) {
+		int configID = componentConfigIndexes[synapseIndex];
+		return initialEfficacy[synapseIndex] == 0 && a2N[configID] == 0 && a3N[configID] == 0 && a2P[configID] == 0 && a3P[configID] == 0;
+	}
+
+	@Override
 	public String[] getStateVariableNames() {
 		String[] names = { "efficacy", "r1", "r2", "o1", "o2", };
 		return names;

@@ -199,6 +199,11 @@ public class Graupner2012SynapseCollection extends SynapseCollection<Graupner201
 
 		super.run();
 	}
+	
+	@Override
+	public boolean isNotUsed(int synapseIndex) {
+		return false;
+	}
 
 	@Override
 	public String[] getStateVariableNames() {
