@@ -35,7 +35,7 @@ next cycle, mostly negating any performance improvements.
 
 ## Building
 
-Europa requires Java 7 or greater. Bain is built with 
+Bain requires Java 7 or greater. Bain is built with 
 [gradle](http://gradle.org). A JAR file can be built from the source files 
 with:
 
