@@ -9,8 +9,7 @@ import com.ojcoleman.bain.base.SynapseCollection;
 
 /**
  * Implements the plastic synapse model described by Niv et al (2002) Evolution of reinforcement learning in uncertain
- * environments: A simple explanation for complex foraging behaviors. This model must be used in combination with
- * {@link com.ojcoleman.bain.neuron.rate.RisiModulatoryNeuronCollection}
+ * environments: A simple explanation for complex foraging behaviors.
  * 
  * @author Oliver J. Coleman
  */

@@ -1,0 +1,2 @@
+So aparapi isn't available in a maven or gradle repo. 
+But maybe soon: https://github.com/aparapi/aparapi/issues/8

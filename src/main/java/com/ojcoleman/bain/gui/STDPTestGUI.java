@@ -69,7 +69,7 @@ public class STDPTestGUI extends JPanel {
 				testPresetsSingleButton.setEnabled(false);
 				testPresetsSeparateButton.setEnabled(false);
 
-				final int timeResolution = (int) timeResolutionSpinner.getValue();
+				final int timeResolution = ((SpinnerNumberModel) timeResolutionSpinner.getModel()).getNumber().intValue();
 
 				final ProgressMonitor progressMonitor = new ProgressMonitor(gui, null, "Performing test...", 0, 0);
 
@@ -176,7 +176,7 @@ public class STDPTestGUI extends JPanel {
 			variationDimsSpinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
-					int dimCount = (int) variationDimsSpinner.getValue();
+					int dimCount = ((SpinnerNumberModel) variationDimsSpinner.getModel()).getNumber().intValue();
 					for (int d = 1; d < maxSpikePatternVariationDimensions + 1; d++) {
 						spikeTimingSetterPairs[d].setVisible(dimCount >= d);
 					}
@@ -188,7 +188,7 @@ public class STDPTestGUI extends JPanel {
 			preSpikeCountSpinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
-					int spikeCount = (int) ((JSpinner) e.getSource()).getValue();
+					int spikeCount = ((SpinnerNumberModel) ((JSpinner) e.getSource()).getModel()).getNumber().intValue();
 					for (int d = 0; d < spikeTimingSetters.length; d++) {
 						spikeTimingSetters[d][0].setSpikeCount(spikeCount);
 					}
@@ -199,7 +199,7 @@ public class STDPTestGUI extends JPanel {
 			postSpikeCountSpinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
-					int spikeCount = (int) ((JSpinner) e.getSource()).getValue();
+					int spikeCount = ((SpinnerNumberModel) ((JSpinner) e.getSource()).getModel()).getNumber().intValue();
 					for (int d = 0; d < spikeTimingSetters.length; d++) {
 						spikeTimingSetters[d][1].setSpikeCount(spikeCount);
 					}
@@ -210,7 +210,7 @@ public class STDPTestGUI extends JPanel {
 			patternFreqSpinner.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
-					double period = 1.0 / (double) patternFreqSpinner.getValue();
+					double period = 1.0 / ((SpinnerNumberModel) patternFreqSpinner.getModel()).getNumber().doubleValue();
 					for (int d = 0; d < spikeTimingSetters.length; d++) {
 						for (int p = 0; p < spikeTimingSetters[d].length; p++) {
 							spikeTimingSetters[d][p].setPeriod(period);
@@ -297,12 +297,12 @@ public class STDPTestGUI extends JPanel {
 		public SpikeProtocolSettings getSpikeProtocolSettings() {
 			SpikeProtocolSettings settings = new SpikeProtocolSettings();
 			settings.name = presetSelector.getSelectedItem().toString();
-			settings.variationDimsCount = (int) variationDimsSpinner.getValue();
-			settings.period = 1.0 / (double) patternFreqSpinner.getValue();
-			settings.repetitions = (int) patternRepetitionsSpinner.getValue();
+			settings.variationDimsCount = ((SpinnerNumberModel) variationDimsSpinner.getModel()).getNumber().intValue();
+			settings.period = 1.0 / ((SpinnerNumberModel) patternFreqSpinner.getModel()).getNumber().doubleValue();
+			settings.repetitions = ((SpinnerNumberModel) patternRepetitionsSpinner.getModel()).getNumber().intValue();
 			settings.spikeCounts = new int[2];
-			settings.spikeCounts[0] = (int) preSpikeCountSpinner.getValue();
-			settings.spikeCounts[1] = (int) postSpikeCountSpinner.getValue();
+			settings.spikeCounts[0] = ((SpinnerNumberModel) preSpikeCountSpinner.getModel()).getNumber().intValue();
+			settings.spikeCounts[1] = ((SpinnerNumberModel) postSpikeCountSpinner.getModel()).getNumber().intValue();
 			// [initial, dim 1, dim 2][pre, post][spike index]
 			settings.patterns = new double[settings.variationDimsCount + 1][2][];
 			// [dim 1, dim 2][pre, post]
@@ -699,7 +699,7 @@ public class STDPTestGUI extends JPanel {
 			int pms = (int) (period * 1000);
 			timingSlider.setMaximumValue(pms);
 			for (int i = 0; i < spikeCount; i++) {
-				if ((int) timingSpinners.get(i).getModel().getValue() > pms) {
+				if (((SpinnerNumberModel) timingSpinners.get(i).getModel()).getNumber().intValue() > pms) {
 					timingSpinners.get(i).getModel().setValue(pms);
 				}
 				((SpinnerNumberModel) timingSpinners.get(i).getModel()).setMaximum(pms);
@@ -728,13 +728,13 @@ public class STDPTestGUI extends JPanel {
 		}
 
 		public int getCurrentMaxTimingValue() {
-			return (spikeCount == 0) ? 0 : (int) timingSpinners.lastElement().getValue();
+			return (spikeCount == 0) ? 0 : ((SpinnerNumberModel) timingSpinners.lastElement().getModel()).getNumber().intValue();
 		}
 
 		public double[] getSpikeTimings() {
 			double[] timings = new double[spikeCount];
 			for (int i = 0; i < spikeCount; i++) {
-				timings[i] = (int) timingSpinners.get(i).getValue() / 1000d;
+				timings[i] = ((SpinnerNumberModel) timingSpinners.get(i).getModel()).getNumber().intValue() / 1000d;
 			}
 			return timings;
 		}
@@ -749,8 +749,8 @@ public class STDPTestGUI extends JPanel {
 		public void stateChanged(ChangeEvent e) {
 			JSpinner spinner = (JSpinner) e.getSource();
 			int index = timingSpinners.indexOf(spinner);
-			timingSlider.getModel().getThumbAt(index).setPosition((int) spinner.getValue());
-			enforceOrdering(index, (int) spinner.getValue());
+			timingSlider.getModel().getThumbAt(index).setPosition(((SpinnerNumberModel) spinner.getModel()).getNumber().intValue());
+			enforceOrdering(index, ((SpinnerNumberModel) spinner.getModel()).getNumber().intValue());
 		}
 
 		// Interface ThumbListener
@@ -775,13 +775,13 @@ public class STDPTestGUI extends JPanel {
 		// indexes.
 		private void enforceOrdering(int fixedIndex, int fixedValue) {
 			for (int i = fixedIndex + 1; i < spikeCount; i++) {
-				if ((int) timingSpinners.get(i).getValue() < fixedValue) {
+				if (((SpinnerNumberModel) timingSpinners.get(i).getModel()).getNumber().intValue() < fixedValue) {
 					timingSpinners.get(i).setValue(fixedValue);
 					timingSlider.getModel().getThumbAt(i).setPosition(fixedValue);
 				}
 			}
 			for (int i = fixedIndex - 1; i >= 0; i--) {
-				if ((int) timingSpinners.get(i).getValue() > fixedValue) {
+				if (((SpinnerNumberModel) timingSpinners.get(i).getModel()).getNumber().intValue() > fixedValue) {
 					timingSpinners.get(i).setValue(fixedValue);
 					timingSlider.getModel().getThumbAt(i).setPosition(fixedValue);
 				}
