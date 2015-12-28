@@ -33,6 +33,7 @@ neurons and all synapses must be transferred from the GPU to the CPU  and back
 again so they can be input into the synapses and neurons respectively for the 
 next cycle, mostly negating any performance improvements.
 
+
 ## Building
 
 Bain requires Java 7 or greater. Bain is built with 
@@ -43,9 +44,7 @@ with:
 gradle build
 ```
 
-This will create a runnable jar file in a directory called bain-build in the 
-same directory that the bain project 
-directory resides in. The jar file will contain all the required dependencies.
+This will create a runnable jar file in build/libs
 
 
 ## Getting started

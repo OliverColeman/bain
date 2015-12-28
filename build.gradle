@@ -1,15 +1,38 @@
-// Apply the java plugin to add support for Java
+plugins {
+    id "com.jfrog.bintray" version "1.4"
+}
+
 apply plugin: 'java'
 
-// In this section you declare where to find the dependencies of your project
+
+// Determine version from last git tag.
+def getVersionName = { ->
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--tags'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    }
+    catch (ignored) {
+        return null;
+    }
+}
+
+group = "org.ojcoleman.bain"
+version = getVersionName()
+
 repositories {
     // Use 'jcenter' for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
-    maven { url "http://mvnrepository.com" }
+    maven { 
+    	url "http://mvnrepository.com"
+    }
 }
 
-// In this section you declare the dependencies for your production and test code
+
 dependencies {
     // The production code uses the SLF4J logging API at compile time
     compile 'org.slf4j:slf4j-api:1.7.12'
@@ -24,11 +47,33 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-libsDirName = '../../bain-build'
 
-jar {
+//jar {
   // Include dependencies (make a "fat" jar")
-  from {
-    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-  }
+  //from {
+  //  configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+  //}
+//}
+
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    pkg {
+        repo = 'maven'
+        name = 'bain'
+        desc = "Neural network simulator."
+        websiteUrl = "http://olivercoleman.github.io/bain"
+        issueTrackerUrl = "https://github.com/OliverColeman/bain/issues"
+        vcsUrl = 'https://github.com/OliverColeman/bain.git'
+        licenses = ['GPL-3.0']
+        version {
+                name = getVersionName()
+                //desc = 'Initial release'
+                released  = new Date()
+                vcsTag = getVersionName()
+        }
+    }
+    configurations = ['archives']
 }
+

@@ -62,12 +62,12 @@ public class NeuralNetworkTest {
 		assertTrue(Arrays.equals(sim.getNeurons().getOutputs(), correctOutput));
 	}
 	
-	@Test
-	public void testGPU() {
-		sim.setPreferredExecutionMode(Kernel.EXECUTION_MODE.GPU);
-		runSim(sim, false);
-		assertTrue(Arrays.equals(sim.getNeurons().getOutputs(), correctOutput));
-	}
+//	@Test
+//	public void testGPU() {
+//		sim.setPreferredExecutionMode(Kernel.EXECUTION_MODE.GPU);
+//		runSim(sim, false);
+//		assertTrue(Arrays.equals(sim.getNeurons().getOutputs(), correctOutput));
+//	}
 	
 	@After
 	public void tearDown() {
