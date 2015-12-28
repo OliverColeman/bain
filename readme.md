@@ -39,12 +39,14 @@ next cycle, mostly negating any performance improvements.
 Bain requires Java 7 or greater. Bain is built with 
 [gradle](http://gradle.org). A JAR file can be built from the source files 
 with:
-
-```sh
-gradle build
 ```
-
-This will create a runnable jar file in build/libs
+./gradlew build
+```
+on *nix systems, or
+```
+gradlew build
+```
+on Windows systems. This will create a runnable jar file in build/libs.
 
 
 ## Getting started
