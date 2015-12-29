@@ -17,7 +17,6 @@ requirements:
      Aparapi.
  - Be written in Java.
 
-
 Aparapi allows writing Java code that follows certain conventions and 
 restrictions that it will then turn into OpenCL at run-time. If no OpenCL 
 compatible platforms are available then Aparapi falls back to using a Java 
@@ -26,8 +25,11 @@ model of a neural network component, one only need extend the appropriate base
 class and implement a few methods, without thinking (very much) about OpenCL, 
 thread pools, etcetera.
 
-NOTE: unfortunately limitations in Aparapi severely restrict the efficiency of
-SIMD computations. At present Aparapi does not allow communication between
+The latest version is available at, and issues should be posted at,
+https://github.com/OliverColeman/bain
+
+**NOTE:** unfortunately limitations in Aparapi severely restrict the efficiency 
+of SIMD computations. At present Aparapi does not allow communication between
 kernels (for example the neuron and synapse kernels), thus the output of all
 neurons and all synapses must be transferred from the GPU to the CPU  and back 
 again so they can be input into the synapses and neurons respectively for the 
@@ -54,29 +56,29 @@ want a jar file that does not include the dependencies replace "withDeps" with
 ### Dependencies
 
 Basic:
-Aparapi: https://github.com/aparapi/aparapi
+* Aparapi: https://github.com/aparapi/aparapi
 
 GUI:
-jfreechart (>= 1.0.19)
-swingx (>= 1.6.4)
-
-You can build a jar containing all the dependencies by  modify build.gradle b
+* jfreechart (>= 1.0.19)
+* swingx (>= 1.6.4)
 
 
 ## Getting started
+
+You can run the GUI by running
+```
+java -jar bain[-all]-<version>.jar
+```
 
 Read the API documentation starting with com.ojcoleman.bain.Simulation,
 and the references within. API documentation is available at 
 http://olivercoleman.github.com/bain/
 
 
-The latest version is available at, and issues should be posted at,
-https://github.com/OliverColeman/bain
-
+## Other
 
 This library is being written as part of my PhD: "Evolving plastic neural 
 networks for online learning". For more details see http://ojcoleman.com.
-
 
 "Using all this knowledge as a key, we may possibly unlock the secrets of the
 anatomical structure; we may compel the cells and fibres to disclose their
@@ -85,6 +87,7 @@ activity resulted from interactions among neurons within the brain), 1873,
 Mind and Body: The Theories of Their Relation, New York: D. Appleton and Company.
 Also, "Bain" is just one letter away from "Brain"... ;) 
 
+## License
 
 Bain is licensed under the GNU General Public License v3. A copy of the license
 is included in the distribution. Please note that Bain is distributed WITHOUT 
