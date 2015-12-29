@@ -37,16 +37,30 @@ next cycle, mostly negating any performance improvements.
 ## Building
 
 Bain requires Java 7 or greater. Bain is built with 
-[gradle](http://gradle.org). A JAR file can be built from the source files 
-with:
+[gradle](http://gradle.org). To build a runnable JAR file, run the following 
+command from the project directory (it is not necessary to install gradle):
 ```
-./gradlew build
+./gradlew withDeps
 ```
 on *nix systems, or
 ```
-gradlew build
+gradlew withDeps
 ```
-on Windows systems. This will create a runnable jar file in build/libs.
+on Windows systems. This will create a runnable jar file in build/libs. If you
+want a jar file that does not include the dependencies replace "withDeps" with
+"assemble".
+
+
+### Dependencies
+
+Basic:
+Aparapi: https://github.com/aparapi/aparapi
+
+GUI:
+jfreechart (>= 1.0.19)
+swingx (>= 1.6.4)
+
+You can build a jar containing all the dependencies by  modify build.gradle b
 
 
 ## Getting started

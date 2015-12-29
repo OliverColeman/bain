@@ -35,7 +35,6 @@ repositories {
 
 dependencies {
     // The production code uses the SLF4J logging API at compile time
-    compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'org.jfree:jfreechart:1.0.19'
     compile 'org.swinglabs.swingx:swingx-all:1.6.4'
     compile fileTree(dir: 'lib', include: 'aparapi.jar')
@@ -48,12 +47,22 @@ dependencies {
 }
 
 
-//jar {
-  // Include dependencies (make a "fat" jar")
-  //from {
-  //  configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-  //}
-//}
+// Default jar file for "assemble" task.
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.ojcoleman.bain.gui.STDPTestGUIApp'
+    }
+}
+
+// Assemble task that includes all dependencies (makes a "fat" jar")
+task withDeps(type: Jar) {
+	manifest.from jar.manifest
+	baseName = project.name + '-all'
+	from {
+	    configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+	with jar
+}
 
 
 bintray {
