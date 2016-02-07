@@ -409,6 +409,28 @@ public abstract class ComponentCollection extends Kernel {
 			typeSingletons.put(className, ((Class<? extends ComponentCollection>) Class.forName(className)).getConstructor(new Class[] { int.class }).newInstance(new Integer(0)));
 		}
 	}
+	
+	/**
+	 * Calling this method makes the specified component type available in the list of component types given by
+	 * getComponentTypes() and the getComponentCollectionSingleton() method. Subsequent calls with the same class name
+	 * have no effect.
+	 * 
+	 * @param className The class of the Synapse type.
+	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 * @throws SecurityException
+	 * @throws NoSuchMethodException
+	 * @throws InvocationTargetException
+	 * @throws IllegalArgumentException
+	 */
+	public static void registerComponentCollectionType(Class<? extends ComponentCollection> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		String className = clazz.getCanonicalName();
+		if (!typeSingletons.containsKey(className)) {
+			// Create a singleton for the specific collection with size 0.
+			typeSingletons.put(className, clazz.getConstructor(new Class[] { int.class }).newInstance(new Integer(0)));
+		}
+	}
 
 	public static String[] getComponentTypes() {
 		return typeSingletons.keySet().toArray(new String[typeSingletons.size()]);
@@ -442,5 +464,23 @@ public abstract class ComponentCollection extends Kernel {
 	public static ComponentCollection createCollection(String className, int size) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		registerComponentCollectionType(className);
 		return getComponentCollectionSingleton(className).createCollection(size);
+	}
+	
+	/**
+	 * Create a new collection of the given type and size.
+	 * 
+	 * @param className The class name of the collection to create.
+	 * @param size The size of the new collection.
+	 * @throws SecurityException
+	 * @throws NoSuchMethodException
+	 * @throws InvocationTargetException
+	 * @throws IllegalArgumentException
+	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 */
+	public static ComponentCollection createCollection(Class<? extends ComponentCollection> clazz, int size) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		registerComponentCollectionType(clazz);
+		return getComponentCollectionSingleton(clazz.getCanonicalName()).createCollection(size);
 	}
 }
