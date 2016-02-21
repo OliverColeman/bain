@@ -4,6 +4,7 @@ plugins {
 
 apply plugin: 'java'
 
+sourceCompatibility = 1.7
 
 // Determine version from last git tag.
 def getVersionName = { ->
