@@ -3,6 +3,7 @@ plugins {
 }
 
 apply plugin: 'java'
+apply plugin: 'maven'
 
 sourceCompatibility = 1.7
 
@@ -63,6 +64,25 @@ task withDeps(type: Jar) {
 	    configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
 	}
 	with jar
+}
+
+
+task createPom << {
+    pom {
+        project {
+            groupId 'com.ojcoleman'
+            artifactId 'bain'
+            version getVersionName()
+
+            inceptionYear '2015'
+            licenses {
+                license {
+                    name 'GNU General Public License, Version 3.0'
+                    url 'http://www.gnu.org/licenses/gpl.txt'
+                }
+            }
+        }
+    }.writeTo("pom.xml")
 }
 
 
